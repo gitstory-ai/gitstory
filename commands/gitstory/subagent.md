@@ -1,7 +1,7 @@
 ---
 description: Create or improve a subagent following best practices and contract compliance
 argument-hint: <name-or-path> [--model sonnet|opus|haiku] [--tools Read,Write,...]
-allowed-tools: Read, Write, Edit, Task, Bash(ls:*)
+allowed-tools: Read, Write, Task, Bash(ls:*)
 model: inherit
 ---
 
@@ -12,30 +12,21 @@ Create or improve subagents with contract compliance enforcement.
 ## Execution Constraints
 
 ### Requirements
-- Detect mode: file exists → IMPROVE, name only → CREATE
-- Validate subagent contract (single-shot, JSON output, no user interaction)
-- Ask about namespace prefix (gitstory-* recommended for project tools)
-- Present plan before any changes
-- Get user approval before writing/editing
+- Mode detection: file exists → IMPROVE, name only → CREATE
+- Subagent contract validation: single-shot, JSON output, no multi-step interaction
+- Present plan before changes, get user approval before writing
+- YAML frontmatter required: name (lowercase-with-hyphens), description (action-oriented), tools (specific list - NOT "*"), model (sonnet default)
+- Single responsibility, stateless execution, JSON output schema
 
-### YAML Frontmatter Rules
-- `name`: lowercase-with-hyphens (with optional namespace prefix)
-- `description`: Action-oriented. Use PROACTIVELY when X. (for auto-delegation)
-- `tools`: Specific list (NOT "*" - unrestricted access not allowed)
-- `model`: sonnet (default for subagents)
+### Simplicity Rules
+- Use Write (not Edit) for atomic file replacement
+- Minimize tools - specific list only, never "*" (unrestricted)
+- Remove bloat during improvements
 
-### Subagent Contract (CRITICAL)
-- Single responsibility (not multi-purpose)
-- Stateless, single-shot execution
-- JSON output schema required
-- References AGENT_CONTRACT.md (if using contract)
-- **NO** "ask user", **NO** "wait for", **NO** multi-step interaction
-
-### Quality Principles
-Same as commands, plus:
-- Contract compliance is CRITICAL (cannot proceed with violations)
-- Convert Markdown headers → YAML frontmatter
-- Enforce single-shot execution pattern
+### Error Handling
+- Contract violations are CRITICAL - cannot proceed without fixes
+- File not found → suggest CREATE mode or verify path
+- File exists in CREATE → suggest IMPROVE mode or different name
 
 ---
 
@@ -47,39 +38,24 @@ Same as commands, plus:
 
 Ask user:
 
-1. What is this agent's **SINGLE** responsibility? (not multi-purpose)
-2. Namespace prefix?
-   - Recommended: `gitstory-{name}` for project tools
-   - Custom prefix: `{custom}-{name}`
-   - No prefix: just `{name}`
-3. What operations does it support?
-4. What tools does it need? (minimize - specific list only)
-   - File ops: Read, Write, Edit
-   - Search: Grep, Glob
-   - Git: Bash(git:*)
-   - **Never** use "*" (unrestricted)
-5. What should it return? (must be JSON)
-6. Model preference?
-   - **sonnet** (DEFAULT for subagents): Balanced performance
-   - **opus**: Most capable, complex reasoning
-   - **haiku**: Fastest, simple tasks
-   - **inherit**: Use conversation model
-7. Use PROACTIVELY? (for auto-delegation when keywords match)
+1. Single responsibility (what one thing does this agent do?)
+2. Namespace prefix (default: `gitstory-{name}`, custom: `{prefix}-{name}`, none: `{name}`)
+3. Operations supported
+4. Tools needed (specific list - Read, Write, Grep, Glob, Bash(git:*) - never "*")
+5. JSON return format
+6. Model (sonnet=default, opus=complex, haiku=fast, inherit=current)
+7. PROACTIVELY auto-invoke? (yes/no)
 
 **Step 2: Validate Subagent Rules**
 
 Check for violations:
 
-❌ **CRITICAL Violations:**
-- Multi-step user interaction mentioned
-- No JSON output specified
-- Tools: "*" (unrestricted access)
+❌ CRITICAL (stop execution):
+- Multi-step user interaction
+- No JSON output
+- Tools: "*" (unrestricted)
 
-⚠️ **Warnings:**
-- Multi-purpose design (should be single responsibility)
-- Vague output format
-
-If CRITICAL violations → Stop, explain issue, ask user to revise
+⚠️ WARNINGS: Multi-purpose design, vague output format
 
 **Step 3: Invoke gitstory-prompt-generator**
 
@@ -91,16 +67,9 @@ Use Task tool with gitstory-prompt-generator agent:
 **Step 4: Present Generated Content**
 
 Show:
-- YAML frontmatter (with namespace prefix)
-- Agent Mission statement
-- Operations list
-- JSON Output Schema preview
-- Best practices applied
+- YAML frontmatter with namespace prefix
+- Agent mission, operations, JSON schema preview
 - File path: `.claude/agents/{name}.md`
-
-**Important Notes:**
-- Subagents don't use thinking keywords (invoking commands can)
-- Auto-invoked when description keywords match user request (if PROACTIVELY)
 
 **Step 5: Get Approval**
 
@@ -134,73 +103,39 @@ Use Task tool to:
 
 **Step 3: Check Contract Violations**
 
-If violations found:
-
-**CRITICAL Violations:**
+If CRITICAL violations found, show:
 ```
-❌ Subagent Contract Violations (CRITICAL)
+❌ Subagent Contract Violations
 
-1. Multi-step interaction (lines 120-150):
-   "Ask user: Fix issues? (yes/no)"
-   "Step 4: If yes, apply fixes..."
+1. [Violation description with line numbers]
+   FIX: [Specific fix]
 
-   FIX: Remove user interaction. Return JSON with findings.
-        Let calling command handle user interaction.
+2. [Additional violations...]
 
-2. Unrestricted tools (frontmatter line 5):
-   "tools: '*'"
-
-   FIX: List specific tools: Read, Grep, Glob
-
-Cannot proceed until violations fixed.
+Options:
+1. Fix violations (include in improvement plan)
+2. Convert to slash command (if interaction needed)
+3. Cancel
 ```
 
-**Options:**
-1. Convert to slash command (if interaction is essential)
-2. Refactor as subagent (remove interaction, add JSON output)
-
-Ask: **"Fix violations first? (required for compliance)"**
-
-- **yes** → Include fixes in improvement plan
-- **no** → Cannot proceed (contract compliance required)
+Ask: "Fix violations? (1/2/3)" - Cannot proceed without fixes
 
 **Step 4: Present Plan**
 
-Show improvement summary:
+Show:
 
-**Contract Compliance:**
-- Status: ✅ Compliant / ❌ Violations found
-- Violations: [list with fixes]
+**Contract Status:** ✅ Compliant / ❌ Violations: [list]
 
-**Current State:**
-- Size: X lines
-- Format: Markdown headers / YAML frontmatter
-- Issues found: Y
+**Current:** X lines, [Markdown/YAML], Y issues
 
 **Proposed Changes:**
+1. Fix violations (if any)
+2. Convert to YAML frontmatter (if needed)
+3. Remove bloat sections: [list with line ranges]
+4. Simplify verbose sections: [list with X→Y line reductions]
+5. Add missing: JSON schema, contract reference
 
-1. **Fix Contract Violations** (if any)
-   - Show each violation and fix
-
-2. **Convert Frontmatter** (if Markdown headers)
-   - Show before/after
-
-3. **Remove Sections** (bloat)
-   - Section name (lines N-M, X lines)
-   - Reason
-
-4. **Simplify Sections** (verbose pseudocode)
-   - Section name (lines N-M)
-   - Before: X lines → After: Y lines
-
-5. **Add Missing Sections**
-   - JSON Output Schema (if missing)
-   - AGENT_CONTRACT.md reference (if applicable)
-
-**Estimated Reduction:**
-- From: X lines
-- To: Y lines
-- Saved: Z lines (P%)
+**Reduction:** X → Y lines (Z lines, P% saved)
 
 **Step 5: Get Approval**
 
@@ -211,38 +146,17 @@ Ask: **"Apply improvements? (yes/no)"**
 
 **Step 6: Write Improved File**
 
-1. Extract `complete_improved_content` from improver agent JSON output
-2. Validate content is complete:
-   - Has YAML frontmatter (not Markdown headers)
-   - Has required fields: name, description, tools, model
-   - Has JSON output schema section
-   - Reasonable length (not empty, not truncated)
-3. Use single Write tool call to replace entire file
-4. No Edit operations needed - atomic file replacement
+1. Extract `complete_improved_content` from improver agent JSON
+2. Validate: YAML frontmatter, required fields, JSON schema, reasonable length
+3. Write entire file (single Write call, no Edit operations)
 
-**Note:** The improver agent generates the complete improved file content with all changes applied (frontmatter conversion, contract fixes, bloat removal, etc.). This eliminates the need for multiple Edit calls and prevents 400 tool concurrency errors.
-
-**Step 7: Re-validate Contract (Optional)**
-
-If contract violations were CRITICAL, optionally invoke gitstory-subagent-prompt-improver again on the new file to verify compliance:
-
-- ✅ Single-shot execution (no user interaction)
-- ✅ JSON output schema present
-- ✅ YAML frontmatter with required fields
-- ✅ Specific tools (NOT "*")
-- ✅ Single responsibility
-
-**Step 8: Report Completion**
+**Step 7: Report Completion**
 
 Show:
-- Before: X lines
-- After: Y lines
-- Contract compliance: ✅ **COMPLIANT**
-- Violations fixed: [list]
-- Sections removed: [list]
-- Sections simplified: [list]
-- Best practices applied: [list]
-- ✅ Improvement complete
+- Before/After: X → Y lines
+- Contract: ✅ COMPLIANT
+- Changes: Violations fixed [list], sections removed [list], simplified [list]
+- ✅ Complete
 
 ---
 
@@ -319,33 +233,3 @@ Recovery:
 - Check YAML frontmatter valid
 - Review agent logs
 ```
-
----
-
-## Implementation Checklist
-
-- [ ] Parse arguments (name vs path, optional flags)
-- [ ] Detect mode: file exists → IMPROVE, otherwise → CREATE
-- [ ] CREATE mode:
-  - [ ] Gather requirements interactively
-  - [ ] Ask about namespace prefix
-  - [ ] Validate subagent rules (no multi-step, JSON output, specific tools)
-  - [ ] Invoke gitstory-prompt-generator
-  - [ ] Present generated content
-  - [ ] Get approval
-  - [ ] Write file
-  - [ ] Report success with auto-invoke trigger
-- [ ] IMPROVE mode:
-  - [ ] Invoke gitstory-prompt-analyzer
-  - [ ] Invoke gitstory-subagent-prompt-improver
-  - [ ] Check contract violations
-  - [ ] Present improvement plan (violations + bloat removal)
-  - [ ] Get approval (all/selective)
-  - [ ] Apply edits (frontmatter conversion + fixes + bloat removal)
-  - [ ] Re-validate contract compliance
-  - [ ] Report completion
-- [ ] Enforce contract compliance (CRITICAL - cannot proceed with violations)
-- [ ] Offer model selection (sonnet default for subagents)
-- [ ] Clarify: subagents don't use thinking keywords (commands do)
-- [ ] Handle all error cases
-- [ ] Never modify files without user approval
