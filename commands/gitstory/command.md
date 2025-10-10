@@ -12,6 +12,7 @@ Create or improve slash commands with best practices enforcement.
 ## Execution Constraints
 
 ### Requirements
+
 - Detect mode: file exists → IMPROVE, name only → CREATE
 - Present plan before any file changes
 - Get user approval before writing/editing
@@ -19,12 +20,14 @@ Create or improve slash commands with best practices enforcement.
 - Recommend thinking keywords based on complexity
 
 ### Frontmatter Rules
+
 - `description`: Brief command explanation
 - `argument-hint`: Expected arguments format (if command takes args)
 - `allowed-tools`: Specific tools or inherit for broad access
 - `model`: inherit (default for commands)
 
 ### Quality Principles
+
 - **Remove**: Marketing, history, design rationale, verbose pseudocode
 - **Keep**: Execution steps, error examples, checklists, constraints
 - **Simplify**: >20 line pseudocode → requirements bullets
@@ -37,6 +40,7 @@ Create or improve slash commands with best practices enforcement.
 ### CREATE Mode
 
 **Gather Requirements:**
+
 1. What should this command do?
 2. Arguments needed? (format)
 3. Tools needed?
@@ -45,15 +49,18 @@ Create or improve slash commands with best practices enforcement.
 6. Thinking mode? (think/think-hard/think-harder/ultrathink)
 
 **Generate:**
+
 - Invoke `gitstory-prompt-generator` agent (operation: `generate-command`)
 - Input: All requirements above
 
 **Present Plan:**
+
 - Frontmatter + structure outline + size estimate
 - File path: `.claude/commands/{name}.md` or `.claude/commands/gitstory/{name}.md`
 - Ask: **"Approve? (yes/modify/cancel)"**
 
 **Execute:**
+
 - **yes** → Write file, show success message
 - **modify** → Regenerate with adjustments
 - **cancel** → Abort
@@ -75,6 +82,7 @@ Use Task tool to generate improvement plan based on analysis.
 Show improvement summary:
 
 **Current State:**
+
 - Size: X lines
 - Issues found: Y
 
@@ -97,6 +105,7 @@ Show improvement summary:
    - Proposed "Execution Constraints" section preview
 
 **Estimated Reduction:**
+
 - From: X lines
 - To: Y lines
 - Saved: Z lines (P%)
@@ -106,6 +115,7 @@ Show improvement summary:
 Ask: **"Apply improvements? (yes/no/selective)"**
 
 **yes** → Apply all edits:
+
 1. Add/update frontmatter (Write/Edit)
 2. Delete bloat sections (Edit with empty new_string)
 3. Add Execution Constraints section (Edit, insert after header)
@@ -116,6 +126,7 @@ Ask: **"Apply improvements? (yes/no/selective)"**
 **no** → Cancel
 
 **Step 5: Report**
+
 - Before/After line counts
 - Changes applied: [removed/simplified/consolidated]
 - ✅ Complete
@@ -125,25 +136,29 @@ Ask: **"Apply improvements? (yes/no/selective)"**
 ## Error Handling
 
 **File Not Found (IMPROVE mode):**
-```
+
+```bash
 ❌ Command file not found: .claude/commands/missing-cmd.md
 Try: /gitstory:command new-name (CREATE) or ls .claude/commands/
 ```
 
 **Invalid Arguments:**
-```
+
+```bash
 ❌ Missing required argument: <name-or-path>
 Usage: /gitstory:command <name-or-path> [--model X] [--think-X]
 ```
 
 **File Already Exists (CREATE mode):**
-```
+
+```bash
 ⚠️ File exists: .claude/commands/existing.md
 Use IMPROVE mode: /gitstory:command existing.md
 ```
 
 **Agent Invocation Failed:**
-```
+
+```bash
 ❌ Failed to invoke gitstory-prompt-generator
 Error: [agent error message]
 Verify: .claude/agents/gitstory-prompt-generator.md exists with valid YAML
