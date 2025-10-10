@@ -280,7 +280,7 @@ Will use `config_factory`? (yes/no)
 > 4 hours
 
 **Files to create/modify:**
-> - CREATE: src/yourproject/storage/vector_store.py (~150 lines, schema + protocol)
+> - CREATE: src/{{PROJECT_NAME}}/storage/vector_store.py (~150 lines, schema + protocol)
 > - CREATE: tests/unit/storage/test_schema.py (~80 lines, schema tests)
 > - CREATE: tests/unit/storage/test_store.py (~120 lines, store tests)
 > - MODIFY: tests/e2e/steps/vector_storage_steps.py (implement 5 steps)

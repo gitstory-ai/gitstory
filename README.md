@@ -73,6 +73,32 @@ curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/agents/gi
 # Copy entire directories from commands/gitstory/, agents/, docs/
 ```
 
+**After copying files, customize for your project:**
+
+```bash
+# Set your GitHub org/repo
+GITHUB_ORG="your-org"
+PROJECT_NAME="your-repo"
+
+# Replace placeholders in GitStory files (NOT your existing code!)
+for file in \
+  .claude/agents/gitstory-*.md \
+  .claude/agents/AGENT_CONTRACT.md \
+  .claude/commands/gitstory/*.md \
+  docs/tickets/CLAUDE.md \
+  docs/PLANNING_INTERVIEW_GUIDE.md; do
+
+  if [ -f "$file" ]; then
+    sed -i \
+      -e "s/{{GITHUB_ORG}}/$GITHUB_ORG/g" \
+      -e "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
+      "$file"
+  fi
+done
+```
+
+**Note:** This only updates GitStory-installed files with your org/repo name.
+
 **Start minimal, add as needed.**
 
 ### Start Your First Initiative

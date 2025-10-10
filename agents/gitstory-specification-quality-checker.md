@@ -76,7 +76,7 @@ Your goal: **Every spec must be executable by an agent without clarification.**
 |----------|----------|
 | "Simply validate the input" | "Validate input: check type is str, length <256, no null bytes" |
 | "Obviously handle edge cases" | "Edge cases: empty string → return [], null → raise ValueError, whitespace-only → return []" |
-| "Just use the default" | "Use default: `~/.yourproject/config.yml` if XDG_CONFIG_HOME not set" |
+| "Just use the default" | "Use default: `~/.{{PROJECT_NAME}}/config.yml` if XDG_CONFIG_HOME not set" |
 
 ### Category 4: Unquantified (No Metrics)
 
@@ -117,7 +117,7 @@ Acceptance Criterion: User can save config
 **After:**
 ```markdown
 Acceptance Criteria:
-- ✅ Valid config → Save to ~/.yourproject/config.yml, return success
+- ✅ Valid config → Save to ~/.{{PROJECT_NAME}}/config.yml, return success
 - ✅ Invalid schema → Display validation errors, exit code 1
 - ✅ No write permission → Display "Permission denied: <path>", exit code 2
 - ✅ Directory doesn't exist → Create parent dirs with mode 0755, then save
@@ -143,7 +143,7 @@ Handle file errors appropriately
 **After:**
 ```markdown
 File Error Handling:
-- FileNotFoundError → "Error: Config file not found: <path>\nCreate with: yourproject config init" (exit 1)
+- FileNotFoundError → "Error: Config file not found: <path>\nCreate with: {{PROJECT_NAME}} config init" (exit 1)
 - PermissionError → "Error: Permission denied: <path>\nCheck file permissions." (exit 2)
 - IsADirectoryError → "Error: Path is a directory, expected file: <path>" (exit 1)
 - All errors → Log to stderr, display user-actionable message, non-zero exit
@@ -276,7 +276,7 @@ Return JSON:
       "problem": "Only happy path - no edge cases or error handling",
       "fix": {
         "old": "- [ ] User can save configuration",
-        "new": "- [ ] Valid config → Save to ~/.yourproject/config.yml, return success\n- [ ] Invalid schema → Display validation errors, exit 1\n- [ ] No write permission → Display actionable error, exit 2\n- [ ] Directory missing → Create with mode 0755, then save"
+        "new": "- [ ] Valid config → Save to ~/.{{PROJECT_NAME}}/config.yml, return success\n- [ ] Invalid schema → Display validation errors, exit 1\n- [ ] No write permission → Display actionable error, exit 2\n- [ ] Directory missing → Create with mode 0755, then save"
       },
       "impact": "Incomplete - missing error and edge case specifications"
     },
@@ -392,9 +392,9 @@ def calculate_quality_score(ticket_content: str, issues: list) -> dict:
 
 | Vague | Specific |
 |-------|----------|
-| "Load config" | "Parse ~/.yourproject/config.yml, validate against schema, merge with defaults" |
-| "Save settings" | "Write config to ~/.yourproject/config.yml with mode 0600, atomic write with rename" |
-| "Use defaults" | "Default: index_path='.yourproject/index', format='json', log_level='INFO'" |
+| "Load config" | "Parse ~/.{{PROJECT_NAME}}/config.yml, validate against schema, merge with defaults" |
+| "Save settings" | "Write config to ~/.{{PROJECT_NAME}}/config.yml with mode 0600, atomic write with rename" |
+| "Use defaults" | "Default: index_path='.{{PROJECT_NAME}}/index', format='json', log_level='INFO'" |
 
 ### Error Handling Vagueness
 

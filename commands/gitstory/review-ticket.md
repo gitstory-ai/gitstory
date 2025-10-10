@@ -672,7 +672,7 @@ Agent analyzes:
 
 1. **TASK-0001.2.4.2 Status Mismatch**
    - Ticket says: "🔵 Not Started"
-   - Git shows: 3 commits modifying src/yourproject/storage/vector_store.py
+   - Git shows: 3 commits modifying src/{{PROJECT_NAME}}/storage/vector_store.py
    - **Fix:** Update status to "✅ Complete"
 
 2. **Story Progress Inaccurate**

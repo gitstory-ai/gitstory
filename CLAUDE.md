@@ -467,7 +467,7 @@ uv run ruff check src tests && uv run ruff format src tests && uv run mypy src &
 
 # Testing
 uv run pytest                                  # Run all tests
-uv run pytest --cov=src/yourproject                # With coverage
+uv run pytest --cov=src/{{PROJECT_NAME}}                # With coverage
 uv run pytest -vvs -x                         # Debug mode
 
 # Git Operations

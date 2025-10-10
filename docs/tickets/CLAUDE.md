@@ -447,7 +447,7 @@ This creates broken URL: `https://github.com/{org}/{repo}/pull/docs/tickets/...`
 
 **✅ Correct (blob URLs with branch name):**
 ```markdown
-[EPIC-0001.1](https://github.com/yourorg/yourproject/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/epics/EPIC-0001.1.md)
+[EPIC-0001.1](https://github.com/{{GITHUB_ORG}}/{{PROJECT_NAME}}/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/epics/EPIC-0001.1.md)
 ```
 
 Format: `https://github.com/{org}/{repo}/blob/{branch}/{path}`
@@ -457,7 +457,7 @@ Format: `https://github.com/{org}/{repo}/blob/{branch}/{path}`
 ```markdown
 # STORY-0001.1.0: Development Environment Setup
 
-**Parent Epic**: [EPIC-0001.1](https://github.com/yourorg/yourproject/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/epics/EPIC-0001.1.md)
+**Parent Epic**: [EPIC-0001.1](https://github.com/{{GITHUB_ORG}}/{{PROJECT_NAME}}/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/epics/EPIC-0001.1.md)
 **Status**: ✅ Complete
 **Story Points**: 8
 **Progress**: ████████████████████ 100%
@@ -479,11 +479,11 @@ So that I can contribute to your project following best practices
 
 ## Child Tasks
 
-- [TASK-0001.1.0.1](https://github.com/yourorg/yourproject/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.1.md): ✅ Complete
-- [TASK-0001.1.0.2](https://github.com/yourorg/yourproject/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.2.md): ✅ Complete
-- [TASK-0001.1.0.3](https://github.com/yourorg/yourproject/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.3.md): ✅ Complete
-- [TASK-0001.1.0.4](https://github.com/yourorg/yourproject/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.4.md): ✅ Complete
-- [TASK-0001.1.0.5](https://github.com/yourorg/yourproject/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.5.md): ✅ Complete
+- [TASK-0001.1.0.1](https://github.com/{{GITHUB_ORG}}/{{PROJECT_NAME}}/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.1.md): ✅ Complete
+- [TASK-0001.1.0.2](https://github.com/{{GITHUB_ORG}}/{{PROJECT_NAME}}/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.2.md): ✅ Complete
+- [TASK-0001.1.0.3](https://github.com/{{GITHUB_ORG}}/{{PROJECT_NAME}}/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.3.md): ✅ Complete
+- [TASK-0001.1.0.4](https://github.com/{{GITHUB_ORG}}/{{PROJECT_NAME}}/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.4.md): ✅ Complete
+- [TASK-0001.1.0.5](https://github.com/{{GITHUB_ORG}}/{{PROJECT_NAME}}/blob/STORY-0001.1.0/docs/tickets/initiatives/INIT-0001/tasks/TASK-0001.1.0.5.md): ✅ Complete
 
 ## Implementation Summary
 

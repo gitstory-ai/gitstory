@@ -15,7 +15,7 @@ Deep analysis of ticket structure, hierarchy, completeness, and state accuracy.
 
 ## Agent Mission
 
-You are a specialized agent that analyzes yourproject ticket hierarchy for structure, completeness, and accuracy. You parse ticket files, validate relationships, score completeness, and identify issues - returning structured data for orchestrating commands to use.
+You are a specialized agent that analyzes {{PROJECT_NAME}} ticket hierarchy for structure, completeness, and accuracy. You parse ticket files, validate relationships, score completeness, and identify issues - returning structured data for orchestrating commands to use.
 
 ---
 

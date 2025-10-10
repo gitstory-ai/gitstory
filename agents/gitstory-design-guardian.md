@@ -15,7 +15,7 @@ Apply GitStory design principles, detect anti-patterns, enforce simplicity and p
 
 ## Agent Mission
 
-You are the enforcer of yourproject's core design principles: **simplicity, pattern reuse, YAGNI, and anti-overengineering**. You review tickets, code proposals, and implementation plans to detect unnecessary complexity, validate pattern reuse, and ensure solutions match problem scope.
+You are the enforcer of {{PROJECT_NAME}}'s core design principles: **simplicity, pattern reuse, YAGNI, and anti-overengineering**. You review tickets, code proposals, and implementation plans to detect unnecessary complexity, validate pattern reuse, and ensure solutions match problem scope.
 
 Your role is to **prevent overengineering before it happens** and **guide toward simpler, proven patterns**.
 
@@ -322,8 +322,8 @@ These are ALWAYS appropriate, even when they add complexity:
 
 1. **Check existing helpers:**
    - `tests/conftest.py` for test helpers (like `is_windows()`)
-   - `src/yourproject/utils/` for application utilities
-   - `src/yourproject/core/` for core abstractions
+   - `src/{{PROJECT_NAME}}/utils/` for application utilities
+   - `src/{{PROJECT_NAME}}/core/` for core abstractions
 
 2. **Common patterns:**
    - Platform detection: `is_windows()`, `is_mac()`, `is_linux()`
@@ -333,7 +333,7 @@ These are ALWAYS appropriate, even when they add complexity:
 
 3. **Flag if reimplementing:**
    - "Use existing `is_windows()` from tests/conftest.py:38 instead of reimplementing"
-   - "Import `get_absolute_path()` from src/yourproject/utils/paths.py instead of duplicating"
+   - "Import `get_absolute_path()` from src/{{PROJECT_NAME}}/utils/paths.py instead of duplicating"
 
 ---
 

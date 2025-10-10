@@ -96,8 +96,8 @@ Wrapped in standard contract (see [AGENT_CONTRACT.md](AGENT_CONTRACT.md)):
     },
     "files": {
       "committed": {
-        "modified": ["src/yourproject/cli.py", "tests/unit/test_cli.py"],
-        "added": ["src/yourproject/config.py"],
+        "modified": ["src/{{PROJECT_NAME}}/cli.py", "tests/unit/test_cli.py"],
+        "added": ["src/{{PROJECT_NAME}}/config.py"],
         "deleted": [],
         "stat": "+234 -12"
       },
@@ -147,8 +147,8 @@ Wrapped in standard contract (see [AGENT_CONTRACT.md](AGENT_CONTRACT.md)):
           "found": true,
           "commits": ["a1b2c3d"],
           "commit_messages": ["feat(TASK-0001.2.3.1): Add config init command"],
-          "files_modified": ["src/yourproject/cli.py", "src/yourproject/config.py"],
-          "expected_files": ["src/yourproject/cli.py", "src/yourproject/config.py"],
+          "files_modified": ["src/{{PROJECT_NAME}}/cli.py", "src/{{PROJECT_NAME}}/config.py"],
+          "expected_files": ["src/{{PROJECT_NAME}}/cli.py", "src/{{PROJECT_NAME}}/config.py"],
           "files_match": true
         },
         "verdict": "accurate",
@@ -177,8 +177,8 @@ Wrapped in standard contract (see [AGENT_CONTRACT.md](AGENT_CONTRACT.md)):
           "found": true,
           "commits": ["e4f5g6h"],
           "commit_messages": ["feat(TASK-0001.2.3.3): Implement config validation"],
-          "files_modified": ["src/yourproject/config.py", "tests/unit/test_config.py"],
-          "expected_files": ["src/yourproject/config.py"],
+          "files_modified": ["src/{{PROJECT_NAME}}/config.py", "tests/unit/test_config.py"],
+          "expected_files": ["src/{{PROJECT_NAME}}/config.py"],
           "files_match": true
         },
         "verdict": "reality_ahead_of_ticket",

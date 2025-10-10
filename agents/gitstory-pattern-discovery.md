@@ -77,7 +77,7 @@ Perform comprehensive survey of all patterns, fixtures, and helpers.
   - File and line references
 
 #### Source Code Patterns
-- **Location**: `src/yourproject/**/*.py`
+- **Location**: `src/{{PROJECT_NAME}}/**/*.py`
 - **Patterns to identify**:
   - Common import patterns
   - Utility functions and helpers
@@ -193,7 +193,7 @@ Find test files that test similar functionality.
 - **Usage Pattern**:
   ```python
   def test_config(isolated_env):
-      config_dir = isolated_env["HOME"] / ".yourproject"
+      config_dir = isolated_env["HOME"] / ".{{PROJECT_NAME}}"
   ```
 - **Used in**: 15 test files (tests/unit/core/test_config.py, ...)
 
@@ -304,13 +304,13 @@ def check_output_contains(cli_runner, text):
 
 #### Utility Functions
 
-**`load_yaml_config(path: Path) -> dict`** (src/yourproject/utils/config.py:12)
+**`load_yaml_config(path: Path) -> dict`** (src/{{PROJECT_NAME}}/utils/config.py:12)
 - **Purpose**: Safely load and parse YAML config files
 - **Error Handling**: Raises ConfigError on parse failure
 - **Used in**: 5 modules
 - **Reuse**: Always use this instead of yaml.safe_load directly
 
-**`ensure_directory(path: Path) -> Path`** (src/yourproject/utils/fs.py:23)
+**`ensure_directory(path: Path) -> Path`** (src/{{PROJECT_NAME}}/utils/fs.py:23)
 - **Purpose**: Create directory if it doesn't exist, return path
 - **Thread-safe**: Uses exist_ok=True
 - **Used in**: 8 modules
@@ -335,7 +335,7 @@ def check_output_contains(cli_runner, text):
 
 **From: CLAUDE.md**
 - ❌ **Never use pip directly** - Always use `uv`
-- ❌ **Never run yourproject from yourproject repo** - Use temp/mock repos
+- ❌ **Never run {{PROJECT_NAME}} from {{PROJECT_NAME}} repo** - Use temp/mock repos
 - ❌ **Never skip or xfail tests** - Fix them instead
 
 **From: tests/e2e/CLAUDE.md**
@@ -466,7 +466,7 @@ Before returning results, verify:
 **Context:** Planning STORY-0001.2.3 (OpenAI embedding generation)
 
 **Related modules:**
-- src/yourproject/embeddings/
+- src/{{PROJECT_NAME}}/embeddings/
 - tests/unit/embeddings/
 - tests/e2e/features/embeddings.feature
 ```
