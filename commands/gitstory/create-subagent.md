@@ -1,38 +1,34 @@
 ---
-description: Create or improve a subagent following best practices and contract compliance
-argument-hint: <name-or-path> [--model sonnet|opus|haiku] [--tools Read,Write,...]
-allowed-tools: Read, Write, Task, Bash(ls:*)
+description: Create new subagents following best practices and contract compliance
+argument-hint: <name> [--model sonnet|opus|haiku] [--tools Read,Write,...]
+allowed-tools: Read, Write, Task
 model: inherit
 ---
 
-# /gitstory:subagent
+# /gitstory:create-subagent
 
-Create or improve subagents with contract compliance enforcement.
+Create new subagents from scratch with contract compliance enforcement.
 
 ## Execution Constraints
 
 ### Requirements
-- Mode detection: file exists → IMPROVE, name only → CREATE
 - Subagent contract validation: single-shot, JSON output, no multi-step interaction
 - Present plan before changes, get user approval before writing
 - YAML frontmatter required: name (lowercase-with-hyphens), description (action-oriented), tools (specific list - NOT "*"), model (sonnet default)
 - Single responsibility, stateless execution, JSON output schema
 
 ### Simplicity Rules
-- Use Write (not Edit) for atomic file replacement
+- Use Write for atomic file creation
 - Minimize tools - specific list only, never "*" (unrestricted)
-- Remove bloat during improvements
+- Follow best practices from start
 
 ### Error Handling
 - Contract violations are CRITICAL - cannot proceed without fixes
-- File not found → suggest CREATE mode or verify path
-- File exists in CREATE → suggest IMPROVE mode or different name
+- File exists → suggest /gitstory:improve-subagent instead
 
 ---
 
 ## Workflow
-
-### CREATE Mode
 
 **Step 1: Gather Requirements**
 
@@ -89,147 +85,55 @@ Show:
 
 ---
 
-### IMPROVE Mode
-
-**Step 1: Invoke gitstory-prompt-analyzer**
-
-Use Task tool to analyze current file structure.
-
-**Step 2: Invoke gitstory-subagent-prompt-improver**
-
-Use Task tool to:
-- Generate improvement plan
-- Validate contract compliance
-
-**Step 3: Check Contract Violations**
-
-If CRITICAL violations found, show:
-```
-❌ Subagent Contract Violations
-
-1. [Violation description with line numbers]
-   FIX: [Specific fix]
-
-2. [Additional violations...]
-
-Options:
-1. Fix violations (include in improvement plan)
-2. Convert to slash command (if interaction needed)
-3. Cancel
-```
-
-Ask: "Fix violations? (1/2/3)" - Cannot proceed without fixes
-
-**Step 4: Present Plan**
-
-Show:
-
-**Contract Status:** ✅ Compliant / ❌ Violations: [list]
-
-**Current:** X lines, [Markdown/YAML], Y issues
-
-**Proposed Changes:**
-1. Fix violations (if any)
-2. Convert to YAML frontmatter (if needed)
-3. Remove bloat sections: [list with line ranges]
-4. Simplify verbose sections: [list with X→Y line reductions]
-5. Add missing: JSON schema, contract reference
-
-**Reduction:** X → Y lines (Z lines, P% saved)
-
-**Step 5: Get Approval**
-
-Ask: **"Apply improvements? (yes/no)"**
-
-- **yes** → Write improved file
-- **no** → Cancel
-
-**Step 6: Write Improved File**
-
-1. Extract `complete_improved_content` from improver agent JSON
-2. Validate: YAML frontmatter, required fields, JSON schema, reasonable length
-3. Write entire file (single Write call, no Edit operations)
-
-**Step 7: Report Completion**
-
-Show:
-- Before/After: X → Y lines
-- Contract: ✅ COMPLIANT
-- Changes: Violations fixed [list], sections removed [list], simplified [list]
-- ✅ Complete
-
----
-
 ## Error Handling
-
-### File Not Found (IMPROVE mode)
-
-```
-❌ Subagent file not found: .claude/agents/missing-agent.md
-
-Recovery:
-- Check file path
-- Use CREATE mode: /gitstory:subagent new-name
-- List agents: ls .claude/agents/
-```
 
 ### Invalid Arguments
 
 ```
-❌ Missing required argument: <name-or-path>
+❌ Missing required argument: <name>
 
-Usage: /gitstory:subagent <name-or-path> [--model X] [--tools X,Y,Z]
+Usage: /gitstory:create-subagent <name> [--model X] [--tools X,Y,Z]
 
 Examples:
-  /gitstory:subagent new-agent                       # Create new
-  /gitstory:subagent existing.md                     # Improve existing
-  /gitstory:subagent new-agent --model opus          # Create with opus
-  /gitstory:subagent .claude/agents/agent.md         # Full path
+  /gitstory:create-subagent new-agent                # Create new
+  /gitstory:create-subagent new-agent --model opus   # Create with opus
+  /gitstory:create-subagent analyzer --tools Read,Grep
 ```
 
-### File Already Exists (CREATE mode)
+### File Already Exists
 
 ```
-⚠️ File already exists: .claude/agents/existing-agent.md
+❌ Subagent file already exists: .claude/agents/existing-agent.md
 
-Options:
-1. Use IMPROVE mode: /gitstory:subagent existing-agent.md
-2. Choose different name
-3. Delete existing file first (if recreating)
+To improve an existing subagent, use: /gitstory:improve-subagent existing-agent.md
 ```
 
-### Contract Violation Detected (IMPROVE mode)
+### Contract Violation in Requirements
 
 ```
-❌ Subagent Contract Violations (CRITICAL)
+❌ Subagent Requirements Violate Contract
 
-Cannot improve subagent with critical violations.
+Cannot create subagent with contract violations.
 
 Violations found:
-1. Multi-step interaction (lines 120-150)
-   Pattern: "Ask user: Do you want to proceed?"
+1. Multi-step user interaction requested
    Fix: Remove interaction, return JSON findings
 
-2. Missing JSON output schema
-   Fix: Add JSON Output Schema section
+2. Tools: "*" (unrestricted access)
+   Fix: Specify exact tools needed (Read, Write, Grep, etc.)
 
-Options:
-1. Fix violations manually first, then re-run
-2. Convert to slash command (if interaction needed)
-3. Cancel and redesign as true subagent
-
-Choose: (1/2/3)
+Please revise requirements to comply with subagent contract.
 ```
 
 ### Agent Invocation Failed
 
 ```
-❌ Failed to invoke gitstory-subagent-prompt-improver
+❌ Failed to invoke gitstory-prompt-generator
 
 Error: [agent error message]
 
 Recovery:
-- Verify agent exists: .claude/agents/gitstory-subagent-prompt-improver.md
+- Verify agent exists: .claude/agents/gitstory-prompt-generator.md
 - Check YAML frontmatter valid
 - Review agent logs
 ```

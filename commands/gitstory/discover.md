@@ -3,7 +3,6 @@ description: Perform comprehensive gap analysis at any ticket hierarchy level
 argument-hint: TICKET-ID or --genesis
 allowed-tools: Read, Task
 model: inherit
-timeout: 30s
 ---
 
 # /discover - Standalone Gap Discovery Command
@@ -15,36 +14,23 @@ timeout: 30s
 /discover --genesis          # Strategic initiative genesis
 ```
 
-**Related Commands:**
-
-- `/plan-initiative` - Create epics after discovering gaps
-- `/plan-epic` - Create stories after discovering gaps
-- `/plan-story` - Create tasks after discovering gaps
-- `/review-ticket` - Quality review with gap discovery integrated
-
 ---
 
 ## Execution Constraints
 
 ### Requirements
 
-- Parse TICKET-ID (INIT/EPIC/STORY/TASK) or `--genesis` flag
+- Parse TICKET-ID (INIT/EPIC/STORY/TASK) or --genesis flag
 - Map ticket type → operation (INIT→initiative-gaps, EPIC→epic-gaps, etc)
 - Invoke gitstory-discovery-orchestrator via Task tool
-- Validate output against [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
+- Validate JSON output against [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
 - Present gaps with priority/status indicators
-- Suggest next command based on results
 
-### Tool Usage
+### Workflow
 
-- Read: Ticket hierarchy files
-- Task: Invoke gitstory-discovery-orchestrator agent
-
-### Simplicity Rules
-
-- Read-only operation (no ticket creation/modification)
-- All gap analysis logic delegated to orchestrator agent
-- Output formatting follows contract schema exactly
+- Read-only (no ticket creation/modification)
+- All gap analysis delegated to orchestrator agent
+- Tools: Read (tickets), Task (orchestrator)
 
 ---
 
@@ -69,16 +55,9 @@ timeout: 30s
 
 ### 3. Invoke Discovery Orchestrator
 
-Use Task tool to invoke gitstory-discovery-orchestrator agent:
-
-```markdown
-**Agent:** gitstory-discovery-orchestrator
-**Operation:** {operation}
-**Target:** {target}
-**Mode:** pre-planning
-
-Execute comprehensive gap discovery and return structured JSON output per [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md).
-```
+- Agent: gitstory-discovery-orchestrator
+- Pass: operation, target, mode=pre-planning
+- Expect: JSON per [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
 
 ### 4. Parse & Validate Output
 
@@ -89,28 +68,14 @@ Execute comprehensive gap discovery and return structured JSON output per [AGENT
 
 ### 5. Present Results
 
-**Show User:**
-
-- Header: `📊 Gap Discovery: {target}` with operation, status
-- Summary: total_gaps, ready_to_write, blocked, overengineering_flags
-- Warnings (if partial): type, message, impact, recovery
-- Gaps: icon (✅/❌), ID, title, type, priority, effort, blocker
-- Patterns (if any): name, location, purpose, reuse_for, example
-- Complexity flags (if any): severity (🔴/🟡/🟢), ticket, issue, recommendation, savings
-- Quality issues (if any): score (✅/⚠️/❌), ticket, score %, issues
-- Metadata: agents invoked, execution time, failures
+Show: Header (target/operation/status), Summary (gaps/blocked/flags), Warnings (partial results), Gaps (icon/ID/title/priority/effort/blocker), Patterns (name/location/reuse_for), Complexity (severity/issue/recommendation), Quality (score/issues), Metadata (agents/time/failures)
 
 ### 6. Suggest Next Actions
 
-**If total_gaps = 0:**
-- `initiative/epic/story-gaps` → Suggest drill down or start work
-
-**If ready_to_write > 0:**
-- Suggest matching `/plan-*` command
-- `task-gaps` → Fix quality issues first
-
-**If blocked > 0:** Warn + list blockers
-**If overengineering/quality:** Suggest `/review-ticket {target}`
+- No gaps → suggest drill down or start work
+- Ready gaps → suggest `/plan-*` command (task-gaps: fix quality first)
+- Blocked gaps → warn + list blockers
+- Overengineering/quality → suggest `/review-ticket`
 
 ---
 

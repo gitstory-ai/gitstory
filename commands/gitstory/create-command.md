@@ -1,20 +1,15 @@
 ---
-description: Create or improve slash commands with best practices enforcement
-argument-hint: <name-or-path> [--model MODEL] [--think*]
+description: Create new slash commands with best practices enforcement
+argument-hint: <name> [--model MODEL] [--think*]
 allowed-tools: Read, Write, Task
 model: inherit
 ---
 
-# /gitstory:command
+# /gitstory:create-command
 
-Create or improve slash commands with best practices enforcement.
+Create new slash commands from scratch with best practices enforcement.
 
 ## Execution Constraints
-
-### Mode Detection
-
-- File exists → IMPROVE mode
-- Name only → CREATE mode
 
 ### User Interaction
 
@@ -25,14 +20,14 @@ Create or improve slash commands with best practices enforcement.
 
 ### Quality Standards
 
-- Remove: Marketing, history, rationale, verbose pseudocode
-- Keep: Execution steps, error examples, constraints
-- Simplify: >20 line pseudocode → requirement bullets
-- Consolidate: Scattered requirements → single section
+- Include proper frontmatter with all required fields
+- Clear execution steps and error examples
+- Consolidated constraints section
+- No marketing, history, or verbose pseudocode
 
 ---
 
-## CREATE Mode
+## Workflow
 
 ### Step 1: Gather Requirements
 
@@ -54,86 +49,21 @@ Ask: **"Approve? (yes/modify/cancel)"**
 
 ---
 
-## IMPROVE Mode
-
-### Step 1: Analyze
-
-Invoke `gitstory-prompt-analyzer` to assess file structure and bloat.
-
-### Step 2: Generate Improvements
-
-Invoke `gitstory-command-prompt-improver` to create improvement plan.
-
-### Step 3: Present Plan
-
-Show improvement summary:
-
-**Current State:**
-
-- Size: X lines
-- Issues: Y
-
-**Proposed Changes:**
-
-1. **Add/Update Frontmatter** (if needed)
-   - Show proposed YAML
-
-2. **Remove Sections** (bloat: marketing/history/rationale)
-   - Section name (lines N-M, X lines)
-
-3. **Simplify Sections** (verbose pseudocode)
-   - Section name (lines N-M): X lines → Y lines
-   - Show preview
-
-4. **Consolidate Constraints** (scattered requirements)
-   - Sources: [sections]
-   - Preview new section
-
-**Estimated Reduction:**
-
-- From: X lines → To: Y lines (P% reduction)
-
-### Step 4: Execute
-
-Ask: **"Apply improvements? (yes/no)"**
-
-**yes** → Apply changes:
-
-1. Extract `complete_improved_content` from improver JSON output
-2. Validate content (not empty, has frontmatter, reasonable length)
-3. Write complete file (single atomic operation)
-
-**no** → Cancel
-
-### Step 5: Report
-
-- Before/After: X → Y lines
-- Changes: [removed/simplified/consolidated]
-- ✅ Complete
-
----
-
 ## Error Handling
-
-**File Not Found (IMPROVE mode):**
-
-```text
-❌ Command file not found: .claude/commands/missing-cmd.md
-Try: /gitstory:command new-name (CREATE) or ls .claude/commands/
-```
 
 **Invalid Arguments:**
 
 ```text
-❌ Missing required argument: <name-or-path>
-Usage: /gitstory:command <name-or-path> [--model X] [--think-X]
+❌ Missing required argument: <name>
+Usage: /gitstory:create-command <name> [--model X] [--think-X]
+Example: /gitstory:create-command my-new-cmd --model sonnet --think
 ```
 
-**File Already Exists (CREATE mode):**
+**File Already Exists:**
 
 ```text
-⚠️ File exists: .claude/commands/existing.md
-Use IMPROVE mode: /gitstory:command existing.md
+❌ Command file already exists: .claude/commands/existing.md
+To improve an existing command, use: /gitstory:improve-command existing.md
 ```
 
 **Agent Invocation Failed:**

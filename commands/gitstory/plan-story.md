@@ -1,19 +1,29 @@
+---
+description: Define tasks for a story with incremental BDD tracking and pattern reuse
+argument-hint: STORY-ID
+allowed-tools: Read, Write, Bash(gh api)
+model: inherit
+---
+
 # /plan-story - Story Task Planning Command
 
 **Purpose:** Define tasks for a story with incremental BDD tracking and pattern reuse.
 
 **Usage:**
+
 ```bash
 /plan-story STORY-ID
 ```
 
 **Examples:**
+
 ```bash
 /plan-story STORY-0001.2.4        # Discover task gaps → interview → create TASK-0001.2.4.{1,2,3,4}.md
 /plan-story STORY-0001.2.6        # Pattern-aware task planning with fixture validation
 ```
 
 **Related Commands:**
+
 - `/discover STORY-ID` - See task gaps without creating them
 - `/start-next-task STORY-ID` - Begin implementation after tasks defined
 - `/review-ticket STORY-ID` - Quality check story before task planning
@@ -22,42 +32,47 @@
 
 ---
 
+## Execution Constraints
+
+### Quality Gates
+
+- Story quality ≥85% before planning (offer `/review-ticket` to fix)
+- Task quality ≥95% before creation (higher threshold for execution clarity)
+- Invoke `gitstory-specification-quality-checker` on all task drafts
+
+### Incremental BDD Requirements
+
+- Task 1: Write ALL BDD scenarios, stub steps (0/N failing)
+- Tasks 2-N: Progressive implementation with BDD tracking
+- Final task: Complete all scenarios (N/N passing)
+- BDD progress must increase each task
+
+### Task Planning Rules
+
+- Task hours sum ≈ story points × 4 (±2h variance)
+- Each task confirms pattern reuse explicitly
+- Invoke `gitstory-discovery-orchestrator` (story-gaps operation) for gap analysis
+
+### Error Recovery
+
+- Story not found → suggest `/plan-epic {EPIC-ID}`
+- Story quality <85% → block task creation, offer `/review-ticket`
+- Task quality <95% → offer revise/skip/proceed-anyway
+- Invalid BDD pattern → re-interview with corrected guidance
+
+---
+
 ## Workflow
 
 ### Step 1: Load Story README
 
-```python
-def load_story(story_id: str) -> dict:
-    """Load story README and extract metadata"""
-    # Parse story ID: STORY-0001.2.4 → INIT-0001/EPIC-0001.2/STORY-0001.2.4
-    parts = story_id.split('-')[1].split('.')  # ["0001", "2", "4"]
-    init_id = f"INIT-{parts[0]}"
-    epic_id = f"EPIC-{parts[0]}.{parts[1]}"
+**Requirements:**
 
-    path = f"docs/tickets/{init_id}/{epic_id}/{story_id}/README.md"
-
-    if not os.path.exists(path):
-        raise FileNotFoundError(
-            f"Story {story_id} not found at {path}\n"
-            f"Create story first: /plan-epic {epic_id}"
-        )
-
-    content = read_file(path)
-
-    return {
-        "id": story_id,
-        "path": path,
-        "parent_epic": epic_id,
-        "parent_init": init_id,
-        "user_story": extract_user_story(content),
-        "acceptance_criteria": extract_acceptance_criteria(content),
-        "bdd_scenarios": extract_bdd_scenarios(content),
-        "technical_design": extract_technical_design(content),
-        "story_points": extract_story_points(content),
-        "existing_tasks": extract_task_list(content),
-        "pattern_reuse": extract_pattern_reuse(content)
-    }
-```
+- Parse STORY-NNNN.E.S → INIT/EPIC/STORY hierarchy
+- Build path: `docs/tickets/{INIT}/{EPIC}/{STORY}/README.md`
+- Error if story not found → suggest `/plan-epic`
+- Extract: user story, acceptance criteria, BDD scenarios, technical design, story points, existing tasks, pattern reuse
+- Return dict with story metadata for planning
 
 ### Step 2: Discovery - Invoke Orchestrator
 
@@ -71,6 +86,7 @@ Execute comprehensive gap discovery and return structured JSON output per [AGENT
 ```
 
 Expected output:
+
 ```json
 {
   "status": "success",
@@ -187,12 +203,15 @@ Invoking /review-ticket STORY-0001.2.4...
 **File:** STORY-0001.2.4/README.md
 
 **Edit 1:** Acceptance Criteria
+```
+
 ```diff
 - [ ] Fast search performance
 + [ ] Search completes in <500ms for 1000 vectors
 ```
 
 **Edit 2:** BDD Scenario
+
 ```diff
 - Then search completes in reasonable time
 + Then search completes in under 500ms
@@ -202,6 +221,7 @@ Invoking /review-ticket STORY-0001.2.4...
 > yes
 
 ✅ Story quality improved: 88% → 95%
+
 ```
 
 ### Step 5: Task Interview (for each gap)
@@ -214,6 +234,7 @@ Following the **incremental BDD pattern** (TASK-1 = all scenarios, TASK-2-N = pr
 ## Task 1: Write BDD Scenarios
 
 **This is TASK-1 in incremental BDD pattern:**
+
 - Write ALL 10 BDD scenarios from story README
 - Stub step definitions (all scenarios fail)
 - BDD Progress: 0/10 → 0/10 (all stubbed, all failing)
@@ -255,6 +276,7 @@ Will use `config_factory`? (yes/no)
 ## Task 2: Schema & Basic Storage
 
 **This is TASK-2 in incremental BDD pattern:**
+
 - Implement foundation (protocols, models, basic initialization)
 - Implement steps for scenarios 1-2
 - BDD Progress: 0/10 → 2/10 (scenarios 1-2 passing)
@@ -298,6 +320,7 @@ Will use `config_factory`? (yes/no)
 ## Task 3: Core Operations & Indexing
 
 **This is TASK-3 in incremental BDD pattern:**
+
 - Implement core functionality (batch ops, indexing, search)
 - Implement steps for scenarios 3-7
 - BDD Progress: 2/10 → 7/10 (majority of features working)
@@ -336,6 +359,7 @@ Will use `config_factory`? (yes/no)
 ## Task 4: State Tracking & Integration
 
 **This is TASK-4 in incremental BDD pattern:**
+
 - Complete remaining functionality (metadata, state tracking)
 - Implement final BDD steps for scenarios 8-10
 - BDD Progress: 7/10 → 10/10 (all scenarios passing ✅)
@@ -368,66 +392,14 @@ Will use `config_factory`? (yes/no)
 
 ### Step 6: Validate Task Breakdown
 
-Ensure tasks follow incremental BDD pattern:
+**Validation Rules:**
 
-```python
-def validate_task_breakdown(tasks: list[dict]) -> dict:
-    """Validate task breakdown follows incremental BDD pattern"""
-
-    # Extract BDD progress from each task
-    bdd_progress = [t["bdd_progress"] for t in tasks]
-
-    # Expected pattern: 0/N → 2/N → 7/N → N/N
-    # Task 1: All scenarios stubbed (0/N)
-    # Task 2-N: Progressive implementation
-
-    issues = []
-
-    # Task 1 should stub all scenarios
-    if tasks[0]["title"] != "Write BDD Scenarios":
-        issues.append("Task 1 must be 'Write BDD Scenarios' (incremental BDD pattern)")
-
-    # Task 1 should have 0/N progress (all stubbed)
-    if "0/" not in bdd_progress[0]:
-        issues.append("Task 1 should stub all scenarios (0/N progress)")
-
-    # Subsequent tasks should increase progress
-    for i in range(1, len(tasks)):
-        prev_passing = int(bdd_progress[i-1].split('/')[0])
-        curr_passing = int(bdd_progress[i].split('/')[0])
-
-        if curr_passing <= prev_passing:
-            issues.append(
-                f"Task {i+1} BDD progress ({bdd_progress[i]}) "
-                f"should increase from Task {i} ({bdd_progress[i-1]})"
-            )
-
-    # Final task should reach N/N (all passing)
-    final_progress = bdd_progress[-1]
-    final_current, final_total = map(int, final_progress.split('/'))
-
-    if final_current != final_total:
-        issues.append(
-            f"Final task should complete all scenarios ({final_total}/{final_total}), "
-            f"got {final_progress}"
-        )
-
-    # Task hours should sum to story points (1 point ≈ 4 hours)
-    story_points = story["story_points"]
-    expected_hours = story_points * 4
-    actual_hours = sum(t["hours"] for t in tasks)
-
-    if abs(actual_hours - expected_hours) > 2:  # Allow 2 hour variance
-        issues.append(
-            f"Task hours ({actual_hours}h) should sum to ~{expected_hours}h "
-            f"({story_points} points × 4h/point)"
-        )
-
-    return {
-        "valid": len(issues) == 0,
-        "issues": issues
-    }
-```
+- Task 1 title must contain "BDD" or "Scenario"
+- Task 1 BDD progress: 0/N (all stubbed)
+- Tasks 2-N: BDD progress must increase each task
+- Final task: BDD progress N/N (all passing)
+- Task hours sum ≈ story points × 4 (±2h variance)
+- Return: `{valid: bool, issues: list[str]}`
 
 ### Step 7: Draft Task Files
 
@@ -451,26 +423,31 @@ Create task markdown files:
 **After this task**: {Y}/{N} scenarios passing
 
 **Scenarios for this task:**
+
 - Scenario {A}: {Title}
 - Scenario {B}: {Title}
 
 ## Implementation Checklist
 
 ### {Phase 1: e.g., "Unit Tests First (TDD - RED)"}
+
 - [ ] {Specific step 1}
 - [ ] {Specific step 2}
 - [ ] Run tests - all fail ✓
 
 ### {Phase 2: e.g., "Implementation (GREEN)"}
+
 - [ ] {Specific step 1}
 - [ ] {Specific step 2}
 - [ ] Run tests - all pass ✓
 
 ### {Phase 3: e.g., "BDD Implementation"}
+
 - [ ] Implement step: "{Gherkin step text}"
 - [ ] Run BDD tests - {Y}/{N} passing ✓
 
 ### Verification
+
 - [ ] All unit tests pass
 - [ ] BDD scenarios {A}-{B} pass
 - [ ] Code coverage >{percentage}%
@@ -488,6 +465,7 @@ Create task markdown files:
 ## Performance Targets
 
 (If applicable to this task)
+
 - {Metric}: {Target value}
 
 ## Dependencies
@@ -515,6 +493,7 @@ Quality threshold: **95%** (tasks must be very specific for autonomous execution
 ## 📋 Task Drafts (4 tasks)
 
 ### TASK-0001.2.4.1: Write BDD Scenarios
+
 - **Hours:** 2
 - **BDD Progress:** 0/10 → 0/10 (all stubbed, all failing)
 - **Quality Score:** 96% ✅
@@ -522,6 +501,7 @@ Quality threshold: **95%** (tasks must be very specific for autonomous execution
 - **Issues:** None
 
 ### TASK-0001.2.4.2: Schema & Basic Storage
+
 - **Hours:** 4
 - **BDD Progress:** 0/10 → 2/10 (scenarios 1-2 passing)
 - **Quality Score:** 94% ✅
@@ -529,6 +509,7 @@ Quality threshold: **95%** (tasks must be very specific for autonomous execution
 - **Issues:** None
 
 ### TASK-0001.2.4.3: Core Operations & Indexing
+
 - **Hours:** 3
 - **BDD Progress:** 2/10 → 7/10 (scenarios 3-7 passing)
 - **Quality Score:** 93% ⚠️
@@ -537,6 +518,7 @@ Quality threshold: **95%** (tasks must be very specific for autonomous execution
   - Step "Implement indexing" too vague - specify IVF-PQ algorithm, nlist=100
 
 ### TASK-0001.2.4.4: State Tracking & Integration
+
 - **Hours:** 3
 - **BDD Progress:** 7/10 → 10/10 (all passing ✅)
 - **Quality Score:** 95% ✅
@@ -584,6 +566,7 @@ Update story with task list and BDD progress:
 **BDD Progress**: 0/10 scenarios passing
 
 **Incremental BDD Tracking:**
+
 - TASK-1: 0/10 (all scenarios stubbed)
 - TASK-2: 2/10 (foundation + basic scenarios)
 - TASK-3: 7/10 (core functionality)
@@ -615,6 +598,20 @@ Update story with task list and BDD progress:
 
 ---
 
+## Incremental BDD Pattern
+
+### Validation Pattern
+
+- Task 1: Title contains "BDD"/"Scenario", progress 0/N (all stubbed)
+- Tasks 2-N: Each increases passing scenarios progressively
+- Final task: Progress N/N (all passing)
+
+### Success Message Template
+
+Show: Task 1 (0/N stubbed) → Task 2 (X/N) → ... → Final (N/N ✅)
+
+---
+
 ## Error Handling
 
 ### Story Not Found
@@ -625,6 +622,7 @@ $ /plan-story STORY-9999.9.9
 ❌ Story STORY-9999.9.9 not found
 
 **Recovery:**
+
 - Verify story ID: run /discover EPIC-9999.9
 - Create story first: /plan-epic EPIC-9999.9
 ```
@@ -639,6 +637,7 @@ $ /plan-story STORY-0001.2.4
 ### Story Quality: 62% ❌
 
 **Critical Issues:**
+
 - Acceptance criteria not testable ("should work properly")
 - BDD scenarios incomplete (missing Then steps)
 - Technical design too vague ("use database")
@@ -659,6 +658,7 @@ Then retry: `/plan-story STORY-0001.2.4`
 ## Task Breakdown Validation: ❌ Failed
 
 **Issues:**
+
 1. Task 1 is not "Write BDD Scenarios" (violates incremental BDD pattern)
 2. Task 2 BDD progress (5/10) doesn't increase from Task 1 (0/10) - jumps too much
 3. Final task ends at 8/10, should reach 10/10 (all scenarios)
@@ -678,9 +678,11 @@ Then retry: `/plan-story STORY-0001.2.4`
 ## 📋 Task Drafts
 
 ### TASK-0001.2.4.3: Core Operations
+
 - **Quality Score:** 78% ❌
 
 **Issues:**
+
 - Step "Implement indexing" too vague (no algorithm specified)
 - Step "Add search" too vague (no details on how)
 - Missing file paths (which files to modify?)
@@ -698,141 +700,32 @@ Then retry: `/plan-story STORY-0001.2.4`
 
 ---
 
-## Incremental BDD Pattern Enforcement
-
-### Pattern Validation
-
-```python
-INCREMENTAL_BDD_PATTERN = {
-    "task_1": {
-        "title_contains": ["BDD", "Scenario", "Write"],
-        "bdd_progress_pattern": r"0/\d+ scenarios? \(.*all stub.*\)",
-        "purpose": "Define all scenarios upfront, all failing"
-    },
-    "task_2_to_n": {
-        "bdd_progress_rule": "Each task increases passing scenarios",
-        "purpose": "Progressive implementation with incremental BDD"
-    },
-    "final_task": {
-        "bdd_progress_pattern": r"(\d+)/\1",  # Same number on both sides
-        "purpose": "Complete all scenarios (N/N passing)"
-    }
-}
-```
-
-### Validation Messages
-
-```markdown
-✅ **Incremental BDD Pattern Valid:**
-- Task 1: Write all 10 scenarios (0/10 stubbed)
-- Task 2: Foundation (0/10 → 2/10)
-- Task 3: Core functionality (2/10 → 7/10)
-- Task 4: Complete integration (7/10 → 10/10 ✅)
-
-**This follows best practices:**
-- All behavior defined upfront (Task 1)
-- Progressive implementation (Tasks 2-4)
-- Clear progress tracking (BDD scenarios as milestones)
-```
-
----
-
 ## Implementation Checklist
 
 - [ ] Parse STORY-ID and load story README
 - [ ] Invoke gitstory-discovery-orchestrator (story-gaps)
-- [ ] Present gap analysis with BDD progress tracking
-- [ ] Show pattern suggestions from gitstory-pattern-discovery
+- [ ] Present gap analysis with BDD pattern guidance
 - [ ] Offer to fix story quality issues first (if <85%)
-- [ ] Task interview following incremental BDD pattern:
-  - [ ] Task 1: Write BDD scenarios (all stubbed, 0/N)
-  - [ ] Task 2-N: Progressive implementation with BDD tracking
-  - [ ] Final task: Complete all scenarios (N/N)
-- [ ] Validate task breakdown (BDD pattern, hour estimates)
+- [ ] Task interview for each gap (deliverable, steps, BDD scope, hours, files, patterns)
+- [ ] Validate task breakdown (incremental BDD pattern, hour sum)
 - [ ] Draft task files from template
 - [ ] Validate drafts with spec-quality-checker (95% threshold)
-- [ ] Present drafts with quality scores and BDD progress
+- [ ] Present drafts with quality scores
 - [ ] Handle "modify" option (revise specific task)
-- [ ] Create task markdown files in story directory
+- [ ] Create task files (not directories - files in story dir)
 - [ ] Update story README with task list and BDD tracking
-- [ ] Suggest next command (/review-ticket, /start-next-task)
-
----
-
-## Design Decisions
-
-### Why Incremental BDD Pattern?
-
-**Problem:** Tests written at end → No progress tracking → Late discovery of issues
-
-**Solution:** Incremental BDD pattern
-- Task 1: All scenarios defined and stubbed (0/N failing)
-- Task 2-N: Progressive implementation (2/N → 7/N → N/N passing)
-
-**Benefits:**
-- Behavior defined upfront (clear target)
-- Progress tracked via BDD scenarios (objective metric)
-- Early feedback (2 scenarios passing = foundation works)
-- No "big bang" integration (incremental validation)
-
-### Why Task 1 = Write BDD Scenarios?
-
-**Requirement:** All BDD scenarios must be defined before implementation starts
-
-**Pattern:**
-- Task 1: Write all scenarios in Gherkin, stub step definitions
-- All scenarios fail (NotImplementedError)
-- Provides clear roadmap for subsequent tasks
-
-**Benefits:**
-- Forces upfront design thinking (what behaviors matter?)
-- Prevents scope creep (can't add scenarios mid-implementation)
-- Creates executable specification (scenarios = requirements)
-
-### Why 95% Quality Threshold?
-
-**Problem:** Vague tasks → developer confusion → slow implementation
-
-**Solution:** Enforce 95% quality (higher than story's 85%)
-
-**Reason:**
-- Tasks are implementation instructions (must be concrete)
-- "Implement indexing" is 60% quality (what algorithm?)
-- "Implement IVF-PQ indexing with nlist=100, nprobe=10" is 95% quality (actionable)
-- Autonomous agents need 95%+ to execute correctly
-
-### Why Validate Pattern Reuse at Task Level?
-
-**Problem:** Story says "use config_factory" but tasks don't reference it
-
-**Solution:** Each task explicitly confirms pattern reuse
-
-**Benefits:**
-- Ensures patterns actually used (not just mentioned in story)
-- Catches when task proposes new fixture unnecessarily
-- Documents pattern usage at granular level
+- [ ] Suggest next command (/start-next-task, /review-ticket)
 
 ---
 
 ## Success Criteria
 
-- ✅ Discovers task gaps accurately (missing tasks, BDD coverage)
-- ✅ Enforces incremental BDD pattern (Task 1 = scenarios, 2-N = progressive)
-- ✅ Validates BDD progress tracking (0/N → 2/N → 7/N → N/N)
-- ✅ Confirms pattern reuse at task level
+- ✅ Discovers task gaps accurately (missing tasks with BDD guidance)
+- ✅ Enforces incremental BDD pattern (Task 1 = all scenarios stubbed)
 - ✅ Task quality ≥95% before creation
-- ✅ Task hours sum to story points (±2h variance)
+- ✅ Task hours sum to story points × 4 (±2h)
+- ✅ BDD progress increases monotonically (0→X→Y→N)
+- ✅ Final task reaches N/N scenarios passing
 - ✅ Story README updated with task list and BDD tracking
 - ✅ Suggests appropriate next command
-
----
-
-## Version History
-
-**1.0** (2025-10-09)
-- Initial implementation
-- Discovery-orchestrator integration (story-gaps)
-- Incremental BDD pattern enforcement
-- Task-level pattern reuse validation
-- 95% quality threshold for tasks
-- BDD progress tracking (0/N → N/N)
+- ✅ Handles all error cases gracefully

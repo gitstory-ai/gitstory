@@ -329,10 +329,13 @@ GitStory uses specialized agents (not monolithic commands) for structured analys
 GitStory provides meta-tools for creating and improving its own commands/agents:
 
 ```bash
-/gitstory:command new-cmd              # Create new slash command
-/gitstory:command existing.md          # Optimize existing command (remove bloat)
-/gitstory:subagent new-agent           # Create new specialized agent
-/gitstory:subagent existing.md         # Improve agent with contract validation
+# Create new commands/agents
+/gitstory:create-command new-cmd       # Create new slash command
+/gitstory:create-subagent new-agent    # Create new specialized agent
+
+# Improve existing commands/agents
+/gitstory:improve-command existing.md  # Optimize existing command (remove bloat)
+/gitstory:improve-subagent agent.md    # Improve agent with contract validation
 ```
 
 **Use cases:**

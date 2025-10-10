@@ -1,3 +1,10 @@
+---
+description: Create initiatives from scratch or define epics for existing initiatives
+argument-hint: [--genesis | INIT-ID]
+allowed-tools: Read, Write, Bash(git:*), Subagent(gitstory-discovery-orchestrator, gitstory-specification-quality-checker)
+model: inherit
+---
+
 # /plan-initiative - Initiative & Epic Planning Command
 
 **Purpose:** Create initiatives from scratch (genesis mode) or define epics for existing initiatives.
@@ -51,92 +58,23 @@ Command asks these questions:
 ```markdown
 ## Initiative Definition
 
-**What is the initiative ID?** (Format: INIT-NNNN)
-> INIT-0005
-
-**What is the core strategic objective?** (One sentence, starts with verb)
-> Build AI-powered code review assistant to improve merge request quality
-
-**What are the key results?** (3-5 measurable outcomes)
-> 1. Reduce code review time by 40%
-> 2. Catch 80% of common issues automatically
-> 3. Achieve 90% developer satisfaction with AI suggestions
-> 4. Reduce bug escape rate by 25%
-
-**What is the timeline?** (Quarter or date range)
-> Q1 2026
-
+**Initiative ID?** (Format: INIT-NNNN)
+**Core objective?** (One sentence, starts with verb)
+**Key results?** (3-5 measurable outcomes)
+**Timeline?** (Quarter or date range)
 **Success metrics?** (How will we measure success)
-> - Code review cycle time (current: 2 days → target: <1 day)
-> - Issues caught pre-merge (current: 50% → target: 80%)
-> - Developer NPS (target: 40+)
-> - Production bugs per release (current: 8 → target: 6)
 ```
+
+**Example:** INIT-0005 for AI code review assistant with 4 key results targeting 40% time reduction, 80% issue detection, 90% satisfaction, 25% bug reduction
 
 #### Step 3: Draft Initiative README
 
-Create initiative README using template:
+Create initiative README using template (see Templates section):
 
-```markdown
-# INIT-{ID}: {Objective}
-
-**Timeline**: {Timeline}
-**Status**: 🔵 Not Started
-**Owner**: {Owner or "TBD"}
-**Progress**: ░░░░░░░░░░ 0%
-
-## Objective
-
-{Expanded objective paragraph}
-
-## Key Results
-
-{Key results as checklist}
-- [ ] {Result 1}
-- [ ] {Result 2}
-...
-
-## Epics
-
-(Empty - will be filled by running /plan-initiative INIT-{ID})
-
-| ID | Title | Status | Progress | Owner |
-|----|-------|--------|----------|-------|
-
-## Success Metrics
-
-### Functional Requirements
-
-{Derived from key results}
-
-### Performance Targets
-
-{Quantified metrics}
-
-### Quality Gates
-
-{BDD, unit test, doc requirements}
-
-## Dependencies
-
-### External Services
-
-{APIs, services needed}
-
-### Technology Stack
-
-{Languages, frameworks, libraries}
-
-## Risks
-
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|------------|
-{Risk assessment}
-
-## Deliverables Checklist
-
-(Empty - will be filled when epics are defined)
-```
+**Show user:**
+- Initiative header with status/progress
+- Key results as checklist
+- Empty epics table (filled by `/plan-initiative INIT-ID`)
 
 #### Step 4: Validate with Spec Quality Checker
 
@@ -208,30 +146,12 @@ Use existing mode when:
 
 #### Step 1: Read Initiative README
 
-```python
-def load_initiative(init_id: str) -> dict:
-    """Load initiative README and extract metadata"""
-    path = f"docs/tickets/{init_id}/README.md"
+### Requirements
 
-    # Validate file exists
-    if not os.path.exists(path):
-        raise FileNotFoundError(
-            f"Initiative {init_id} not found at {path}\n"
-            f"Run: /plan-initiative --genesis to create new initiative"
-        )
-
-    # Parse README
-    content = read_file(path)
-
-    return {
-        "id": init_id,
-        "path": path,
-        "objective": extract_objective(content),
-        "key_results": extract_key_results(content),
-        "timeline": extract_timeline(content),
-        "existing_epics": extract_epic_list(content)
-    }
-```
+- Read `docs/tickets/{INIT-ID}/README.md`
+- Extract: objective, key_results, timeline, existing_epics
+- Error if file not found → suggest `/plan-initiative --genesis`
+- Return parsed initiative metadata
 
 #### Step 2: Discovery - Invoke Orchestrator
 
@@ -301,77 +221,25 @@ Expected output:
 For each missing epic, conduct interview:
 
 ```markdown
-## Epic Definition: AI Model Integration
+## Epic Definition: {Gap Title}
 
 **What does this epic deliver?** (User-facing outcome)
-> Automated code issue detection using AI models that identify common problems in merge requests
-
 **Story point estimate?** (Rough sizing: 5, 13, 21, 34)
-> 21 story points
-
 **Key BDD scenarios?** (At least 1 scenario showing value)
-> Scenario: AI detects security vulnerability
->   Given a merge request with SQL injection vulnerability
->   When AI model analyzes the code
->   Then model flags the vulnerability with severity HIGH
->   And model suggests parameterized query fix
-
 **Technical approach?** (High-level architecture)
-> - Fine-tune GPT-4 on code review dataset
-> - Create prompt templates for different issue categories
-> - Implement caching to reduce API costs
-> - Build result aggregation pipeline
-> - Integration with existing git workflow
-
 **Dependencies?** (Other epics, external services)
-> - Requires git integration from CLI epic
-> - Depends on OpenAI API access
-> - Needs code parsing infrastructure
 ```
+
+**Example:** AI Model Integration epic delivering automated issue detection, 21 points, with security vulnerability detection scenario
 
 #### Step 5: Draft Epic READMEs
 
-Create epic README drafts using template:
+Create epic README using template (see Templates section):
 
-```markdown
-# EPIC-{ID}: {Title}
-
-**Parent Initiative**: [{INIT-ID}](../README.md)
-**Status**: 🔵 Not Started
-**Story Points**: {Estimate}
-**Progress**: ░░░░░░░░░░ 0%
-
-## Overview
-
-{What this epic delivers - user-facing value}
-
-## Key Scenarios
-
-```gherkin
-{BDD scenario showing epic value}
-```
-
-## Stories
-
-(To be defined - run /plan-epic EPIC-{ID})
-
-| ID | Title | Status | Points | Progress |
-|----|-------|--------|--------|----------|
-
-## Technical Approach
-
-{High-level architecture and design}
-
-## Dependencies
-
-- {Dependency 1}
-- {Dependency 2}
-
-## Deliverables
-
-- [ ] {Deliverable 1}
-- [ ] {Deliverable 2}
-```
+**Show user:**
+- Epic header with parent link, status, points, progress
+- Key BDD scenario showing epic value
+- Empty stories table (filled by `/plan-epic EPIC-ID`)
 
 #### Step 6: Validate Epic Drafts
 
@@ -541,23 +409,31 @@ Choose option: (1/2)
 
 ---
 
-## Implementation Checklist
+## Execution Constraints
 
-- [ ] Parse --genesis vs INIT-ID arguments
-- [ ] Genesis: Strategic interview (ID, objective, key results, timeline, metrics)
-- [ ] Genesis: Draft initiative README from template
-- [ ] Genesis: Validate with spec-quality-checker
-- [ ] Genesis: Create initiative directory and README
-- [ ] Existing: Load initiative README
-- [ ] Existing: Invoke gitstory-discovery-orchestrator (initiative-gaps)
-- [ ] Existing: Present gap analysis
-- [ ] Existing: Epic interview for each gap (deliverable, points, BDD, approach, deps)
-- [ ] Existing: Draft epic READMEs from template
-- [ ] Existing: Validate drafts with spec-quality-checker
-- [ ] Existing: Create epic directories and READMEs
-- [ ] Existing: Update initiative README with epic list
-- [ ] Handle errors gracefully (missing files, validation failures, orchestrator errors)
-- [ ] Suggest appropriate next command (/plan-epic, /review-ticket)
+### Requirements
+
+- Genesis mode: Create valid initiative README with 85%+ quality score
+- Existing mode: Discover gaps accurately via orchestrator
+- Epic interview: Produce 85%+ quality score drafts
+- File creation: Follow templates exactly
+- Post-creation: Update parent initiative README with epic list
+- Always suggest appropriate next command
+
+### Workflow
+
+1. **Argument Parsing:** Detect `--genesis` vs `INIT-ID`
+2. **Genesis Path:** Interview → draft → validate → create → suggest `/plan-initiative INIT-ID`
+3. **Existing Path:** Load → discover gaps → interview each → validate → create → update parent → suggest `/plan-epic`
+4. **Validation:** Invoke spec-quality-checker on all drafts before creation
+5. **Error Handling:** Graceful failures with recovery options
+
+### Simplicity Rules
+
+- Two-step process: Genesis (strategy) then Existing (epics)
+- Discovery-first approach: Show gaps before asking questions
+- Single responsibility: Don't create epics during genesis
+- Template adherence: All files match templates exactly
 
 ---
 
@@ -671,64 +547,3 @@ Scenario: {Scenario name}
 - [ ] {Deliverable 2}
 - [ ] {Deliverable 3}
 ```
-
----
-
-## Design Decisions
-
-### Why Two Modes (Genesis vs Existing)?
-
-**Problem:** Initiative creation and epic planning are fundamentally different:
-- Genesis: Strategic thinking (objectives, key results, metrics)
-- Epic planning: Tactical breakdown (deliverables, stories, estimates)
-
-**Solution:** Separate modes with different interviews
-- `--genesis`: Focus on "why" and "what success looks like"
-- `INIT-ID`: Focus on "how" and "what epics needed"
-
-### Why Not Create Epics During Genesis?
-
-**Problem:** Too much cognitive load to define objective AND break down into epics simultaneously
-
-**Solution:** Two-step process
-1. Genesis: Define strategy (initiative README only)
-2. Epic planning: Break down strategy (epic READMEs)
-
-**Benefits:**
-- User can review initiative before committing to epics
-- Strategic clarity before tactical planning
-- Can run `/discover --genesis` first for validation
-
-### Why Discovery-First Approach?
-
-**Problem:** Without gap analysis, user must remember what's missing
-
-**Solution:** Show comprehensive gap report before asking questions
-
-**Benefits:**
-- User sees full context (3 missing epics, 1 incomplete)
-- Questions are informed by gaps (suggest epic titles from context)
-- Prevents duplicate work (discovers existing epics first)
-
----
-
-## Success Criteria
-
-- ✅ Genesis mode creates valid initiative README
-- ✅ Existing mode discovers gaps accurately
-- ✅ Epic interview produces 85%+ quality score
-- ✅ All files created follow templates exactly
-- ✅ Initiative README updated with epic list
-- ✅ Suggests appropriate next command
-- ✅ Handles errors gracefully with recovery options
-
----
-
-## Version History
-
-**1.0** (2025-10-09)
-- Initial implementation
-- Genesis mode for initiative creation
-- Existing mode for epic planning
-- Discovery-orchestrator integration
-- Spec-quality-checker validation
