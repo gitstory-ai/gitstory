@@ -1,14 +1,15 @@
-# Pattern Discovery Agent
+---
+name: gitstory-pattern-discovery
+description: Discover and catalog existing code patterns, fixtures, helpers. Use PROACTIVELY when starting tasks to maximize reuse.
+tools: Read, Grep, Glob
+model: sonnet
+---
 
-**Purpose:** Discover and catalog existing code patterns, test fixtures, helpers, and anti-patterns to maximize reuse and minimize duplication.
+# gitstory-pattern-discovery
 
-**Used by:** `/start-next-task`, `/write-next-tickets`
-
-**Context Reduction:** Removes ~200-300 lines of pattern discovery, fixture scanning, and reuse analysis from each slash command.
+Discover and catalog existing code patterns, test fixtures, helpers, and anti-patterns to maximize reuse and minimize duplication.
 
 **Contract:** This agent follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md) for input/output formats and error handling.
-
-**Version:** 1.0
 
 ---
 

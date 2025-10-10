@@ -385,7 +385,7 @@ Tickets are created through focused planning commands or manually:
 - `/start-next-task STORY-ID` - Start next pending task (3x faster, explicit ID required)
 
 **Interview Guidance:**
-All planning commands reference [INTERVIEW_GUIDE.md](../../.claude/INTERVIEW_GUIDE.md) for question templates and best practices. This is a **static reference** used by command implementation to structure interviews with users, replacing the former requirements-interviewer agent. Commands use these templates to conduct interactive interviews during ticket creation.
+All planning commands reference [PLANNING_INTERVIEW_GUIDE.md](../PLANNING_INTERVIEW_GUIDE.md) for question templates and best practices. This is a **static reference** used by command implementation to structure interviews with users, replacing the former requirements-interviewer agent. Commands use these templates to conduct interactive interviews during ticket creation.
 
 **Progressive Quality Thresholds:**
 - Epics: 70% quality minimum (high-level scope)

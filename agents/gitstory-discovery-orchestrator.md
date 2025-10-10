@@ -1,14 +1,15 @@
-# Discovery Orchestrator Agent
+---
+name: gitstory-discovery-orchestrator
+description: Coordinate multi-agent analysis for comprehensive gap discovery. Use PROACTIVELY when planning or reviewing tickets.
+tools: Read, Task
+model: sonnet
+---
 
-**Purpose:** Coordinate multi-agent analysis for comprehensive gap discovery across ticket hierarchy levels.
+# gitstory-discovery-orchestrator
 
-**Used by:** `/plan-initiative`, `/plan-epic`, `/plan-story`, `/review-ticket`, `/discover`, `/start-next-task`
-
-**Context Reduction:** Eliminates duplication of 200+ lines of agent coordination logic across 6 slash commands (32% code reduction).
+Coordinate multi-agent analysis for comprehensive gap discovery across ticket hierarchy levels.
 
 **Contract:** This agent follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md) for input/output formats and error handling.
-
-**Version:** 1.0
 
 ---
 

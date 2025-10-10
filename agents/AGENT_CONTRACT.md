@@ -36,7 +36,7 @@ All agents accept input in this markdown format:
 ### Example
 
 ```markdown
-**Agent:** ticket-analyzer
+**Agent:** gitstory-ticket-analyzer
 **Operation:** story-deep
 **Target:** STORY-0001.2.3
 **Context:** Pre-work validation before starting story
@@ -214,7 +214,7 @@ Before returning any response, agents MUST verify:
 ```json
 {
   "status": "success",
-  "agent": "ticket-analyzer",
+  "agent": "gitstory-ticket-analyzer",
   "version": "1.0",
   "operation": "story-deep",
   "result": {
@@ -502,11 +502,11 @@ def validate_operation(agent_name: str, operation: str) -> str:
         ValueError: If operation not supported by agent
     """
     AGENT_OPERATIONS = {
-        "ticket-analyzer": ["story-deep", "ticket-completeness", "hierarchy-gaps", "task-readiness"],
-        "pattern-discovery": ["full-survey", "focused-domain", "fixture-lookup", "test-pattern-search"],
-        "git-state-analyzer": ["branch-status", "task-validation", "drift-detection", "commit-analysis"],
-        "design-guardian": ["story-review", "task-review", "epic-review"],
-        "specification-quality-checker": ["full-ticket", "acceptance-criteria", "technical-design", "task-steps"],
+        "gitstory-ticket-analyzer": ["story-deep", "ticket-completeness", "hierarchy-gaps", "task-readiness"],
+        "gitstory-pattern-discovery": ["full-survey", "focused-domain", "fixture-lookup", "test-pattern-search"],
+        "gitstory-git-state-analyzer": ["branch-status", "task-validation", "drift-detection", "commit-analysis"],
+        "gitstory-design-guardian": ["story-review", "task-review", "epic-review"],
+        "gitstory-specification-quality-checker": ["full-ticket", "acceptance-criteria", "technical-design", "task-steps"],
         "requirements-interviewer": ["initiative", "epic", "story", "task"],
     }
 
@@ -540,17 +540,17 @@ def validate_operation(agent_name: str, operation: str) -> str:
 
 Each agent defines its own `result` schema in its individual documentation. The standard wrapper (status, agent, version, etc.) is always the same.
 
-### Example: ticket-analyzer
+### Example: gitstory-ticket-analyzer
 
-See [ticket-analyzer.md](ticket-analyzer.md) for detailed `result` schemas for each operation type:
+See [gitstory-ticket-analyzer.md](gitstory-ticket-analyzer.md) for detailed `result` schemas for each operation type:
 - `story-deep` → Full story analysis object
 - `ticket-completeness` → Completeness scoring object
 - `hierarchy-gaps` → Gap analysis object
 - `task-readiness` → Readiness validation object
 
-### Example: pattern-discovery
+### Example: gitstory-pattern-discovery
 
-See [pattern-discovery.md](pattern-discovery.md) for `result` schemas:
+See [gitstory-pattern-discovery.md](gitstory-pattern-discovery.md) for `result` schemas:
 - `full-survey` → Complete pattern inventory
 - `focused-domain` → Domain-specific patterns
 - `fixture-lookup` → Fixture search results
@@ -566,7 +566,7 @@ Slash commands invoke agents using the Task tool:
 ```markdown
 Use Task tool with agent specification:
 
-**Agent:** ticket-analyzer
+**Agent:** gitstory-ticket-analyzer
 **Operation:** story-deep
 **Target:** STORY-0001.2.3
 **Context:** Pre-work validation

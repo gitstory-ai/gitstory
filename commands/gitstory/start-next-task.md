@@ -167,10 +167,10 @@ def load_task_file(task_id: str, story_dir: str) -> dict:
 
 ### Step 5: Validate Single Task (Focused)
 
-Invoke discovery-orchestrator for task-only validation:
+Invoke gitstory-discovery-orchestrator for task-only validation:
 
 ```markdown
-**Agent:** discovery-orchestrator
+**Agent:** gitstory-discovery-orchestrator
 **Operation:** task-gaps
 **Target:** {TASK-ID}
 **Mode:** pre-planning
@@ -505,7 +505,7 @@ Choose: (1/2)
 - [ ] Parse task table from markdown
 - [ ] Find first task with status="🔵 Not Started" (simple query)
 - [ ] Load single task file
-- [ ] Invoke discovery-orchestrator (task-gaps, single task validation)
+- [ ] Invoke gitstory-discovery-orchestrator (task-gaps, single task validation)
 - [ ] Create task branch (git checkout -b TASK-ID)
 - [ ] Present task context (objective, checklist, files, patterns, BDD)
 - [ ] Show quality score and issues (if <95%)

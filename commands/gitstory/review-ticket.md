@@ -163,7 +163,7 @@ def determine_review_operation(ticket_type: str) -> str:
 Invoke orchestrator with quality-review mode:
 
 ```markdown
-**Agent:** discovery-orchestrator
+**Agent:** gitstory-discovery-orchestrator
 **Operation:** {operation}
 **Target:** {TICKET-ID}
 **Mode:** quality-review
@@ -173,13 +173,13 @@ Invoke orchestrator with quality-review mode:
 ```
 
 Expected agents invoked:
-- **Initiative**: ticket-analyzer, design-guardian
-- **Epic**: ticket-analyzer, pattern-discovery, design-guardian, spec-quality-checker
-- **Story**: ticket-analyzer, pattern-discovery, spec-quality-checker
+- **Initiative**: gitstory-ticket-analyzer, gitstory-design-guardian
+- **Epic**: gitstory-ticket-analyzer, gitstory-pattern-discovery, gitstory-design-guardian, spec-quality-checker
+- **Story**: gitstory-ticket-analyzer, gitstory-pattern-discovery, spec-quality-checker
 - **Task**: spec-quality-checker
 
 If on git branch, also invoke:
-- **git-state-analyzer** (ticket drift detection)
+- **gitstory-git-state-analyzer** (ticket drift detection)
 
 ### Step 5: Present Review Report
 
@@ -583,8 +583,8 @@ The orchestrator automatically selects agents based on ticket type:
 
 ### Initiative Review
 **Agents:**
-- `ticket-analyzer` (initiative completeness, epic alignment)
-- `design-guardian` (strategic scope validation)
+- `gitstory-ticket-analyzer` (initiative completeness, epic alignment)
+- `gitstory-design-guardian` (strategic scope validation)
 
 **Focus:**
 - Are all key results covered by epics?
@@ -593,10 +593,10 @@ The orchestrator automatically selects agents based on ticket type:
 
 ### Epic Review
 **Agents:**
-- `ticket-analyzer` (epic completeness, story alignment)
-- `pattern-discovery` (fixture opportunities for stories)
-- `design-guardian` (overengineering in stories)
-- `specification-quality-checker` (epic clarity)
+- `gitstory-ticket-analyzer` (epic completeness, story alignment)
+- `gitstory-pattern-discovery` (fixture opportunities for stories)
+- `gitstory-design-guardian` (overengineering in stories)
+- `gitstory-specification-quality-checker` (epic clarity)
 
 **Focus:**
 - Are all epic deliverables covered by stories?
@@ -606,9 +606,9 @@ The orchestrator automatically selects agents based on ticket type:
 
 ### Story Review
 **Agents:**
-- `ticket-analyzer` (story completeness, task alignment)
-- `pattern-discovery` (fixture opportunities for tasks)
-- `specification-quality-checker` (story clarity, BDD quality)
+- `gitstory-ticket-analyzer` (story completeness, task alignment)
+- `gitstory-pattern-discovery` (fixture opportunities for tasks)
+- `gitstory-specification-quality-checker` (story clarity, BDD quality)
 
 **Focus:**
 - Are all acceptance criteria covered by tasks?
@@ -618,7 +618,7 @@ The orchestrator automatically selects agents based on ticket type:
 
 ### Task Review
 **Agents:**
-- `specification-quality-checker` (task step clarity, readiness for execution)
+- `gitstory-specification-quality-checker` (task step clarity, readiness for execution)
 
 **Focus:**
 - Are implementation steps specific (no "implement X")?
@@ -644,10 +644,10 @@ When on a git branch matching the ticket:
 
 ### Detection Process
 
-Invoke `git-state-analyzer`:
+Invoke `gitstory-git-state-analyzer`:
 
 ```markdown
-**Agent:** git-state-analyzer
+**Agent:** gitstory-git-state-analyzer
 **Operation:** drift-detection
 **Target:** {TICKET-ID}
 **Context:** On branch {branch-name}, {N} commits, {N} files changed
@@ -762,8 +762,8 @@ All sections complete, acceptance criteria testable, BDD scenarios specific, tec
 - [ ] Parse TICKET-ID and determine depth (INIT→epics, EPIC→stories, STORY→tasks, TASK→single)
 - [ ] Load ticket README and children based on depth
 - [ ] Check git branch context (enable drift detection if on branch)
-- [ ] Invoke discovery-orchestrator with appropriate operation
-- [ ] If on branch, also invoke git-state-analyzer for drift detection
+- [ ] Invoke gitstory-discovery-orchestrator with appropriate operation
+- [ ] If on branch, also invoke gitstory-git-state-analyzer for drift detection
 - [ ] Present comprehensive review report:
   - [ ] Quality score with breakdown
   - [ ] Completeness analysis
@@ -847,7 +847,7 @@ All sections complete, acceptance criteria testable, BDD scenarios specific, tec
 **1.0** (2025-10-09)
 - Initial implementation
 - Depth-aware review (any ticket type)
-- Ticket drift detection (git-state-analyzer)
+- Ticket drift detection (gitstory-git-state-analyzer)
 - Exact edit proposals
 - Re-validation after fixes
 - Replaces `/review-story`

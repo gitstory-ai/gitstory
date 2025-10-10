@@ -18,7 +18,7 @@
 - `/start-next-task STORY-ID` - Begin implementation after tasks defined
 - `/review-ticket STORY-ID` - Quality check story before task planning
 
-**Interview Reference:** See [INTERVIEW_GUIDE.md](../INTERVIEW_GUIDE.md) for question templates and best practices
+**Interview Reference:** See [PLANNING_INTERVIEW_GUIDE.md](../../docs/PLANNING_INTERVIEW_GUIDE.md) for question templates and best practices
 
 ---
 
@@ -62,7 +62,7 @@ def load_story(story_id: str) -> dict:
 ### Step 2: Discovery - Invoke Orchestrator
 
 ```markdown
-**Agent:** discovery-orchestrator
+**Agent:** gitstory-discovery-orchestrator
 **Operation:** story-gaps
 **Target:** {STORY-ID}
 **Mode:** pre-planning
@@ -501,7 +501,7 @@ Create task markdown files:
 Invoke spec-quality-checker on each draft:
 
 ```markdown
-**Agent:** specification-quality-checker
+**Agent:** gitstory-specification-quality-checker
 **Operation:** task-steps
 **Target:** TASK-{ID}.md (draft)
 **Context:** Task validation - must be 95%+ for autonomous execution
@@ -740,9 +740,9 @@ INCREMENTAL_BDD_PATTERN = {
 ## Implementation Checklist
 
 - [ ] Parse STORY-ID and load story README
-- [ ] Invoke discovery-orchestrator (story-gaps)
+- [ ] Invoke gitstory-discovery-orchestrator (story-gaps)
 - [ ] Present gap analysis with BDD progress tracking
-- [ ] Show pattern suggestions from pattern-discovery
+- [ ] Show pattern suggestions from gitstory-pattern-discovery
 - [ ] Offer to fix story quality issues first (if <85%)
 - [ ] Task interview following incremental BDD pattern:
   - [ ] Task 1: Write BDD scenarios (all stubbed, 0/N)

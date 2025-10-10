@@ -11,7 +11,7 @@ When using GitStory in your project, read the appropriate nested CLAUDE.md based
 - **Documentation** → Read `docs/CLAUDE.md` and subdirectories
 - **Architecture** → Read `docs/architecture/CLAUDE.md`
 - **Ticket Workflow** → Read `docs/tickets/CLAUDE.md`
-- **Specialized Agents** → Read `.claude/agents/README.md` for agent composition patterns
+- **Specialized Agents** → See README.md "Specialized AI Agents" section for agent catalog
 
 ## Core Development Workflow
 

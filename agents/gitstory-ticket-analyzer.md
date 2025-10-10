@@ -1,14 +1,15 @@
-# Ticket Analyzer Agent
+---
+name: gitstory-ticket-analyzer
+description: Deep analysis of ticket structure, hierarchy, completeness. Use PROACTIVELY when analyzing tickets for planning.
+tools: Read, Grep, Glob
+model: sonnet
+---
 
-**Purpose:** Deep analysis of ticket structure, hierarchy, completeness, and state accuracy.
+# gitstory-ticket-analyzer
 
-**Used by:** `/start-next-task`, `/write-next-tickets`, `/review-story`
-
-**Context Reduction:** Removes ~300-400 lines of ticket parsing, hierarchy traversal, and completeness scoring from each slash command.
+Deep analysis of ticket structure, hierarchy, completeness, and state accuracy.
 
 **Contract:** This agent follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md) for input/output formats and error handling.
-
-**Version:** 1.0
 
 ---
 

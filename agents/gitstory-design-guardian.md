@@ -1,14 +1,15 @@
-# Design Guardian Agent
+---
+name: gitstory-design-guardian
+description: Apply design principles, detect anti-patterns, enforce simplicity. Use PROACTIVELY when reviewing tickets for overengineering.
+tools: Read
+model: sonnet
+---
 
-**Purpose:** Apply yourproject design principles, detect anti-patterns, enforce simplicity and pattern reuse.
+# gitstory-design-guardian
 
-**Used by:** `/start-next-task`, `/write-next-tickets`, `/review-story`
-
-**Context Reduction:** Removes ~250 lines of anti-overengineering rules, pattern validation, and complexity assessment from each slash command.
+Apply GitStory design principles, detect anti-patterns, enforce simplicity and pattern reuse.
 
 **Contract:** This agent follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md) for input/output formats and error handling.
-
-**Version:** 1.0
 
 ---
 

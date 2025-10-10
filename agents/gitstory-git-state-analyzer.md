@@ -1,14 +1,15 @@
-# Git State Analyzer Agent
+---
+name: gitstory-git-state-analyzer
+description: Analyze git commit history and detect ticket-git drift. Use PROACTIVELY when validating task completion.
+tools: Read, Bash(git:*)
+model: sonnet
+---
 
-**Purpose:** Analyze git commit history and compare to ticket expectations to detect drift and validate implementation matches documentation.
+# gitstory-git-state-analyzer
 
-**Used by:** `/start-next-task`, `/review-story`
-
-**Context Reduction:** Removes ~150-200 lines of git command sequences, commit parsing, and status comparison logic from each slash command.
+Analyze git commit history and compare to ticket expectations to detect drift and validate implementation matches documentation.
 
 **Contract:** This agent follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md) for input/output formats and error handling.
-
-**Version:** 1.0
 
 ---
 

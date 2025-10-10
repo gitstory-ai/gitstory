@@ -18,7 +18,7 @@
 - `/plan-story STORY-ID` - Create tasks after stories are defined
 - `/review-ticket EPIC-ID` - Quality check epic before story planning
 
-**Interview Reference:** See [INTERVIEW_GUIDE.md](../INTERVIEW_GUIDE.md) for question templates and best practices
+**Interview Reference:** See [PLANNING_INTERVIEW_GUIDE.md](../../docs/PLANNING_INTERVIEW_GUIDE.md) for question templates and best practices
 
 ---
 
@@ -61,7 +61,7 @@ def load_epic(epic_id: str) -> dict:
 ### Step 2: Discovery - Invoke Orchestrator
 
 ```markdown
-**Agent:** discovery-orchestrator
+**Agent:** gitstory-discovery-orchestrator
 **Operation:** epic-gaps
 **Target:** {EPIC-ID}
 **Mode:** pre-planning
@@ -261,7 +261,7 @@ If story has complexity flag, challenge user:
 ```markdown
 ## ⚠️  Complexity Alert: Custom Vector DB
 
-**design-guardian flagged this approach:**
+**gitstory-design-guardian flagged this approach:**
 
 **Issue:** Story proposes custom vector database implementation
 **Epic Decision:** LanceDB already chosen for vector storage
@@ -340,7 +340,7 @@ Create story README drafts using template:
 Invoke spec-quality-checker on each draft:
 
 ```markdown
-**Agent:** specification-quality-checker
+**Agent:** gitstory-specification-quality-checker
 **Operation:** full-ticket
 **Target:** STORY-{ID}/README.md (draft)
 **Context:** Story validation before creation
@@ -607,10 +607,10 @@ If not: Use existing pattern instead
 ## Implementation Checklist
 
 - [ ] Parse EPIC-ID and load epic README
-- [ ] Invoke discovery-orchestrator (epic-gaps)
+- [ ] Invoke gitstory-discovery-orchestrator (epic-gaps)
 - [ ] Present gap analysis with priorities
-- [ ] Show pattern suggestions from pattern-discovery
-- [ ] Show complexity flags from design-guardian
+- [ ] Show pattern suggestions from gitstory-pattern-discovery
+- [ ] Show complexity flags from gitstory-design-guardian
 - [ ] Offer to fix epic quality issues first (if any)
 - [ ] Story interview for each ready gap (user story, criteria, BDD, design, deps, points)
 - [ ] Suggest patterns during technical design question
@@ -655,7 +655,7 @@ If not: Use existing pattern instead
 
 **Problem:** User might not realize simpler alternatives exist
 
-**Solution:** Present design-guardian flags as questions, not blocks
+**Solution:** Present gitstory-design-guardian flags as questions, not blocks
 
 **Benefits:**
 - User makes informed decision (not forced)

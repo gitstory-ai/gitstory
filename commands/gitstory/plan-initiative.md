@@ -20,7 +20,7 @@
 - `/plan-epic EPIC-ID` - Create stories after epics are defined
 - `/review-ticket INIT-ID` - Quality check initiative after epic planning
 
-**Interview Reference:** See [INTERVIEW_GUIDE.md](../INTERVIEW_GUIDE.md) for question templates and best practices
+**Interview Reference:** See [PLANNING_INTERVIEW_GUIDE.md](../../docs/PLANNING_INTERVIEW_GUIDE.md) for question templates and best practices
 
 ---
 
@@ -40,7 +40,7 @@ Use genesis mode when:
 User can run discovery first:
 ```bash
 $ /discover --genesis
-# design-guardian validates scope appropriateness
+# gitstory-design-guardian validates scope appropriateness
 # "3-5 epics is appropriate" or "That's 10+ epics, reduce scope"
 ```
 
@@ -143,7 +143,7 @@ Create initiative README using template:
 Invoke agent to validate clarity:
 
 ```markdown
-**Agent:** specification-quality-checker
+**Agent:** gitstory-specification-quality-checker
 **Operation:** full-ticket
 **Target:** INIT-{ID}/README.md (draft)
 **Context:** Genesis validation - ensure initiative is concrete and measurable
@@ -236,7 +236,7 @@ def load_initiative(init_id: str) -> dict:
 #### Step 2: Discovery - Invoke Orchestrator
 
 ```markdown
-**Agent:** discovery-orchestrator
+**Agent:** gitstory-discovery-orchestrator
 **Operation:** initiative-gaps
 **Target:** {INIT-ID}
 **Mode:** pre-planning
@@ -378,7 +378,7 @@ Create epic README drafts using template:
 Invoke spec-quality-checker on each draft:
 
 ```markdown
-**Agent:** specification-quality-checker
+**Agent:** gitstory-specification-quality-checker
 **Operation:** full-ticket
 **Target:** EPIC-{ID}/README.md (draft)
 **Context:** Epic validation before creation
@@ -549,7 +549,7 @@ Choose option: (1/2)
 - [ ] Genesis: Validate with spec-quality-checker
 - [ ] Genesis: Create initiative directory and README
 - [ ] Existing: Load initiative README
-- [ ] Existing: Invoke discovery-orchestrator (initiative-gaps)
+- [ ] Existing: Invoke gitstory-discovery-orchestrator (initiative-gaps)
 - [ ] Existing: Present gap analysis
 - [ ] Existing: Epic interview for each gap (deliverable, points, BDD, approach, deps)
 - [ ] Existing: Draft epic READMEs from template

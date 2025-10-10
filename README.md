@@ -30,9 +30,180 @@ A **git-native project management framework** specifically designed for AI agent
 
 ---
 
-## Core Features
+## Installation
 
-### 1. Hierarchical Ticket System
+GitStory is **experimental patterns you copy and adapt**, not a dependency. We're figuring this out together—copy what resonates, modify what doesn't, share what you learn.
+
+### Quick Install
+
+One command from your project root:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/install.sh | bash
+```
+
+**What this does:**
+- Copies agents, commands, and guides into `.claude/` and `docs/`
+- No external dependencies, no git pollution
+- Files are **yours to modify**—adapt them for your workflow
+
+**Specific version:** `GITSTORY_REF=v1.0.0 curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/install.sh | bash`
+
+### What You Get
+
+**~16 files total:**
+- **6 agents** - Analysis, quality checking, gap discovery
+- **7 commands** - Planning workflows (plan-initiative, plan-epic, plan-story, etc.)
+- **3 guides** - Ticket hierarchy, interview templates, agent contracts
+
+**Everything is markdown.** Edit, delete, or extend any file.
+
+### Manual Install
+
+Prefer to pick what you need?
+
+```bash
+# Browse the repo
+https://github.com/gitstory-ai/gitstory/tree/main
+
+# Copy specific files
+curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/agents/gitstory-ticket-analyzer.md \
+  -o .claude/agents/gitstory-ticket-analyzer.md
+
+# Copy entire directories from commands/gitstory/, agents/, docs/
+```
+
+**Start minimal, add as needed.**
+
+### Start Your First Initiative
+
+After installation:
+
+1. **Open Claude Code** in your project
+2. **Run:**
+   ```bash
+   /gitstory:plan-initiative --genesis
+   ```
+3. **The AI guides you** through strategic planning
+
+See the **Complete Workflow** below for the full development cycle from idea to merged PR.
+
+---
+
+**🧪 Experimental Note:** GitStory is evolving based on real-world use. After you try it, share what worked (and what felt clunky) in [Discussions](https://github.com/gitstory-ai/gitstory/discussions). Your feedback shapes the project.
+
+---
+
+## Complete Workflow: Idea to Merged PR
+
+Here's GitStory in practice, from strategic planning to merged pull request:
+
+### 1. Strategic Planning
+
+```bash
+# Start a new initiative from scratch
+/gitstory:plan-initiative --genesis
+
+# AI interviews you:
+# - What's the strategic goal?
+# - Time horizon? (quarter/year)
+# - What are the major epics?
+
+# Creates: docs/tickets/INIT-0001/README.md
+```
+
+### 2. Break Down into Epics and Stories
+
+```bash
+# Define epics for the initiative
+/gitstory:plan-initiative INIT-0001
+
+# Plan stories for an epic
+/gitstory:plan-epic EPIC-0001.1
+
+# Break story into concrete tasks
+/gitstory:plan-story STORY-0001.1.0
+
+# Creates full hierarchy:
+# docs/tickets/INIT-0001/
+#   └── EPIC-0001.1/
+#       └── STORY-0001.1.0/
+#           ├── README.md (story specification)
+#           ├── TASK-0001.1.0.1.md
+#           ├── TASK-0001.1.0.2.md
+#           └── TASK-0001.1.0.3.md
+```
+
+### 3. Start Working on a Story
+
+```bash
+# Create branch matching story ID
+git checkout -b STORY-0001.1.0
+
+# AI analyzes story completeness and shows next task
+/gitstory:start-next-task STORY-0001.1.0
+
+# Output:
+# ✅ Story Quality: 92% (Ready for development)
+#
+# 📋 Next Task: TASK-0001.1.0.1 - Project Structure
+# - BDD scenarios defined
+# - Unit tests specified
+# - Implementation steps clear
+# - 3 hours estimated
+```
+
+### 4. Implement Tasks (BDD/TDD)
+
+```bash
+# Write tests first (BDD scenarios + unit tests)
+# Make them pass
+# Refactor if needed
+
+# Run quality gates (your project's validation)
+pytest && ruff check && mypy
+
+# Commit (1 task = 1 commit after manual approval)
+git add .
+git commit -m "feat(TASK-0001.1.0.1): Create project structure with CLI foundation"
+
+# Move to next task
+/gitstory:start-next-task STORY-0001.1.0
+```
+
+### 5. Create Pull Request
+
+```bash
+# Push story branch
+git push -u origin STORY-0001.1.0
+
+# Create PR with full context from ticket
+gh pr create \
+  --title "STORY-0001.1.0: Development Environment Setup" \
+  --body "$(cat docs/tickets/INIT-0001/EPIC-0001.1/STORY-0001.1.0/README.md)"
+```
+
+### 6. Respond to Review Comments
+
+```bash
+# AI finds review comments, proposes fixes, commits, and replies
+/gitstory:review-pr-comments PR_NUMBER
+
+# Automatically:
+# - Identifies each review thread
+# - Implements fixes with TDD
+# - Commits with fix(STORY-ID): format
+# - Replies to reviewer explaining the fix
+# - Resolves the thread
+```
+
+**Result:** Your git history perfectly mirrors your project plan. Every commit traces to a task, every task to a story, documentation always up-to-date.
+
+---
+
+## Core Concepts
+
+### Hierarchical Ticket System
 
 ```
 INIT-0001: MVP Foundation (Quarter)
@@ -47,47 +218,24 @@ INIT-0001: MVP Foundation (Quarter)
 
 All stored as markdown in `docs/tickets/` with perfect git traceability.
 
-**Note:** The Initiative→Epic→Story hierarchy isn't novel—it's [standard Agile practice](https://www.atlassian.com/agile/project-management/epics-stories-themes). Our distinction is treating **Tasks as the atomic unit of work**: 1 task = 1 commit = hours of focused implementation, with each task explicitly tracked as a child of its story.
+**Note:** The Initiative→Epic→Story hierarchy is [standard Agile practice](https://www.atlassian.com/agile/project-management/epics-stories-themes). Our distinction: **Tasks are the atomic unit of work** - 1 task = 1 commit = hours of focused implementation, each task explicitly tracked as a child of its story.
 
-### 2. Story-Driven Workflow
+### Story-Driven Workflow
 
 - **1 Story = 1 Branch = 1 PR**
 - **1 Task = 1 Commit** (after manual approval)
 - Branch names match ticket IDs: `STORY-0001.2.4`
 - Continuous progress tracking: 🔵 Not Started → 🟡 In Progress → ✅ Complete
 
-### 3. Specification-First Development
+### Specification-First Development
 
 - **Concrete Specifications** - Agents enforce quantified, testable requirements (not vague "handle errors")
-- **Progressive Validation** - Track implementation progress with measurable milestones
+- **Progressive Validation** - Track implementation with measurable milestones
 - **Quality Gates** - Validation passes before commits (configurable per project)
 
-**Our choice:** We use BDD/TDD (Gherkin scenarios, unit tests first) for gitctx development. **Your choice:** Agents adapt to any workflow—the core requirement is **concrete specifications that agents can validate**, not a specific testing methodology.
+**Our choice:** We use BDD/TDD (Gherkin scenarios, unit tests first) for GitStory development. **Your choice:** Agents adapt to any workflow—the core requirement is **concrete specifications that agents can validate**, not a specific testing methodology.
 
-### 4. AI Agent Architecture
-
-Six specialized agents provide structured analysis:
-
-- **discovery-orchestrator** - Multi-level gap analysis (what's missing?)
-- **ticket-analyzer** - Completeness scoring (is it ready?)
-- **specification-quality-checker** - Vagueness detection (make it concrete)
-- **design-guardian** - Anti-overengineering (flag unnecessary abstractions)
-- **pattern-discovery** - Reuse validation (use existing fixtures)
-- **git-state-analyzer** - Ticket drift detection (do commits match tasks?)
-
-### 5. Interactive Planning Commands
-
-```bash
-/plan-initiative --genesis         # Strategic planning from scratch
-/plan-initiative INIT-0001         # Break down initiative into epics
-/plan-epic EPIC-0001.2             # Define stories for an epic
-/plan-story STORY-0001.2.4         # Create tasks for a story
-/start-next-task STORY-0001.2.4    # Begin next pending task
-/review-ticket STORY-0001.2.4      # Quality validation + drift detection
-/discover EPIC-0001.2              # Gap analysis without creating tickets
-```
-
-### 6. Quality Enforcement
+### Quality Enforcement
 
 Progressive quality thresholds for autonomous execution:
 
@@ -98,6 +246,74 @@ Progressive quality thresholds for autonomous execution:
 Automatically flags:
 - ❌ Vague terms ("handle errors", "make it fast")
 - ✅ Concrete specs ("<500ms latency", "batch size 1000")
+
+---
+
+## Specialized AI Agents
+
+GitStory uses specialized agents (not monolithic commands) for structured analysis. Commands orchestrate agents and aggregate results.
+
+### Agent Catalog
+
+| Agent | Purpose | Used By |
+|-------|---------|---------|
+| **gitstory-discovery-orchestrator** | Multi-level gap analysis (what's missing?) | /plan-*, /discover, /review-ticket |
+| **gitstory-ticket-analyzer** | Completeness scoring (is it ready?) | /start-next-task, /review-ticket |
+| **gitstory-specification-quality-checker** | Vagueness detection (make it concrete) | /plan-*, /review-ticket |
+| **gitstory-design-guardian** | Anti-overengineering (flag abstractions) | /plan-story, /start-next-task |
+| **gitstory-pattern-discovery** | Reuse validation (use existing fixtures) | /start-next-task |
+| **gitstory-git-state-analyzer** | Ticket drift detection (commits vs tasks) | /review-ticket |
+
+**Architecture:** Commands invoke agents via Task tool → agents return structured JSON → commands aggregate and present results to user.
+
+**Benefits:**
+- 45% smaller commands (orchestration only, analysis delegated)
+- Parallel execution when agents are independent
+- Reusable across multiple commands
+- Testable independently
+
+**See also:** [agents/AGENT_CONTRACT.md](agents/AGENT_CONTRACT.md) for agent input/output specifications
+
+---
+
+## Interactive Planning Commands
+
+### Planning Phase
+```bash
+/gitstory:plan-initiative --genesis    # Start new initiative from scratch
+/gitstory:plan-initiative INIT-0001    # Add epics to initiative
+/gitstory:plan-epic EPIC-0001.1        # Add stories to epic
+/gitstory:plan-story STORY-0001.1.0    # Break story into tasks
+```
+
+### Execution Phase
+```bash
+/gitstory:start-next-task STORY-ID     # Begin next pending task
+/gitstory:discover TICKET-ID           # Gap analysis without creating tickets
+```
+
+### Review Phase
+```bash
+/gitstory:review-ticket STORY-ID       # Quality validation + drift detection
+/gitstory:review-pr-comments PR_NUM    # Address GitHub review feedback
+```
+
+### Meta Tools (GitStory Development)
+
+GitStory provides meta-tools for creating and improving its own commands/agents:
+
+```bash
+/gitstory:command new-cmd              # Create new slash command
+/gitstory:command existing.md          # Optimize existing command (remove bloat)
+/gitstory:subagent new-agent           # Create new specialized agent
+/gitstory:subagent existing.md         # Improve agent with contract validation
+```
+
+**Use cases:**
+- Customize planning workflows for your team
+- Add domain-specific analysis agents
+- Optimize prompt efficiency (remove verbose pseudocode)
+- Ensure agents follow contract (single-shot, JSON output)
 
 ---
 
@@ -113,55 +329,22 @@ Every commit tells a story. GitStory keeps that story organized.
 
 ---
 
-## Quick Start
-
-GitStory is an **experimental methodology** for git-native project management with AI agents. We're still figuring this out, and we'd love your collaboration!
-
-### Getting Started
-
-1. **Copy what you need**: Browse [docs/tickets/](docs/tickets/), [.claude/agents/](.claude/agents/), and [CLAUDE.md](CLAUDE.md)
-2. **Adapt to your project**: The patterns, templates, and agent specs are starting points - adjust them
-3. **Experiment**: Try the ticket hierarchy, agent patterns, or slash commands. Keep what works, discard what doesn't
-4. **Share your learnings**: Open a [discussion](https://github.com/gitstory/gitstory/discussions) with what you tried
-
-### What's in This Repo?
-
-- **Ticket hierarchy patterns** ([docs/tickets/CLAUDE.md](docs/tickets/CLAUDE.md)) - INIT→EPIC→STORY→TASK structure
-- **AI agent specifications** ([.claude/agents/](.claude/agents/)) - 6 specialized agents for gap analysis, quality checking, pattern discovery
-- **Slash command templates** ([.claude/commands/](.claude/commands/)) - Interactive planning workflows
-- **Interview guides** ([.claude/INTERVIEW_GUIDE.md](.claude/INTERVIEW_GUIDE.md)) - Question templates for requirements gathering
-- **Workflow documentation** ([CLAUDE.md](CLAUDE.md)) - Development patterns, commit conventions
-
-This is all **work in progress**. Nothing is set in stone. We're experimenting together.
-
----
-
-## Documentation
-
-- [Getting Started Guide](docs/getting-started.md)
-- [Ticket Hierarchy](docs/tickets/CLAUDE.md)
-- [Agent Architecture](.claude/agents/README.md)
-- [Interview Guide](.claude/INTERVIEW_GUIDE.md)
-- [Development Workflow](CLAUDE.md)
-
----
-
 ## Why GitStory for Agentic Coding?
 
 GitStory transforms agentic coding from ad-hoc prompts into a structured workflow where:
 
-1. **Agents know what to build** (95% quality tasks with concrete specs)
-2. **Agents know what's been done** (git history + task status + progress tracking)
-3. **Agents can't overengineer** (design guardian flags abstractions with single impl)
-4. **Agents reuse patterns** (pattern discovery references existing code/tests)
-5. **Agents maintain traceability** (commits link to tasks, tasks to stories, stories to epics)
-6. **Humans maintain control** (manual approval gates after each task before commit)
+1. **Agents know what to build** - 95% quality tasks with concrete specs
+2. **Agents know what's been done** - git history + task status + progress tracking
+3. **Agents can't overengineer** - design guardian flags abstractions with single impl
+4. **Agents reuse patterns** - pattern discovery references existing code/tests
+5. **Agents maintain traceability** - commits link to tasks, tasks to stories, stories to epics
+6. **Humans maintain control** - manual approval gates after each task before commit
 
 ---
 
 ## Project Status
 
-🧪 **Experimental** - GitStory is a collection of patterns and practices we've been developing while building [gitctx](https://github.com/gitctx-ai/gitctx).
+🧪 **Experimental** - GitStory is a collection of patterns developed while building [gitctx](https://github.com/gitctx-ai/gitctx).
 
 ### What We've Validated
 - ✅ Ticket hierarchy (INIT→EPIC→STORY→TASK) works for complex projects
@@ -176,12 +359,27 @@ GitStory transforms agentic coding from ad-hoc prompts into a structured workflo
 - 🔬 What the "ideal" agent specifications should look like
 
 ### We Need Your Input!
-We're sharing this **as-is** because we think these patterns might help others building with AI agents. If you try GitStory:
-- Share what worked (and what didn't) in [Discussions](https://github.com/gitstory/gitstory/discussions)
+We're sharing this **as-is** because these patterns might help others building with AI agents. If you try GitStory:
+- Share what worked (and what didn't) in [Discussions](https://github.com/gitstory-ai/gitstory/discussions)
 - Propose improvements via issues or PRs
 - Tell us what's confusing or over-complicated
 
 This is a collaborative experiment. Let's figure it out together.
+
+---
+
+## Documentation
+
+### Core References
+- **[CLAUDE.md](CLAUDE.md)** - Development workflow, BDD/TDD patterns, commit standards
+- **[docs/tickets/CLAUDE.md](docs/tickets/CLAUDE.md)** - Ticket hierarchy specification
+- **[agents/AGENT_CONTRACT.md](agents/AGENT_CONTRACT.md)** - Agent input/output contract
+- **[docs/PLANNING_INTERVIEW_GUIDE.md](docs/PLANNING_INTERVIEW_GUIDE.md)** - Requirements gathering templates
+
+### Examples
+- **[docs/tickets/](docs/tickets/)** - Real ticket hierarchy from GitStory development
+- **[agents/](agents/)** - Agent specifications (self-documenting)
+- **[.claude/commands/gitstory/](.claude/commands/gitstory/)** - Slash command implementations
 
 ---
 
@@ -199,6 +397,18 @@ The result was so useful, we extracted it into GitStory.
 
 ---
 
+## Contributing
+
+GitStory uses itself for development! Check our [ticket hierarchy](docs/tickets/) to see story-driven development in action.
+
+We welcome contributions:
+- 💡 Share experiences in [Discussions](https://github.com/gitstory-ai/gitstory/discussions)
+- 🐛 Report issues or confusing documentation
+- 🔧 Submit PRs with improvements or clarifications
+- 📖 Help us figure out what works and what doesn't
+
+---
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details
@@ -207,22 +417,9 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ## Links
 
-- **Website:** [gitstory.ai](https://gitstory.ai) (coming soon)
 - **GitHub:** [github.com/gitstory](https://github.com/gitstory)
-- **Discussions:** [GitHub Discussions](https://github.com/gitstory/gitstory/discussions)
+- **Discussions:** [GitHub Discussions](https://github.com/gitstory-ai/gitstory/discussions)
 - **Parent Project:** [gitctx](https://github.com/gitctx-ai/gitctx)
-
----
-
-## Contributing
-
-GitStory uses itself for development! Check out our [ticket hierarchy](docs/tickets/) to see story-driven development in action.
-
-We welcome contributions of all kinds:
-- 💡 Share your experiences in [Discussions](https://github.com/gitstory/gitstory/discussions)
-- 🐛 Report issues or confusing documentation
-- 🔧 Submit PRs with improvements or clarifications
-- 📖 Help us figure out what works and what doesn't
 
 ---
 

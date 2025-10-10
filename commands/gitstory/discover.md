@@ -110,10 +110,10 @@ def determine_operation(mode: str, ticket_type: str | None) -> dict:
 
 ### 3. Invoke Discovery Orchestrator
 
-Use Task tool to invoke discovery-orchestrator agent:
+Use Task tool to invoke gitstory-discovery-orchestrator agent:
 
 ```markdown
-**Agent:** discovery-orchestrator
+**Agent:** gitstory-discovery-orchestrator
 **Operation:** {operation}
 **Target:** {target}
 **Mode:** pre-planning
@@ -130,7 +130,7 @@ import json
 
 def parse_orchestrator_output(output: str) -> dict | None:
     """
-    Parse and validate discovery-orchestrator output.
+    Parse and validate gitstory-discovery-orchestrator output.
 
     Returns:
         Parsed JSON if valid, None if error
@@ -146,7 +146,7 @@ def parse_orchestrator_output(output: str) -> dict | None:
             return None
 
         # Check agent name
-        if data["agent"] != "discovery-orchestrator":
+        if data["agent"] != "gitstory-discovery-orchestrator":
             print(f"⚠️  Wrong agent: {data['agent']}")
             return None
 
@@ -396,7 +396,7 @@ $ /discover EPIC-0001.2
 - Missing BDD scenario for edge case: empty repository
 
 ---
-**Agents Invoked:** ticket-analyzer, pattern-discovery, design-guardian, specification-quality-checker
+**Agents Invoked:** gitstory-ticket-analyzer, gitstory-pattern-discovery, gitstory-design-guardian, gitstory-specification-quality-checker
 **Execution Time:** 12500ms
 
 ## 🎯 Next Actions
@@ -430,10 +430,10 @@ $ /discover --genesis
 
 ## 🚩 Complexity Flags
 
-(No complexity flags - design-guardian validates scope is appropriate)
+(No complexity flags - gitstory-design-guardian validates scope is appropriate)
 
 ---
-**Agents Invoked:** design-guardian
+**Agents Invoked:** gitstory-design-guardian
 **Execution Time:** 3500ms
 
 ## 🎯 Next Actions
@@ -470,7 +470,7 @@ $ /discover TASK-0001.2.4.3
 - Missing verification step for 'Search latency <500ms' acceptance criterion
 
 ---
-**Agents Invoked:** specification-quality-checker
+**Agents Invoked:** gitstory-specification-quality-checker
 **Execution Time:** 2500ms
 
 ## 🎯 Next Actions
@@ -529,7 +529,7 @@ $ /discover EPIC-0001.2
 
 ## ⚠️  Warnings
 
-**degraded_analysis:** pattern-discovery agent failed - fixture suggestions unavailable
+**degraded_analysis:** gitstory-pattern-discovery agent failed - fixture suggestions unavailable
 - **Impact:** No automatic pattern reuse suggestions for new stories
 - **Recovery:** Manually review tests/conftest.py for reusable fixtures
 
@@ -544,7 +544,7 @@ When implementing this command, ensure:
 
 - [ ] Parses TICKET-ID and --genesis correctly
 - [ ] Maps ticket type to operation (INIT→initiative-gaps, EPIC→epic-gaps, etc.)
-- [ ] Invokes discovery-orchestrator via Task tool
+- [ ] Invokes gitstory-discovery-orchestrator via Task tool
 - [ ] Validates orchestrator output against AGENT_CONTRACT.md
 - [ ] Handles error status gracefully (shows recovery suggestions)
 - [ ] Handles partial status (shows warnings)
@@ -572,14 +572,14 @@ When implementing this command, ensure:
 
 ### Why Not Integrated in Planning Commands?
 
-**Answer:** It IS integrated! Planning commands use discovery-orchestrator too.
+**Answer:** It IS integrated! Planning commands use gitstory-discovery-orchestrator too.
 
 **Architecture:**
 ```
-/discover → discovery-orchestrator (standalone report)
-/plan-epic → discovery-orchestrator (gaps) → interview → create stories
-/plan-story → discovery-orchestrator (gaps) → interview → create tasks
-/review-ticket → discovery-orchestrator (quality) → propose edits → apply fixes
+/discover → gitstory-discovery-orchestrator (standalone report)
+/plan-epic → gitstory-discovery-orchestrator (gaps) → interview → create stories
+/plan-story → gitstory-discovery-orchestrator (gaps) → interview → create tasks
+/review-ticket → gitstory-discovery-orchestrator (quality) → propose edits → apply fixes
 ```
 
 **Benefit:** DRY principle - discovery logic written once, used everywhere.
@@ -598,7 +598,7 @@ When implementing this command, ensure:
 **With Genesis:**
 ```bash
 /discover --genesis
-# design-guardian validates strategic scope
+# gitstory-design-guardian validates strategic scope
 # "3 epics is appropriate" or "That's 10 epics, too big for one initiative"
 # User adjusts before creating any files
 ```
@@ -607,7 +607,7 @@ When implementing this command, ensure:
 
 ## Related Documentation
 
-- [discovery-orchestrator.md](../agents/discovery-orchestrator.md) - Orchestrator agent specification
+- [gitstory-discovery-orchestrator.md](../agents/gitstory-discovery-orchestrator.md) - Orchestrator agent specification
 - [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md) - Agent input/output contract
 - [plan-initiative.md](plan-initiative.md) - Create epics after discovering gaps
 - [plan-epic.md](plan-epic.md) - Create stories after discovering gaps
@@ -622,5 +622,5 @@ When implementing this command, ensure:
 - Initial implementation
 - Supports ticket discovery (INIT/EPIC/STORY/TASK)
 - Supports genesis mode
-- Uses discovery-orchestrator for all analysis
+- Uses gitstory-discovery-orchestrator for all analysis
 - Suggests appropriate next actions

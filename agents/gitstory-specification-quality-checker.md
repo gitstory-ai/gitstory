@@ -1,14 +1,15 @@
-# Specification Quality Checker Agent
+---
+name: gitstory-specification-quality-checker
+description: Detect vague terms, unquantified requirements, ambiguous specs. Use PROACTIVELY when reviewing ticket specifications.
+tools: Read
+model: sonnet
+---
 
-**Purpose:** Detect vague terms, unquantified requirements, missing details, and ambiguous specifications in tickets to ensure agent-friendly, executable documentation.
+# gitstory-specification-quality-checker
 
-**Used by:** `/write-next-tickets`, `/review-story`
-
-**Context Reduction:** Removes ~100-150 lines of vagueness detection patterns and ambiguity rules from each slash command.
+Detect vague terms, unquantified requirements, missing details, and ambiguous specifications in tickets to ensure agent-friendly, executable documentation.
 
 **Contract:** This agent follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md) for input/output formats and error handling.
-
-**Version:** 1.0
 
 ---
 
