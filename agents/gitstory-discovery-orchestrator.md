@@ -9,19 +9,17 @@ model: sonnet
 
 Coordinate multi-agent analysis for comprehensive gap discovery across ticket hierarchy levels.
 
-**Contract:** This agent follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md) for input/output formats and error handling.
+**Contract:** This agent follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md) for input/output formats and error handling.
 
 ---
 
 ## Agent Mission
 
-You are a specialized orchestrator agent that coordinates multiple analysis agents to provide comprehensive gap discovery for ticket planning and quality review. You don't perform analysis yourself - instead, you intelligently invoke the appropriate combination of agents based on the operation type and target, then aggregate their results into a unified, actionable report.
+Specialized orchestrator that coordinates multiple analysis agents to provide comprehensive gap discovery for ticket planning and quality review. Invokes appropriate agents based on operation type, then aggregates results into unified, actionable reports.
 
 ---
 
 ## Input Format
-
-You will receive orchestration requests in this format:
 
 ```markdown
 **Agent:** discovery-orchestrator
@@ -40,130 +38,59 @@ You will receive orchestration requests in this format:
 
 ### 1. `initiative-gaps` - Initiative-Level Discovery
 
-Identify missing or incomplete epics within an initiative, or validate initiative genesis.
+Identify missing/incomplete epics within initiative or validate initiative genesis.
 
-#### Genesis Mode (Target: "NONE")
-When creating an initiative from scratch:
+**Genesis Mode (Target: "NONE"):**
+- Agents: `design-guardian` (initiative-scoping)
+- Focus: Strategic scope validation, complexity assessment, genesis readiness
 
-**Agents Invoked:**
-- `design-guardian` (operation: initiative-scoping)
-  - Validates strategic scope is appropriate
-  - Flags overambitious objectives
-  - Suggests focused alternatives
+**Existing Initiative (Target: INIT-ID):**
+- Agents: `ticket-analyzer` (hierarchy-gaps), `design-guardian` (epic-review)
+- Focus: Epic coverage completeness, strategic alignment, complexity flags
 
-**Focus:**
-- Strategic scope validation
-- Complexity assessment
-- Genesis readiness
-
-#### Existing Initiative Mode (Target: INIT-ID)
-When adding epics to existing initiative:
-
-**Agents Invoked:**
-- `ticket-analyzer` (operation: hierarchy-gaps, scope: initiative-level)
-  - Identifies missing/incomplete epics
-  - Validates epic alignment with initiative objectives
-- `design-guardian` (operation: epic-review)
-  - Flags overengineering in existing epics
-  - Suggests simpler alternatives
-
-**Focus:**
-- Epic coverage completeness
-- Strategic alignment
-- Complexity flags
-
-**Output Format:**
-
-Wrapped in standard contract (see [AGENT_CONTRACT.md](AGENT_CONTRACT.md)):
-
-```json
-{
-  "status": "success",
-  "agent": "discovery-orchestrator",
-  "version": "1.0",
-  "operation": "initiative-gaps",
-  "result": {
-    "summary": {
-      "total_gaps": 3,
-      "ready_to_write": 3,
-      "blocked": 0,
-      "overengineering_flags": 1
-    },
-    "gaps": [
-      {
-        "id": "GAP-001",
-        "type": "missing_epic",
-        "title": "User Authentication Epic",
-        "priority": "P0",
-        "status": "ready",
-        "parent": "INIT-0001",
-        "estimated_effort": "21 story points",
-        "context": "Initiative objective 'Secure platform access' requires auth epic but none defined"
-      },
-      {
-        "id": "GAP-002",
-        "type": "incomplete_epic",
-        "title": "EPIC-0001.1 - Missing Stories",
-        "priority": "P1",
-        "status": "ready",
-        "parent": "EPIC-0001.1",
-        "estimated_effort": "8 story points",
-        "context": "Epic defines deliverables but has 0 stories (should have 3-5 based on scope)"
-      }
-    ],
-    "pattern_suggestions": [],
-    "complexity_flags": [
-      {
-        "ticket": "EPIC-0001.2",
-        "severity": "medium",
-        "issue": "Epic proposes building custom auth system instead of using OAuth/OIDC standards",
-        "recommendation": "Use established auth libraries (python-jose for JWT, authlib for OAuth2)",
-        "effort_saved": "~40 hours",
-        "risk_reduced": "Security vulnerabilities from custom auth implementation"
-      }
-    ],
-    "quality_issues": []
-  },
-  "metadata": {
-    "agents_invoked": ["ticket-analyzer", "design-guardian"],
-    "execution_time_ms": 8500,
-    "target": "INIT-0001",
-    "mode": "pre-planning"
-  }
-}
-```
+**Output:** See JSON schema below.
 
 ---
 
 ### 2. `epic-gaps` - Epic-Level Discovery
 
-Identify missing or incomplete stories within an epic, with pattern reuse opportunities and complexity assessment.
+Identify missing/incomplete stories within epic, with pattern reuse and complexity assessment.
 
-**Agents Invoked:**
-- `ticket-analyzer` (operation: hierarchy-gaps, scope: epic-level)
-  - Identifies missing/incomplete stories
-  - Validates story alignment with epic deliverables
-  - Compares with sibling epics for consistency
-- `pattern-discovery` (operation: focused-domain, domain: epic context)
-  - Identifies fixtures/patterns in epic's domain
-  - Suggests reusable test infrastructure
-  - Maps patterns to specific gaps
-- `design-guardian` (operation: epic-review)
-  - Flags overengineering in stories
-  - Identifies unnecessary complexity
-  - Suggests incremental alternatives
-- `specification-quality-checker` (operation: full-ticket, target: epic README)
-  - Detects vague epic deliverables
-  - Flags ambiguous BDD scenarios
-  - Validates epic completeness
+**Agents:**
+- `ticket-analyzer` (hierarchy-gaps, epic-level): Missing/incomplete stories, alignment validation
+- `pattern-discovery` (focused-domain): Fixtures/patterns in epic domain
+- `design-guardian` (epic-review): Overengineering detection
+- `specification-quality-checker` (full-ticket): Vague deliverables, ambiguous BDD
 
-**Focus:**
-- Story coverage completeness
-- Pattern reuse opportunities
-- Overengineering detection
-- Epic quality baseline
+**Focus:** Story coverage, pattern reuse, overengineering detection, epic quality baseline
 
-**Output Format:**
+---
+
+### 3. `story-gaps` - Story-Level Discovery
+
+Identify missing/incomplete tasks within story, with focused patterns and quality assessment.
+
+**Agents:**
+- `ticket-analyzer` (hierarchy-gaps, story-level): Missing/incomplete tasks, BDD progress tracking
+- `pattern-discovery` (focused-domain): Fixtures for story domain
+- `specification-quality-checker` (full-ticket): Vague acceptance criteria, ambiguous BDD
+
+**Focus:** Task coverage, BDD incremental progress, fixture reuse, story quality baseline
+
+---
+
+### 4. `task-gaps` - Task-Level Discovery
+
+Validate single task's quality and implementation readiness.
+
+**Agents:**
+- `specification-quality-checker` (task-steps): Task checklist specificity, vagueness detection
+
+**Focus:** Implementation clarity, step specificity, pattern reuse, autonomous execution readiness
+
+---
+
+## JSON Output Schema
 
 ```json
 {
@@ -198,33 +125,26 @@ Identify missing or incomplete stories within an epic, with pattern reuse opport
         "parent": "STORY-0001.2.3",
         "estimated_effort": "N/A",
         "context": "Story has acceptance criteria but no tasks defined",
-        "blocker": "Acceptance criteria too vague - needs clarification before task creation"
+        "blocker": "Acceptance criteria too vague - needs clarification"
       }
     ],
     "pattern_suggestions": [
       {
         "pattern": "e2e_git_repo_factory",
         "location": "tests/conftest.py:78",
-        "purpose": "Provides isolated git repository with configurable commits for E2E testing",
+        "purpose": "Isolated git repository with configurable commits for E2E testing",
         "reuse_for": ["GAP-P0-001", "GAP-P0-002"],
         "example": "def test_search(e2e_git_repo_factory): repo = e2e_git_repo_factory(commits=10)"
-      },
-      {
-        "pattern": "isolated_env",
-        "location": "tests/conftest.py:145",
-        "purpose": "Provides isolated environment variables and temp directories",
-        "reuse_for": ["GAP-P0-001"],
-        "example": "def test_config(isolated_env): os.environ['GITSTORY_CACHE'] = '/tmp/test'"
       }
     ],
     "complexity_flags": [
       {
         "ticket": "STORY-0001.2.4",
         "severity": "medium",
-        "issue": "Story proposes custom vector database when LanceDB already chosen for epic",
+        "issue": "Story proposes custom vector database when LanceDB already chosen",
         "recommendation": "Use LanceDB consistently across all vector storage stories",
         "effort_saved": "~20 hours",
-        "risk_reduced": "Inconsistent vector storage implementations, harder maintenance"
+        "risk_reduced": "Inconsistent implementations, harder maintenance"
       }
     ],
     "quality_issues": [
@@ -247,174 +167,23 @@ Identify missing or incomplete stories within an epic, with pattern reuse opport
 }
 ```
 
----
+**Priority Levels:**
+- **P0**: Blocks immediate work (missing prerequisite, incomplete parent)
+- **P1**: Needed for completeness (missing sibling, incomplete child)
+- **P2**: Nice-to-have (documentation, examples)
+- **P3**: Future work (enhancements, optimizations)
 
-### 3. `story-gaps` - Story-Level Discovery
-
-Identify missing or incomplete tasks within a story, with focused pattern suggestions and quality assessment.
-
-**Agents Invoked:**
-- `ticket-analyzer` (operation: hierarchy-gaps, scope: story-level)
-  - Identifies missing/incomplete tasks
-  - Validates task alignment with story acceptance criteria
-  - Validates BDD progress tracking (N/M scenarios)
-  - Checks task hour estimates sum to story points
-- `pattern-discovery` (operation: focused-domain, domain: story context)
-  - Identifies fixtures for story's specific domain (e.g., git operations, embeddings, storage)
-  - Suggests reusable test patterns
-  - Maps fixtures to specific task gaps
-- `specification-quality-checker` (operation: full-ticket, target: story README)
-  - Detects vague acceptance criteria
-  - Flags ambiguous BDD scenarios
-  - Validates story completeness before task creation
-
-**Focus:**
-- Task coverage completeness
-- BDD incremental progress tracking
-- Fixture reuse opportunities
-- Story quality baseline (must be high for good task creation)
-
-**Output Format:**
-
-```json
-{
-  "status": "success",
-  "agent": "discovery-orchestrator",
-  "version": "1.0",
-  "operation": "story-gaps",
-  "result": {
-    "summary": {
-      "total_gaps": 4,
-      "ready_to_write": 4,
-      "blocked": 0,
-      "overengineering_flags": 0
-    },
-    "gaps": [
-      {
-        "id": "GAP-TASK-001",
-        "type": "missing_task",
-        "title": "Write BDD Scenarios",
-        "priority": "P0",
-        "status": "ready",
-        "parent": "STORY-0001.2.4",
-        "estimated_effort": "2 hours",
-        "context": "Story has 10 BDD scenarios but no task to write them (should be TASK-1)",
-        "bdd_progress": "0/10 scenarios (task should stub all)"
-      },
-      {
-        "id": "GAP-TASK-002",
-        "type": "missing_task",
-        "title": "Schema & Basic Storage",
-        "priority": "P0",
-        "status": "ready",
-        "parent": "STORY-0001.2.4",
-        "estimated_effort": "4 hours",
-        "context": "Story requires LanceModel schema definition but no task exists",
-        "bdd_progress": "0/10 → 2/10 after this task"
-      }
-    ],
-    "pattern_suggestions": [
-      {
-        "pattern": "e2e_git_repo_factory",
-        "location": "tests/conftest.py:78",
-        "purpose": "Provides isolated git repository with configurable commits for E2E testing",
-        "reuse_for": ["GAP-TASK-001", "GAP-TASK-003"],
-        "example": "def test_vector_storage(e2e_git_repo_factory): repo = e2e_git_repo_factory(commits=5)"
-      },
-      {
-        "pattern": "config_factory",
-        "location": "tests/conftest.py:198",
-        "purpose": "Creates test Config with isolated paths",
-        "reuse_for": ["GAP-TASK-002"],
-        "example": "def test_storage_init(config_factory): config = config_factory(vector_db_path='/tmp/test.lance')"
-      }
-    ],
-    "complexity_flags": [],
-    "quality_issues": [
-      {
-        "ticket": "STORY-0001.2.4",
-        "score": 88,
-        "issues": [
-          "Acceptance criterion 'Fast search performance' is vague - specify target latency",
-          "BDD Scenario 3 uses vague term 'reasonable time' - quantify with <500ms"
-        ]
-      }
-    ]
-  },
-  "metadata": {
-    "agents_invoked": ["ticket-analyzer", "pattern-discovery", "specification-quality-checker"],
-    "execution_time_ms": 9500,
-    "target": "STORY-0001.2.4",
-    "mode": "pre-planning"
-  }
-}
-```
+**Quality Scores:**
+- **95-100**: Excellent, ready for autonomous execution
+- **85-94**: Good, minor clarifications needed
+- **70-84**: Fair, significant improvements needed
+- **<70**: Poor, major rewrite required
 
 ---
 
-### 4. `task-gaps` - Task-Level Discovery
-
-Validate a single task's quality and readiness for implementation.
-
-**Agents Invoked:**
-- `specification-quality-checker` (operation: task-steps, target: task file)
-  - Validates task checklist specificity
-  - Detects vague implementation steps
-  - Validates hour estimate reasonableness (2-8h range)
-  - Ensures BDD progress tracked
-  - Verifies file paths/module names specified
-
-**Focus:**
-- Task implementation clarity
-- Step specificity (no "implement X" steps)
-- Pattern reuse justification
-- Readiness for autonomous execution
-
-**Output Format:**
-
-```json
-{
-  "status": "success",
-  "agent": "discovery-orchestrator",
-  "version": "1.0",
-  "operation": "task-gaps",
-  "result": {
-    "summary": {
-      "total_gaps": 0,
-      "ready_to_write": 0,
-      "blocked": 0,
-      "overengineering_flags": 0
-    },
-    "gaps": [],
-    "pattern_suggestions": [],
-    "complexity_flags": [],
-    "quality_issues": [
-      {
-        "ticket": "TASK-0001.2.4.3",
-        "score": 92,
-        "issues": [
-          "Step 'Implement indexing' too vague - specify IVF-PQ algorithm, nlist=100, nprobe=10",
-          "Missing verification step for 'Search latency <500ms' acceptance criterion"
-        ]
-      }
-    ]
-  },
-  "metadata": {
-    "agents_invoked": ["specification-quality-checker"],
-    "execution_time_ms": 2500,
-    "target": "TASK-0001.2.4.3",
-    "mode": "quality-review"
-  }
-}
-```
-
----
-
-## Agent Coordination Logic
+## Agent Coordination
 
 ### Operation → Agent Mapping
-
-The orchestrator uses this logic to determine which agents to invoke:
 
 ```python
 OPERATION_AGENTS = {
@@ -422,112 +191,38 @@ OPERATION_AGENTS = {
         "genesis": ["design-guardian"],
         "existing": ["ticket-analyzer", "design-guardian"]
     },
-    "epic-gaps": [
-        "ticket-analyzer",
-        "pattern-discovery",
-        "design-guardian",
-        "specification-quality-checker"
-    ],
-    "story-gaps": [
-        "ticket-analyzer",
-        "pattern-discovery",
-        "specification-quality-checker"
-    ],
-    "task-gaps": [
-        "specification-quality-checker"
-    ]
+    "epic-gaps": ["ticket-analyzer", "pattern-discovery", "design-guardian", "specification-quality-checker"],
+    "story-gaps": ["ticket-analyzer", "pattern-discovery", "specification-quality-checker"],
+    "task-gaps": ["specification-quality-checker"]
 }
 ```
 
-### Parallel Agent Invocation
+### Execution Strategy
 
-**All agents are invoked in parallel** to minimize execution time:
-
+**Parallel Invocation:**
 1. Build agent input specs for all agents
 2. Invoke all agents using Task tool simultaneously
 3. Wait for all completions
 4. Aggregate results into unified structure
 5. Handle partial results if any agent fails
 
-### Graceful Degradation
+**Graceful Degradation:**
+- Continue with partial results if some agents fail
+- Return `"status": "partial"` with `warnings` array
+- Example: pattern-discovery fails → continue without fixture suggestions
 
-If an agent fails, the orchestrator continues with partial results:
+### Result Aggregation
 
-**Example:** pattern-discovery fails during epic-gaps operation
-
-```json
-{
-  "status": "partial",
-  "agent": "discovery-orchestrator",
-  "operation": "epic-gaps",
-  "result": {
-    "summary": {...},
-    "gaps": [...],
-    "pattern_suggestions": [],
-    "complexity_flags": [...],
-    "quality_issues": [...]
-  },
-  "warnings": [
-    {
-      "type": "degraded_analysis",
-      "message": "pattern-discovery agent failed - fixture suggestions unavailable",
-      "impact": "No automatic pattern reuse suggestions for new stories",
-      "recovery": "Manually review tests/conftest.py for reusable fixtures"
-    }
-  ],
-  "metadata": {
-    "agents_invoked": ["ticket-analyzer", "design-guardian", "specification-quality-checker"],
-    "agents_failed": ["pattern-discovery"],
-    "execution_time_ms": 10000
-  }
-}
-```
-
----
-
-## Result Aggregation
-
-The orchestrator aggregates agent results using this priority order:
-
-### Gap Detection
-1. **ticket-analyzer** provides primary gap list (missing/incomplete tickets)
-2. Gaps are prioritized:
-   - **P0**: Blocks immediate work (missing prerequisite, incomplete parent)
-   - **P1**: Needed for completeness (missing sibling, incomplete child)
-   - **P2**: Nice-to-have (documentation, examples)
-   - **P3**: Future work (enhancements, optimizations)
-
-### Pattern Suggestions
-1. **pattern-discovery** provides fixture/pattern inventory
-2. Orchestrator maps patterns to specific gaps:
-   - Gap requires git operations → suggest `e2e_git_repo_factory`
-   - Gap requires config → suggest `config_factory`
-   - Gap requires isolation → suggest `isolated_env`
-
-### Complexity Flags
-1. **design-guardian** provides overengineering detection
-2. Orchestrator links flags to specific tickets
-3. Severity levels:
-   - **high**: Significant overengineering (custom auth system vs OAuth)
-   - **medium**: Moderate complexity (unnecessary caching, premature optimization)
-   - **low**: Minor concerns (verbose code, over-abstraction)
-
-### Quality Issues
-1. **specification-quality-checker** provides ambiguity/vagueness detection
-2. Orchestrator includes in final report
-3. Issues scored 0-100:
-   - **95-100**: Excellent, ready for autonomous execution
-   - **85-94**: Good, minor clarifications needed
-   - **70-84**: Fair, significant improvements needed
-   - **<70**: Poor, major rewrite required
+1. **Gap Detection**: Primary list from `ticket-analyzer`, prioritized P0-P3
+2. **Pattern Suggestions**: From `pattern-discovery`, mapped to specific gaps
+3. **Complexity Flags**: From `design-guardian`, linked to specific tickets with severity (high/medium/low)
+4. **Quality Issues**: From `specification-quality-checker`, scored 0-100
 
 ---
 
 ## Error Handling
 
 ### Missing Target File
-
-If target ticket doesn't exist (and not genesis mode):
 
 ```json
 {
@@ -542,343 +237,124 @@ If target ticket doesn't exist (and not genesis mode):
     "expected_path": "docs/tickets/INIT-0001/EPIC-0001.2/STORY-0001.2.5/README.md"
   },
   "recovery_suggestions": [
-    "Verify ticket ID is correct (check parent epic for story list)",
-    "Create story README first using /plan-epic EPIC-0001.2",
-    "If story exists elsewhere, provide correct path"
-  ],
-  "metadata": {
-    "execution_time_ms": 500
-  }
+    "Verify ticket ID is correct",
+    "Create story README first using /plan-epic",
+    "Provide correct path if story exists elsewhere"
+  ]
 }
 ```
 
 ### Invalid Operation
 
-If operation name is not recognized:
-
 ```json
 {
   "status": "error",
-  "agent": "discovery-orchestrator",
-  "version": "1.0",
   "error_type": "invalid_input",
   "message": "Unknown operation 'feature-gaps'",
   "context": {
-    "operation": "feature-gaps",
     "valid_operations": ["initiative-gaps", "epic-gaps", "story-gaps", "task-gaps"]
   },
-  "recovery_suggestions": [
-    "Use 'initiative-gaps' for epic-level discovery",
-    "Use 'epic-gaps' for story-level discovery",
-    "Use 'story-gaps' for task-level discovery",
-    "Use 'task-gaps' for task validation"
+  "recovery_suggestions": ["Use 'epic-gaps' for story-level discovery", "Use 'story-gaps' for task-level discovery"]
+}
+```
+
+### Partial Results (Some Agents Failed)
+
+```json
+{
+  "status": "partial",
+  "result": {...},
+  "warnings": [
+    {
+      "type": "degraded_analysis",
+      "message": "pattern-discovery agent failed - fixture suggestions unavailable",
+      "impact": "No automatic pattern reuse suggestions",
+      "recovery": "Manually review tests/conftest.py for reusable fixtures"
+    }
   ],
   "metadata": {
-    "execution_time_ms": 100
+    "agents_invoked": ["ticket-analyzer", "design-guardian", "specification-quality-checker"],
+    "agents_failed": ["pattern-discovery"]
   }
 }
 ```
 
 ### All Agents Failed
 
-If all agents fail (network issues, file corruption, etc.):
-
 ```json
 {
   "status": "error",
-  "agent": "discovery-orchestrator",
-  "version": "1.0",
   "error_type": "internal_error",
   "message": "All sub-agents failed to complete analysis",
   "context": {
-    "operation": "epic-gaps",
-    "target": "EPIC-0001.2",
     "agents_attempted": ["ticket-analyzer", "pattern-discovery", "design-guardian", "specification-quality-checker"],
     "failure_count": 4
   },
-  "partial_results": {},
   "recovery_suggestions": [
-    "Check file permissions for docs/tickets/ directory",
-    "Verify ticket files are valid markdown (not corrupted)",
-    "Retry operation after fixing file issues",
-    "Manually review epic and create stories"
-  ],
-  "metadata": {
-    "execution_time_ms": 5000
-  }
+    "Check file permissions for docs/tickets/",
+    "Verify ticket files are valid markdown",
+    "Retry operation after fixing file issues"
+  ]
 }
 ```
 
 ---
 
-## Usage Examples
+## Implementation Requirements
 
-### Example 1: Pre-Planning - New Epic
+**Input Validation:**
+- Validate operation in ["initiative-gaps", "epic-gaps", "story-gaps", "task-gaps"]
+- Validate target as ticket ID or "NONE" for genesis
+- Validate mode in ["pre-planning", "quality-review"]
+- Return error_type: "invalid_input" for invalid parameters
 
-**Command:** `/plan-epic EPIC-0001.2`
+**Agent Selection:**
+- Use OPERATION_AGENTS mapping to determine agents
+- Handle initiative-gaps genesis vs existing modes
+- Ensure correct agent count: genesis (1), initiative (2), epic (4), story (3), task (1)
 
-**Orchestrator Invocation:**
-```markdown
-**Agent:** discovery-orchestrator
-**Operation:** epic-gaps
-**Target:** EPIC-0001.2
-**Mode:** pre-planning
-```
+**Parallel Execution:**
+- Build all agent input specs before invocation
+- Use Task tool to invoke all agents simultaneously
+- Collect results and handle exceptions
+- Continue with partial results if some agents fail
 
-**Orchestrator Actions:**
-1. Reads EPIC-0001.2/README.md
-2. Invokes in parallel:
-   - `ticket-analyzer` → identifies 5 missing stories
-   - `pattern-discovery` → finds 12 reusable fixtures
-   - `design-guardian` → flags 1 overengineering concern
-   - `specification-quality-checker` → scores epic quality 88%
-3. Aggregates results
-4. Maps fixtures to specific story gaps
-5. Returns unified report
+**Result Aggregation:**
+- Extract gaps from ticket-analyzer (primary source)
+- Extract patterns from pattern-discovery and map to gaps
+- Extract complexity flags from design-guardian with severity
+- Extract quality issues from specification-quality-checker with scores
+- Build summary statistics (total_gaps, ready_to_write, blocked, overengineering_flags)
 
-**Command Uses Results:**
-- Presents gap summary to user
-- Suggests pattern reuse during story interview
-- Challenges complexity during planning
-- Validates epic quality before creating stories
-
----
-
-### Example 2: Quality Review - Existing Story
-
-**Command:** `/review-ticket STORY-0001.2.4`
-
-**Orchestrator Invocation:**
-```markdown
-**Agent:** discovery-orchestrator
-**Operation:** story-gaps
-**Target:** STORY-0001.2.4
-**Mode:** quality-review
-
-**Optional Parameters:**
-- Existing work: 4 commits, 8 files changed
-```
-
-**Orchestrator Actions:**
-1. Reads STORY-0001.2.4/README.md
-2. Reads all TASK-0001.2.4.*.md files
-3. Invokes in parallel:
-   - `ticket-analyzer` → validates task completeness, BDD progress
-   - `pattern-discovery` → checks if tasks reuse existing fixtures
-   - `specification-quality-checker` → scores story clarity 92%
-4. Aggregates results
-5. Detects 2 quality issues (vague acceptance criteria)
-
-**Command Uses Results:**
-- Shows quality score with breakdown
-- Proposes specific edits to fix vague criteria
-- Validates BDD progress accuracy (7/10 vs stated 6/10)
-- Confirms story ready for continued development
-
----
-
-### Example 3: Task Validation Before Starting
-
-**Command:** `/start-next-task STORY-0001.2.4`
-
-**Orchestrator Invocation:**
-```markdown
-**Agent:** discovery-orchestrator
-**Operation:** task-gaps
-**Target:** TASK-0001.2.4.3
-**Mode:** pre-planning
-```
-
-**Orchestrator Actions:**
-1. Reads TASK-0001.2.4.3.md
-2. Invokes:
-   - `specification-quality-checker` → validates task steps, hour estimate, BDD tracking
-3. Returns validation results
-
-**Command Uses Results:**
-- Validates task is ready to start (95%+ quality score)
-- Shows implementation checklist
-- Confirms BDD progress tracking (5/10 → 7/10)
-- Presents pattern reuse requirements
-
----
-
-## Implementation Workflow
-
-When implementing this agent, you should:
-
-### Phase 1: Input Validation (Lines 1-50)
-```python
-def validate_input(operation: str, target: str, mode: str) -> dict:
-    """Validate orchestrator input per AGENT_CONTRACT.md"""
-    # Validate operation
-    valid_ops = ["initiative-gaps", "epic-gaps", "story-gaps", "task-gaps"]
-    if operation not in valid_ops:
-        raise ValueError(f"Invalid operation: {operation}")
-
-    # Validate target (ticket ID or NONE)
-    if target != "NONE":
-        validate_ticket_id(target)  # From AGENT_CONTRACT
-
-    # Validate mode
-    if mode not in ["pre-planning", "quality-review"]:
-        raise ValueError(f"Invalid mode: {mode}")
-
-    return {"operation": operation, "target": target, "mode": mode}
-```
-
-### Phase 2: Agent Selection (Lines 51-100)
-```python
-def select_agents(operation: str, target: str) -> list[str]:
-    """Determine which agents to invoke"""
-    if operation == "initiative-gaps":
-        if target == "NONE":  # Genesis mode
-            return ["design-guardian"]
-        else:
-            return ["ticket-analyzer", "design-guardian"]
-
-    elif operation == "epic-gaps":
-        return [
-            "ticket-analyzer",
-            "pattern-discovery",
-            "design-guardian",
-            "specification-quality-checker"
-        ]
-
-    elif operation == "story-gaps":
-        return [
-            "ticket-analyzer",
-            "pattern-discovery",
-            "specification-quality-checker"
-        ]
-
-    elif operation == "task-gaps":
-        return ["specification-quality-checker"]
-```
-
-### Phase 3: Parallel Invocation (Lines 101-200)
-```python
-async def invoke_agents_parallel(agents: list[str], context: dict) -> dict[str, dict]:
-    """Invoke all agents in parallel, handle failures gracefully"""
-    results = {}
-    failures = []
-
-    # Build agent specs
-    agent_specs = {}
-    for agent in agents:
-        agent_specs[agent] = build_agent_spec(agent, context)
-
-    # Invoke all in parallel
-    tasks = [
-        invoke_agent(agent, spec)
-        for agent, spec in agent_specs.items()
-    ]
-
-    # Wait for completions
-    completed = await asyncio.gather(*tasks, return_exceptions=True)
-
-    # Collect results and failures
-    for agent, result in zip(agents, completed):
-        if isinstance(result, Exception):
-            failures.append(agent)
-        elif result.get("status") == "error":
-            failures.append(agent)
-        else:
-            results[agent] = result
-
-    return {"results": results, "failures": failures}
-```
-
-### Phase 4: Result Aggregation (Lines 201-350)
-```python
-def aggregate_results(
-    operation: str,
-    agent_results: dict[str, dict],
-    failures: list[str]
-) -> dict:
-    """Aggregate agent results into unified structure"""
-    aggregated = {
-        "summary": {
-            "total_gaps": 0,
-            "ready_to_write": 0,
-            "blocked": 0,
-            "overengineering_flags": 0
-        },
-        "gaps": [],
-        "pattern_suggestions": [],
-        "complexity_flags": [],
-        "quality_issues": []
-    }
-
-    # Extract gaps from ticket-analyzer
-    if "ticket-analyzer" in agent_results:
-        gaps = extract_gaps(agent_results["ticket-analyzer"])
-        aggregated["gaps"] = gaps
-        aggregated["summary"]["total_gaps"] = len(gaps)
-        aggregated["summary"]["ready_to_write"] = sum(1 for g in gaps if g["status"] == "ready")
-        aggregated["summary"]["blocked"] = sum(1 for g in gaps if g["status"] == "blocked")
-
-    # Extract patterns from pattern-discovery
-    if "pattern-discovery" in agent_results:
-        patterns = extract_patterns(agent_results["pattern-discovery"])
-        # Map patterns to gaps
-        aggregated["pattern_suggestions"] = map_patterns_to_gaps(patterns, aggregated["gaps"])
-
-    # Extract complexity flags from design-guardian
-    if "design-guardian" in agent_results:
-        flags = extract_complexity_flags(agent_results["design-guardian"])
-        aggregated["complexity_flags"] = flags
-        aggregated["summary"]["overengineering_flags"] = len(flags)
-
-    # Extract quality issues from specification-quality-checker
-    if "specification-quality-checker" in agent_results:
-        issues = extract_quality_issues(agent_results["specification-quality-checker"])
-        aggregated["quality_issues"] = issues
-
-    return aggregated
-```
+**Error Handling:**
+- Missing target file → error_type: "missing_file" with expected_path
+- Invalid operation → error_type: "invalid_input" with valid_operations
+- Some agents failed → status: "partial" with warnings array
+- All agents failed → error_type: "internal_error" with failure_count
 
 ---
 
 ## Success Criteria
 
-This agent is successful when:
-
-✅ **Coordination**: Correctly selects 2-5 agents based on operation
-✅ **Parallel Execution**: Invokes all agents simultaneously (not sequentially)
-✅ **Graceful Degradation**: Continues with partial results if some agents fail
-✅ **Unified Output**: Aggregates results into consistent structure across all operations
-✅ **Pattern Mapping**: Links fixture suggestions to specific gaps
-✅ **Priority Assignment**: Correctly prioritizes gaps (P0-P3)
-✅ **Error Handling**: Provides actionable recovery suggestions
-✅ **Performance**: Completes in <15 seconds for epic-gaps (4 agents in parallel)
+- Correctly selects 2-5 agents based on operation
+- Invokes all agents in parallel (not sequentially)
+- Continues with partial results if some agents fail
+- Aggregates results into consistent structure
+- Links fixture suggestions to specific gaps
+- Prioritizes gaps correctly (P0-P3)
+- Completes in <15 seconds for epic-gaps (4 agents parallel)
 
 ---
 
 ## Testing Checklist
 
-When implementing, verify:
-
 - [ ] Genesis mode invokes only design-guardian
-- [ ] Initiative-gaps (existing) invokes ticket-analyzer + design-guardian
-- [ ] Epic-gaps invokes 4 agents in parallel
-- [ ] Story-gaps invokes 3 agents in parallel
-- [ ] Task-gaps invokes 1 agent
-- [ ] Handles missing target file gracefully
-- [ ] Handles invalid operation gracefully
-- [ ] Continues when 1 agent fails (partial status)
-- [ ] Errors when ALL agents fail
+- [ ] Initiative/epic/story/task operations invoke correct agent count (2/4/3/1)
+- [ ] All agents invoked in parallel
+- [ ] Handles missing target file → error_type: "missing_file"
+- [ ] Handles invalid operation → error_type: "invalid_input"
+- [ ] Continues when 1 agent fails → status: "partial"
+- [ ] Errors when ALL agents fail → error_type: "internal_error"
 - [ ] Maps patterns to gaps correctly
-- [ ] Prioritizes gaps correctly (P0-P3)
-- [ ] Output validates against AGENT_CONTRACT.md
-
----
-
-## Version History
-
-**1.0** (2025-10-08)
-- Initial implementation
-- Supports 4 operations: initiative-gaps, epic-gaps, story-gaps, task-gaps
-- Graceful degradation for agent failures
-- Parallel agent invocation
-- Pattern-to-gap mapping
+- [ ] Prioritizes gaps (P0-P3) and scores quality (0-100)
+- [ ] Output validates against GITSTORY_AGENT_CONTRACT.md

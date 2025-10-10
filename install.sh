@@ -67,7 +67,7 @@ done
 
 # Download docs (3 files)
 echo "📥 Downloading documentation..."
-download_file "$BASE_URL/agents/AGENT_CONTRACT.md" ".claude/agents/AGENT_CONTRACT.md"
+download_file "$BASE_URL/agents/GITSTORY_AGENT_CONTRACT.md" ".claude/agents/GITSTORY_AGENT_CONTRACT.md"
 download_file "$BASE_URL/docs/tickets/CLAUDE.md" "docs/tickets/CLAUDE.md"
 download_file "$BASE_URL/docs/PLANNING_INTERVIEW_GUIDE.md" "docs/PLANNING_INTERVIEW_GUIDE.md"
 

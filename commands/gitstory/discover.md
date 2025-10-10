@@ -23,7 +23,7 @@ model: inherit
 - Parse TICKET-ID (INIT/EPIC/STORY/TASK) or --genesis flag
 - Map ticket type → operation (INIT→initiative-gaps, EPIC→epic-gaps, etc)
 - Invoke gitstory-discovery-orchestrator via Task tool
-- Validate JSON output against [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
+- Validate JSON output against [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md)
 - Present gaps with priority/status indicators
 
 ### Workflow
@@ -57,11 +57,11 @@ model: inherit
 
 - Agent: gitstory-discovery-orchestrator
 - Pass: operation, target, mode=pre-planning
-- Expect: JSON per [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
+- Expect: JSON per [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md)
 
 ### 4. Parse & Validate Output
 
-- Parse JSON, validate required fields per [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
+- Parse JSON, validate required fields per [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md)
 - Verify agent=`gitstory-discovery-orchestrator`
 - If status=`error` → show message + recovery
 - If invalid JSON → error message
@@ -109,7 +109,7 @@ Recovery: Manually review tests/conftest.py
 ## Related Documentation
 
 - [gitstory-discovery-orchestrator.md](../agents/gitstory-discovery-orchestrator.md) - Orchestrator agent specification
-- [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md) - Agent input/output contract
+- [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md) - Agent input/output contract
 - [plan-initiative.md](plan-initiative.md) - Create epics after discovering gaps
 - [plan-epic.md](plan-epic.md) - Create stories after discovering gaps
 - [plan-story.md](plan-story.md) - Create tasks after discovering gaps

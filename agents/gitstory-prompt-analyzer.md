@@ -9,89 +9,41 @@ model: sonnet
 
 Specialized analyzer for slash command and subagent instruction files. Identifies bloat, categorizes sections, and extracts hidden constraints from documentation.
 
+**Contract:** Follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md) for standard input/output formats.
+
 ## Operations
 
 ### analyze-structure
 
 Categorize each section of the prompt file:
 
-- **KEEP**: Execution-critical content
-  - Error handling with examples
-  - Checklists and operational steps
-  - Operations documentation
-  - JSON schemas
-  - Frontmatter configuration
-
-- **SIMPLIFY**: Verbose content
-  - Pseudocode blocks >20 lines
-  - Templates >30 lines
-  - Bash scripts >15 lines
-  - Tutorial-level explanations
-
-- **CONSOLIDATE**: Scattered requirements
-  - Requirements spread across multiple sections
-  - Constraints in different locations
-  - Validation rules not grouped
-
-- **REMOVE**: Non-execution content
-  - Marketing language ("3x faster", performance claims)
-  - Historical context (version logs, migration notes)
-  - Design rationale ("why we chose X")
-  - Comparison content ("old vs new approach")
+- **KEEP**: Error handling, checklists, operations, JSON schemas, frontmatter
+- **SIMPLIFY**: Pseudocode >20 lines, templates >30 lines, bash scripts >15 lines, tutorials
+- **CONSOLIDATE**: Scattered requirements, constraints in different locations, ungrouped validation rules
+- **REMOVE**: Marketing language, historical context, design rationale, comparisons
 
 ### detect-bloat
 
 Identify specific bloat patterns:
 
-**Marketing Content:**
-- Performance claims without measurements
-- Comparison language
-- Superlatives ("best", "fastest", "most efficient")
-- Benefit statements ("saves time", "improves workflow")
-
-**Historical Context:**
-- Version history sections
-- Migration guides
-- "Previously" or "old approach" explanations
-- Change logs embedded in prompts
-
-**Verbose Pseudocode:**
-- Full function implementations Claude doesn't need
-- Step-by-step Python/bash code with comments
-- Implementation details vs. requirements
-- Tutorial-style code walkthroughs
-
-**Design Rationale:**
-- Justifications for decisions
-- "Why we chose" explanations
-- Architecture discussion
-- Trade-off analysis
+- **Marketing**: Performance claims, comparisons, superlatives, benefit statements
+- **Historical**: Version history, migration guides, "previously" explanations, changelogs
+- **Verbose**: Full implementations, step-by-step code with comments, tutorial walkthroughs
+- **Rationale**: Decision justifications, "why we chose", architecture discussion, trade-offs
 
 ### extract-constraints
 
 Pull execution-critical requirements from sections marked for removal:
 
-**From Design Decisions:**
-- "DON'T do X" rules → Execution Constraints
-- Simplicity principles → Requirements
-- Workflow boundaries → Constraints
-
-**From Success Criteria:**
-- Actual requirements (filter out marketing)
-- Validation rules
-- Quality gates
-
-**From Rationale Sections:**
-- Workflow rules
-- Process requirements
-- Integration constraints
+- From design decisions → "DON'T do X" rules, simplicity principles, workflow boundaries
+- From success criteria → Requirements (filter marketing), validation rules, quality gates
+- From rationale → Workflow rules, process requirements, integration constraints
 
 ### calculate-metrics
 
 Provide size analysis:
 
-- Total lines in current file
-- Lines per section
+- Total lines and lines per section
 - Lines by category (KEEP/SIMPLIFY/CONSOLIDATE/REMOVE)
 - Estimated reduction if improvements applied
 - Percentage reduction
@@ -101,76 +53,85 @@ Provide size analysis:
 ```json
 {
   "status": "success",
-  "file_type": "command" | "subagent",
-  "current_size": 658,
-  "sections": [
-    {
-      "name": "Header",
-      "lines": 19,
-      "start_line": 1,
-      "end_line": 19,
-      "action": "KEEP",
-      "reason": "Usage examples and frontmatter"
+  "agent": "gitstory-prompt-analyzer",
+  "version": "1.0",
+  "operation": "analyze-structure",
+  "result": {
+    "file_type": "command" | "subagent",
+    "current_size": 658,
+    "sections": [
+      {
+        "name": "Header",
+        "lines": 19,
+        "start_line": 1,
+        "end_line": 19,
+        "action": "KEEP",
+        "reason": "Usage examples and frontmatter"
+      },
+      {
+        "name": "Optimization Summary",
+        "lines": 18,
+        "start_line": 20,
+        "end_line": 37,
+        "action": "REMOVE",
+        "reason": "Marketing content - performance claims"
+      },
+      {
+        "name": "Step 1: Parse STORY-ID",
+        "lines": 46,
+        "start_line": 100,
+        "end_line": 145,
+        "action": "SIMPLIFY",
+        "reason": "Verbose pseudocode - full Python function"
+      }
+    ],
+    "bloat_detected": {
+      "marketing": [
+        "Optimization Summary (18 lines)",
+        "Performance Comparison (44 lines)"
+      ],
+      "history": [
+        "Version History (17 lines)",
+        "Migration Note (15 lines)"
+      ],
+      "verbose": [
+        "Step 1: Parse (46 lines pseudocode)",
+        "Step 3: Validate (38 lines bash script)"
+      ],
+      "rationale": [
+        "Design Decisions (56 lines)",
+        "Why This Approach (23 lines)"
+      ]
     },
-    {
-      "name": "Optimization Summary",
-      "lines": 18,
-      "start_line": 20,
-      "end_line": 37,
-      "action": "REMOVE",
-      "reason": "Marketing content - performance claims"
-    },
-    {
-      "name": "Step 1: Parse STORY-ID",
-      "lines": 46,
-      "start_line": 100,
-      "end_line": 145,
-      "action": "SIMPLIFY",
-      "reason": "Verbose pseudocode - full Python function"
+    "constraints_found": [
+      {
+        "source": "Design Decisions",
+        "constraint": "No branch inference (user provides ID)",
+        "type": "simplicity_rule",
+        "line_range": "450-452"
+      },
+      {
+        "source": "Success Criteria",
+        "constraint": "Workflow rule: 1 story = 1 branch/PR, 1 task = 1 commit",
+        "type": "requirement",
+        "line_range": "520-522"
+      }
+    ],
+    "metrics": {
+      "total_lines": 658,
+      "keep_lines": 129,
+      "simplify_from": 334,
+      "simplify_to": 77,
+      "remove_lines": 163,
+      "consolidate_from": 82,
+      "consolidate_to": 18,
+      "estimated_final": 205,
+      "reduction_percentage": 69
     }
-  ],
-  "bloat_detected": {
-    "marketing": [
-      "Optimization Summary (18 lines)",
-      "Performance Comparison (44 lines)"
-    ],
-    "history": [
-      "Version History (17 lines)",
-      "Migration Note (15 lines)"
-    ],
-    "verbose": [
-      "Step 1: Parse (46 lines pseudocode)",
-      "Step 3: Validate (38 lines bash script)"
-    ],
-    "rationale": [
-      "Design Decisions (56 lines)",
-      "Why This Approach (23 lines)"
-    ]
   },
-  "constraints_found": [
-    {
-      "source": "Design Decisions",
-      "constraint": "No branch inference (user provides ID)",
-      "type": "simplicity_rule",
-      "line_range": "450-452"
-    },
-    {
-      "source": "Success Criteria",
-      "constraint": "Workflow rule: 1 story = 1 branch/PR, 1 task = 1 commit",
-      "type": "requirement",
-      "line_range": "520-522"
-    }
-  ],
-  "metrics": {
-    "total_lines": 658,
-    "keep_lines": 129,
-    "simplify_from": 334,
-    "simplify_to": 77,
-    "remove_lines": 163,
-    "consolidate_from": 82,
-    "consolidate_to": 18,
-    "estimated_final": 205,
-    "reduction_percentage": 69
+  "metadata": {
+    "execution_time_ms": 1250,
+    "files_read": 1
   }
 }
 ```
@@ -182,9 +143,20 @@ Provide size analysis:
 ```json
 {
   "status": "error",
+  "agent": "gitstory-prompt-analyzer",
+  "version": "1.0",
   "error_type": "file_not_found",
   "message": "File does not exist: /path/to/file.md",
-  "recovery": "Verify file path and try again"
+  "context": {
+    "operation": "analyze-structure",
+    "target": "/path/to/file.md"
+  },
+  "recovery_suggestions": [
+    "Verify file path and try again"
+  ],
+  "metadata": {
+    "execution_time_ms": 50
+  }
 }
 ```
 
@@ -193,9 +165,20 @@ Provide size analysis:
 ```json
 {
   "status": "error",
+  "agent": "gitstory-prompt-analyzer",
+  "version": "1.0",
   "error_type": "invalid_file_type",
   "message": "File is not a markdown file or lacks prompt structure",
-  "recovery": "Ensure file is .md and contains prompt instructions"
+  "context": {
+    "operation": "analyze-structure",
+    "target": "/path/to/file.txt"
+  },
+  "recovery_suggestions": [
+    "Ensure file is .md and contains prompt instructions"
+  ],
+  "metadata": {
+    "execution_time_ms": 75
+  }
 }
 ```
 
@@ -204,8 +187,19 @@ Provide size analysis:
 ```json
 {
   "status": "error",
+  "agent": "gitstory-prompt-analyzer",
+  "version": "1.0",
   "error_type": "empty_file",
   "message": "File has no content to analyze",
-  "recovery": "File must contain prompt instructions"
+  "context": {
+    "operation": "analyze-structure",
+    "target": "/path/to/empty.md"
+  },
+  "recovery_suggestions": [
+    "File must contain prompt instructions"
+  ],
+  "metadata": {
+    "execution_time_ms": 25
+  }
 }
 ```

@@ -9,7 +9,7 @@ model: sonnet
 
 Specialized improver for slash command instruction files. Generates detailed improvement plans that remove bloat while preserving all execution-critical information.
 
-**Contract:** Follows subagent contract per `.claude/agents/AGENT_CONTRACT.md`. Single-shot execution, JSON output, Read-only access.
+**Contract:** Follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md). Single-shot execution, JSON output, Read-only access.
 
 ## Operations
 
@@ -17,13 +17,9 @@ Specialized improver for slash command instruction files. Generates detailed imp
 
 Convert code blocks >20 lines to requirement lists:
 
-**Pattern:** Function/script → validation rules + operations
+**Before (46 lines):** Full function with docstrings, type hints, validation
 
-**Example:**
-
-Before (46 lines): Full Python function with docstrings, type hints, validation
-
-After (8 lines):
+**After (8 lines):**
 
 ```markdown
 ### Requirements
@@ -38,11 +34,9 @@ After (8 lines):
 
 Merge scattered requirements into "Execution Constraints" section:
 
-**Sources:** Success Criteria, Design Decisions, Important notes
-
-**Categories:** Requirements, Simplicity Rules, Error Handling, Workflow
-
-**Remove:** Marketing claims, decision justifications
+- **Sources:** Success Criteria, Design Decisions, Important notes
+- **Categories:** Requirements, Simplicity Rules, Error Handling, Workflow
+- **Remove:** Marketing claims, decision justifications
 
 ### add-frontmatter
 
@@ -61,79 +55,133 @@ model: inherit
 
 Replace verbose templates (>30 lines) with bullet lists:
 
-Before: Full markdown template with formatting
-
-After: "Show user:" bullet list (8-15 lines) of display items
+- **Before:** Full markdown template with formatting
+- **After:** "Show user:" bullet list (8-15 lines) of display items
 
 ## Input Validation
 
-**Required Checks:**
-
-- File exists at provided path
-- File is in `.claude/commands/` directory
-- File is readable
-- File contains parseable markdown
+**Required:** File exists, in `.claude/commands/` directory, readable, parseable markdown
 
 **Graceful Degradation:**
-
 - Missing frontmatter → propose addition
 - Already optimized → return success with no changes
-- Invalid path → return error with recovery suggestions
+- Invalid path → return error with recovery
 
 ## Presentation Guidelines
 
-**For commands that invoke subagents:**
+For commands that invoke subagents, present JSON response data "succinct, but complete and rich":
 
-Present JSON response data in a format that is "succinct, but complete and rich":
-
-**Avoid Overly Verbose:**
-
-- Don't dump entire JSON structures
-- Don't repeat schema documentation
-- Don't show internal metadata unless relevant
-
-**Avoid Overly Terse:**
-
-- Don't omit important details or findings
-- Don't summarize away specific line numbers/locations
-- Don't hide actionable recommendations
-
-**Best Practice:**
-
-- Show key findings with specifics (line numbers, patterns found)
+- Show key findings with specifics (line numbers, patterns)
 - Include severity/impact information
 - Present actionable next steps
-- Use formatting (headers, lists, code blocks) for readability
+- Use formatting for readability
+- Don't dump entire JSON structures or repeat schema docs
+- Don't omit important details or hide recommendations
 
 ## JSON Output Schema
+
+**Standard GITSTORY_AGENT_CONTRACT.md wrapper:**
 
 ```json
 {
   "status": "success",
-  "improvements": {
-    "add_frontmatter": {
-      "current": null,
-      "proposed": "---\ndescription: Start next pending task\nargument-hint: STORY-ID\nallowed-tools: Read, Write, Edit, Task, Bash(git:*)\nmodel: inherit\n---"
+  "agent": "gitstory-command-prompt-improver",
+  "version": "1.0",
+  "operation": "improve",
+  "result": {
+    "improvements": {
+      "add_frontmatter": {
+        "current": null,
+        "proposed": "---\ndescription: ...\nargument-hint: ...\n---"
+      },
+      "remove_sections": [
+        {
+          "name": "Section Name",
+          "lines": 18,
+          "start_line": 20,
+          "end_line": 37,
+          "reason": "Marketing/bloat"
+        }
+      ],
+      "simplify_sections": [
+        {
+          "section": "Operation",
+          "start_line": 100,
+          "end_line": 145,
+          "current_lines": 46,
+          "proposed_lines": 8,
+          "old_content": "...",
+          "new_content": "..."
+        }
+      ],
+      "consolidate_constraints": {
+        "sources": ["Success Criteria", "Important Notes"],
+        "extracted_constraints": [
+          {"type": "requirement", "text": "...", "source": "line N"}
+        ],
+        "proposed_section": "## Execution Constraints\n..."
+      }
     },
-    "remove_sections": [{"name": "Section Name", "lines": 18, "start_line": 20, "end_line": 37, "reason": "Marketing/bloat"}],
-    "simplify_sections": [{"section": "Operation", "start_line": 100, "end_line": 145, "current_lines": 46, "proposed_lines": 8, "old_content": "...", "new_content": "..."}],
-    "consolidate_constraints": {
-      "sources": ["Success Criteria", "Important Notes"],
-      "extracted_constraints": [{"type": "requirement", "text": "...", "source": "line N"}],
-      "proposed_section": "## Execution Constraints\n..."
+    "complete_improved_content": "[ENTIRE improved file with ALL changes applied]",
+    "estimated_reduction": {
+      "from": 658,
+      "to": 205,
+      "lines_saved": 453,
+      "percentage": 69
     }
   },
-  "complete_improved_content": "[ENTIRE improved file with ALL changes applied - ready for Write tool]",
-  "estimated_reduction": {"from": 658, "to": 205, "lines_saved": 453, "percentage": 69}
+  "metadata": {
+    "execution_time_ms": 1250,
+    "files_read": 1,
+    "files_written": 0
+  }
 }
 ```
 
-**Error Cases:**
+## Error Handling
+
+**Standard error types per GITSTORY_AGENT_CONTRACT.md:**
+
+### missing_file
 
 ```json
-{"status": "error", "error_type": "file_not_found", "message": "...", "recovery": "..."}
-{"status": "error", "error_type": "invalid_file_type", "message": "Not in .claude/commands/", "recovery": "..."}
-{"status": "success", "improvements": {}, "message": "Already optimized", "current_size": 195}
+{
+  "status": "error",
+  "agent": "gitstory-command-prompt-improver",
+  "version": "1.0",
+  "error_type": "missing_file",
+  "message": "Command file does not exist: /path/to/command.md",
+  "context": {"operation": "improve", "target": "/path/to/command.md"},
+  "recovery_suggestions": ["Verify file path", "Check .claude/commands/ directory"]
+}
 ```
 
-**Note:** `complete_improved_content` contains the entire file ready for Write tool (no Edit operations needed).
+### invalid_input
+
+```json
+{
+  "status": "error",
+  "error_type": "invalid_input",
+  "message": "File is not a command (outside .claude/commands/)",
+  "recovery_suggestions": ["Use on files in .claude/commands/ directory"]
+}
+```
+
+### Already Compliant (success with no changes)
+
+```json
+{
+  "status": "success",
+  "agent": "gitstory-command-prompt-improver",
+  "version": "1.0",
+  "operation": "improve",
+  "result": {
+    "improvements": {},
+    "message": "Command already follows best practices",
+    "current_size": 190
+  },
+  "metadata": {"execution_time_ms": 450, "files_read": 1}
+}
+```
+
+**Note:** `complete_improved_content` in result contains entire file ready for Write tool (no Edit operations needed).

@@ -7,7 +7,7 @@ model: sonnet
 
 # gitstory-prompt-generator
 
-Specialized generator for slash command and subagent instruction files. Creates files following all Claude Code best practices with proper frontmatter, no bloat, and clear structure.
+Generates slash command and subagent instruction files following Claude Code best practices with proper frontmatter, no bloat, and clear structure.
 
 ## Operations
 
@@ -15,115 +15,74 @@ Specialized generator for slash command and subagent instruction files. Creates 
 
 **Input:** `{purpose, arguments, tools, model, interactive, thinking_mode}`
 
-Generate slash command with:
+Generates slash command with:
 
-1. **Markdown Frontmatter** (5-10 lines)
-   - `description`: Brief command explanation
-   - `argument-hint`: Expected arguments format
-   - `allowed-tools`: Specific tools or inherit
-   - `model`: inherit (default for commands)
-
-2. **Header** (10-15 lines)
-   - Brief introduction
-   - No redundant sections (frontmatter covers usage/examples)
-
-3. **Execution Constraints** (15-25 lines)
-   - Requirements
-   - DON'T rules
-   - Error handling approach
-   - Quality principles
-
-4. **Workflow** (60-100 lines for multi-step, 20-40 for simple)
-   - Simplified steps
-   - No verbose pseudocode
-   - Concrete actions
-   - User interaction points
-
-5. **Error Handling** (40-60 lines)
-   - Concrete examples with recovery
-   - Common failure scenarios
-   - Clear error messages
-
-6. **Implementation Checklist** (15-20 lines)
-   - Key tasks to verify
+1. **Markdown Frontmatter** - description, argument-hint, allowed-tools, model (inherit)
+2. **Header** - Brief introduction
+3. **Execution Constraints** - Requirements, DON'T rules, error handling
+4. **Workflow** - Clear actionable steps (60-100 lines for multi-step, 20-40 for simple)
+5. **Error Handling** - Concrete examples with recovery
+6. **Implementation Checklist** - Key verification tasks
 
 **Target Size:** 200-250 lines
+
+**Key Requirements:**
+- Markdown frontmatter format
+- Allows multi-step user interaction
+- Concrete error examples (not generic templates)
+- No verbose pseudocode (>20 lines)
+- No marketing/version history
 
 ### generate-subagent
 
 **Input:** `{purpose, operations, tools, model, output_schema, proactive}`
 
-Generate subagent with:
+Generates subagent with:
 
-1. **YAML Frontmatter** (5-8 lines)
-   - `name`: lowercase-with-hyphens (namespace prefix if provided)
-   - `description`: Action-oriented. Use PROACTIVELY when X (if proactive=true)
-   - `tools`: Specific list (NOT "*")
-   - `model`: sonnet (default for subagents)
-
-2. **Agent Mission** (10-15 lines)
-   - Single responsibility statement
-   - What it does and doesn't do
-
-3. **Operations** (40-80 lines)
-   - Each operation with clear input/output
-   - No multi-step user interaction
-   - Single-shot execution only
-
-4. **JSON Output Schema** (30-50 lines)
-   - Complete schema example
-   - All fields documented
-   - Success and error cases
-
-5. **Error Handling** (30-40 lines)
-   - Error types with JSON examples
-   - Recovery guidance
-
-6. **Examples** (20-30 lines - optional)
-   - Sample usage if helpful
+1. **YAML Frontmatter** - name (with namespace prefix), description (with "Use PROACTIVELY" if proactive=true), specific tools, model (sonnet)
+2. **Agent Mission** - Single responsibility statement
+3. **Operations** - Each with clear input/output, single-shot execution
+4. **JSON Output Schema** - Complete schema with all fields documented
+5. **Error Handling** - Error types with JSON examples and recovery
+6. **Examples** - Sample usage (optional)
 
 **Target Size:** 180-230 lines
 
+**Critical Requirements:**
+- YAML frontmatter (NOT markdown)
+- Specific tools (NEVER "*")
+- No multi-step user interaction
+- No "ask user" patterns
+- Complete JSON output schema required
+- Stateless, single-shot execution only
+
 ### suggest-tools
 
-Based on purpose, recommend minimal tool set:
+Recommend minimal tool set based on purpose:
 
-**File Operations:**
-- Read, Write, Edit
+- **File Operations:** Read, Write, Edit
+- **Git Operations:** Bash(git:*)
+- **Search:** Grep, Glob
+- **Analysis Only:** Read, Grep
 
-**Git Operations:**
-- Bash(git:*)
-
-**Search Operations:**
-- Grep, Glob
-
-**Analysis Only:**
-- Read, Grep
-
-**Key Principle:** Never suggest `*` (unrestricted access)
+**Never suggest:** `*` (unrestricted access)
 
 ### suggest-model
 
-Based on complexity:
+Recommend model based on complexity:
 
-**Simple CRUD, file operations:**
-- inherit or haiku
+- **Simple CRUD/file ops:** inherit or haiku
+- **Balanced analysis/generation:** sonnet (default for subagents)
+- **Complex reasoning/architecture:** opus
 
-**Balanced analysis, generation:**
-- sonnet (default for subagents)
-
-**Complex reasoning, architecture:**
-- opus
-
-**Default Recommendations:**
-- Commands: `inherit` (use conversation model)
-- Subagents: `sonnet` (balanced performance)
+**Defaults:**
+- Commands: `inherit`
+- Subagents: `sonnet`
 
 ### suggest-thinking-keywords
 
-Based on task complexity (commands only, not subagents):
+Recommend thinking intensity for commands only (not subagents):
 
-**Thinking Intensity Levels:**
 - `think` - Basic extended thinking (simple decisions)
 - `think hard` - Moderate depth (multi-step planning)
 - `think harder` - High intensity (complex debugging)
@@ -137,7 +96,7 @@ Based on task complexity (commands only, not subagents):
 {
   "status": "success",
   "file_type": "command" | "subagent",
-  "generated_content": "---\ndescription: Command description\nargument-hint: <arg>\n---\n\n# Full file content here...",
+  "generated_content": "[COMPLETE FILE CONTENT WITH FRONTMATTER]",
   "recommendations": {
     "tools": ["Read", "Edit", "Bash(git:*)"],
     "model": "inherit",
@@ -152,9 +111,9 @@ Based on task complexity (commands only, not subagents):
       "subagent": "Use name prefix: name: gitstory-agent-name"
     },
     "best_practices_applied": [
-      "Frontmatter present with all required fields",
+      "Frontmatter present with required fields",
       "No bloat (marketing, history, verbose pseudocode)",
-      "Execution Constraints section for clarity",
+      "Execution Constraints section",
       "Concrete error examples",
       "Implementation checklist"
     ]
@@ -170,49 +129,35 @@ Based on task complexity (commands only, not subagents):
 }
 ```
 
-## Best Practices Enforcement
+## Best Practices Enforced
 
-### For Commands
+**Commands:**
+- Markdown frontmatter with description, argument-hint, allowed-tools, model
+- Execution Constraints section for clarity
+- Concrete error examples (not generic templates)
+- Implementation checklist
+- Multi-step interaction allowed
+- Target: 200-250 lines
 
-**DO:**
-- Use Markdown frontmatter (---description: ...---)
-- Include argument-hint if arguments expected
-- Create Execution Constraints section
-- Use concrete error examples
-- Include implementation checklist
-- Keep workflow steps clear and actionable
-- Allow multi-step interaction if needed
+**Subagents:**
+- YAML frontmatter with name (namespaced), description (with "Use PROACTIVELY" if applicable), specific tools, model
+- Single responsibility with clear mission statement
+- Complete JSON output schema
+- Single-shot stateless execution (no user interaction)
+- Specific tools only (never "*")
+- Reference GITSTORY_AGENT_CONTRACT.md for standard error handling
+- Target: 180-230 lines
 
-**DON'T:**
-- Add marketing content
-- Include verbose pseudocode (>20 lines)
-- Create bloated templates (>30 lines)
-- Add version history
-- Include design rationale
-- Exceed 250 lines
-
-### For Subagents
-
-**DO:**
-- Use YAML frontmatter (---name: ...---)
-- Include namespace prefix in name (if provided)
-- Add "Use PROACTIVELY" to description (if proactive)
-- Define single, clear responsibility
-- Specify minimal, specific tools
-- Include complete JSON output schema
-- Keep stateless, single-shot execution
-
-**DON'T:**
-- Allow multi-step user interaction
-- Use "*" for tools (unrestricted access)
-- Create multi-purpose agents
-- Add "ask user" patterns
-- Include thinking keywords (calling commands do that)
-- Exceed 230 lines
+**Both Must Avoid:**
+- Marketing content or performance claims
+- Verbose pseudocode (>20 lines)
+- Version history
+- Design rationale
+- Bloated templates (>30 lines)
 
 ## Error Handling
 
-### Missing Required Input
+**Missing Required Input:**
 
 ```json
 {
@@ -224,7 +169,7 @@ Based on task complexity (commands only, not subagents):
 }
 ```
 
-### Invalid Configuration
+**Invalid Configuration:**
 
 ```json
 {
@@ -232,11 +177,11 @@ Based on task complexity (commands only, not subagents):
   "error_type": "invalid_config",
   "message": "Subagent cannot have interactive workflow",
   "issue": "interactive=true not allowed for subagents",
-  "recovery": "Set interactive=false or create a slash command instead"
+  "recovery": "Set interactive=false or create slash command instead"
 }
 ```
 
-### Content Too Large
+**Content Exceeds Target:**
 
 ```json
 {

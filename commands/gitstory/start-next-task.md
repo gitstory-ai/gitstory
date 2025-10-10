@@ -97,7 +97,7 @@ Invoke gitstory-discovery-orchestrator for task-only validation:
 **Target:** {TASK-ID}
 **Mode:** pre-planning
 
-Execute task validation and return structured JSON output per [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md).
+Execute task validation and return structured JSON output per [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md).
 ```
 
 Expected output:

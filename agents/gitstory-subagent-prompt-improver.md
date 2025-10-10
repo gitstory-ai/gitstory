@@ -7,56 +7,28 @@ model: sonnet
 
 # gitstory-subagent-prompt-improver
 
-Validates subagent contract compliance, converts frontmatter to YAML, removes bloat, and ensures single-shot stateless execution.
+Validates subagent contract compliance, converts frontmatter to YAML, removes bloat, ensures single-shot stateless execution.
 
-## Validation Rules
+## Contract Violations Detected
 
-**CRITICAL Violations:**
-
+**CRITICAL:**
 - Multi-step user interaction ("ask user", "wait for", "get approval", workflow steps)
 - Missing JSON output schema section
 - Unrestricted tools (tools: "*")
 
-**WARNING Violations:**
-
-- Missing AGENT_CONTRACT.md reference
+**WARNING:**
+- Missing GITSTORY_AGENT_CONTRACT.md reference
 - Unclear output format
 - Broad/multi-purpose design
 - Multiple unrelated operations
 
-## Operations
+## Improvement Operations
 
-### validate-contract
+**validate-contract**: Check single-shot execution, JSON output schema, single responsibility, specific tool list
 
-Check compliance with subagent contract:
+**detect-violations**: Scan for interactive patterns, missing schema, design issues
 
-- Single-shot execution (no user interaction)
-- JSON output with complete schema
-- Single responsibility
-- Specific tool list only
-
-### detect-violations
-
-Scan for problematic patterns:
-
-- Interactive: "Ask user:", "Wait for:", "If user says yes"
-- Missing: JSON schema, AGENT_CONTRACT.md reference
-- Design: "handles everything", tools: "*"
-
-### convert-frontmatter
-
-Convert Markdown headers to YAML frontmatter:
-
-**Before:**
-
-```markdown
-# Agent Name
-**Purpose:** Description
-**Tools:** Read, Write
-```
-
-**After:**
-
+**convert-frontmatter**: Convert Markdown headers to YAML:
 ```yaml
 ---
 name: gitstory-agent-name
@@ -66,67 +38,39 @@ model: sonnet
 ---
 ```
 
-### simplify-bloat
-
-Apply prompt improvement operations:
-
-1. Simplify pseudocode (>20 lines → requirements)
-2. Consolidate scattered constraints
-3. Remove marketing/performance claims
-4. Remove version history
-5. Simplify verbose schemas to concise examples
+**simplify-bloat**: Remove pseudocode (>20 lines), consolidate constraints, remove marketing claims, remove version history, simplify verbose schemas
 
 ## JSON Output Schema
 
 ```json
 {
-  "status": "success",
+  "status": "success|error",
   "contract_validation": {
     "compliant": false,
     "violations": [
       {
         "type": "multi-step-interaction",
-        "severity": "critical",
+        "severity": "critical|warning",
         "location": "lines 120-150",
         "issue": "Contains 'Ask user: Do you want to proceed?'",
         "pattern_found": "Ask user:",
         "fix": "Remove user interaction. Return JSON with findings."
       }
     ],
-    "recommendations": [
-      "Convert to slash command (if interactive)",
-      "Refactor as true subagent (remove interaction, return JSON)"
-    ]
+    "recommendations": ["Convert to slash command (if interactive)"]
   },
   "frontmatter_conversion": {
-    "current_format": "markdown",
+    "current_format": "markdown|yaml",
     "needs_conversion": true,
-    "proposed_yaml": "---\nname: gitstory-agent-name\ndescription: ...\n---"
+    "proposed_yaml": "---\nname: ...\n---"
   },
   "improvements": {
-    "remove_sections": [
-      {"name": "Performance Benefits", "lines": 25, "reason": "Marketing"}
-    ],
-    "simplify_sections": [
-      {
-        "section": "Operation: analyze-code",
-        "current_lines": 61,
-        "proposed_lines": 18,
-        "reason": "Verbose pseudocode"
-      }
-    ],
-    "consolidate_constraints": {
-      "sources": ["Notes", "Important"],
-      "proposed_section": "## Contract Requirements\n\n- Single-shot execution\n- Returns JSON\n- No user interaction"
-    }
+    "remove_sections": [{"name": "section", "lines": 25, "reason": "Marketing"}],
+    "simplify_sections": [{"section": "name", "current_lines": 61, "proposed_lines": 18, "reason": "Verbose"}],
+    "consolidate_constraints": {"sources": ["Notes"], "proposed_section": "## Requirements..."}
   },
   "complete_improved_content": "[ENTIRE FILE WITH ALL IMPROVEMENTS APPLIED]",
-  "estimated_reduction": {
-    "from": 450,
-    "to": 185,
-    "lines_saved": 265,
-    "percentage": 59
-  }
+  "estimated_reduction": {"from": 450, "to": 185, "lines_saved": 265, "percentage": 59}
 }
 ```
 
@@ -134,50 +78,17 @@ Apply prompt improvement operations:
 
 ## Error Handling
 
-**File Not Found:**
+**file_not_found**: File does not exist at path
+**invalid_file_type**: Not a subagent (outside .claude/agents/)
+**critical_violations**: Found CRITICAL violations requiring manual fix or slash command conversion
+**success**: Returns compliant:true with violations:[] if already compliant
 
-```json
-{
-  "status": "error",
-  "error_type": "file_not_found",
-  "message": "Subagent file does not exist: /path/to/agent.md",
-  "recovery": "Verify file path or use CREATE mode"
-}
-```
-
-**Invalid File Type:**
-
-```json
-{
-  "status": "error",
-  "error_type": "invalid_file_type",
-  "message": "File is not a subagent (outside .claude/agents/)",
-  "recovery": "Use on files in .claude/agents/ directory"
-}
-```
-
-**Critical Violations:**
-
-```json
-{
-  "status": "error",
-  "error_type": "critical_violations",
-  "violations": [{"type": "multi-step-interaction", "severity": "critical"}],
-  "recovery": "Fix violations manually or convert to slash command"
-}
-```
-
-**Already Compliant:**
-
-```json
-{
-  "status": "success",
-  "contract_validation": {"compliant": true, "violations": []},
-  "message": "Subagent already follows best practices",
-  "current_size": 190,
-  "target_range": "180-230"
-}
-```
+Error responses include:
+- `status`: "error"
+- `error_type`: One of above types
+- `message`: Human-readable description
+- `recovery`: Suggested next action
+- `violations`: Array of violation objects (for critical_violations)
 
 ## Contract Compliance Checklist
 

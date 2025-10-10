@@ -83,7 +83,7 @@ PROJECT_NAME="your-repo"
 # Replace placeholders in GitStory files (NOT your existing code!)
 for file in \
   .claude/agents/gitstory-*.md \
-  .claude/agents/AGENT_CONTRACT.md \
+  .claude/agents/GITSTORY_AGENT_CONTRACT.md \
   .claude/commands/gitstory/*.md \
   docs/tickets/CLAUDE.md \
   docs/PLANNING_INTERVIEW_GUIDE.md; do
@@ -298,7 +298,7 @@ GitStory uses specialized agents (not monolithic commands) for structured analys
 - Reusable across multiple commands
 - Testable independently
 
-**See also:** [agents/AGENT_CONTRACT.md](agents/AGENT_CONTRACT.md) for agent input/output specifications
+**See also:** [agents/GITSTORY_AGENT_CONTRACT.md](agents/GITSTORY_AGENT_CONTRACT.md) for agent input/output specifications
 
 ---
 
@@ -402,7 +402,7 @@ This is a collaborative experiment. Let's figure it out together.
 ### Core References
 - **[CLAUDE.md](CLAUDE.md)** - Development workflow, BDD/TDD patterns, commit standards
 - **[docs/tickets/CLAUDE.md](docs/tickets/CLAUDE.md)** - Ticket hierarchy specification
-- **[agents/AGENT_CONTRACT.md](agents/AGENT_CONTRACT.md)** - Agent input/output contract
+- **[agents/GITSTORY_AGENT_CONTRACT.md](agents/GITSTORY_AGENT_CONTRACT.md)** - Agent input/output contract
 - **[docs/PLANNING_INTERVIEW_GUIDE.md](docs/PLANNING_INTERVIEW_GUIDE.md)** - Requirements gathering templates
 
 ### Examples

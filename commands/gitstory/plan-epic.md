@@ -82,7 +82,7 @@ model: inherit
 **Target:** {EPIC-ID}
 **Mode:** pre-planning
 
-Execute comprehensive gap discovery and return structured JSON output per [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md).
+Execute comprehensive gap discovery and return structured JSON output per [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md).
 ```
 
 **Orchestrator Output Schema:**

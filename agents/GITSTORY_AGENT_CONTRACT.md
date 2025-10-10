@@ -571,7 +571,7 @@ Use Task tool with agent specification:
 **Target:** STORY-0001.2.3
 **Context:** Pre-work validation
 
-Execute the analysis and return structured JSON output per AGENT_CONTRACT.md.
+Execute the analysis and return structured JSON output per GITSTORY_AGENT_CONTRACT.md.
 ```
 
 ### Parsing Agent Output
@@ -611,7 +611,7 @@ def invoke_agent_safe(
         # Invoke via Task tool
         output = task_tool(
             description=f"{agent_name} - {operation}",
-            prompt=input_spec + "\n\nExecute per AGENT_CONTRACT.md",
+            prompt=input_spec + "\n\nExecute per GITSTORY_AGENT_CONTRACT.md",
             subagent_type="general-purpose"
         )
 
@@ -697,7 +697,7 @@ When creating a new specialized agent:
 
 1. **Reference this contract** in agent file header:
    ```markdown
-   **Contract:** This agent follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md)
+   **Contract:** This agent follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md)
    ```
 
 2. **Define operation-specific schemas** for `result` field only
