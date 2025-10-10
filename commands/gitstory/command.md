@@ -36,56 +36,27 @@ Create or improve slash commands with best practices enforcement.
 
 ### CREATE Mode
 
-**Step 1: Gather Requirements**
-
-Ask user:
-
+**Gather Requirements:**
 1. What should this command do?
-2. What arguments does it need? (if any)
-3. What tools does it need?
-4. Interactive (multi-step) or single-shot?
-5. Model preference?
-   - **inherit** (default): Use conversation model
-   - **sonnet**: Balanced performance
-   - **opus**: Most capable, complex reasoning
-   - **haiku**: Fastest, simple tasks
-6. Thinking mode recommendation?
-   - **think**: Basic extended thinking
-   - **think hard**: Moderate depth (multi-step planning)
-   - **think harder**: High intensity (complex debugging)
-   - **ultrathink**: Maximum depth (architecture decisions)
+2. Arguments needed? (format)
+3. Tools needed?
+4. Interactive or single-shot?
+5. Model? (inherit/sonnet/opus/haiku)
+6. Thinking mode? (think/think-hard/think-harder/ultrathink)
 
-**Step 2: Invoke gitstory-prompt-generator**
+**Generate:**
+- Invoke `gitstory-prompt-generator` agent (operation: `generate-command`)
+- Input: All requirements above
 
-Use Task tool with gitstory-prompt-generator agent:
-
-- Operation: `generate-command`
-- Input: All requirements from Step 1
-
-**Step 3: Present Generated Content**
-
-Show:
-- Generated frontmatter
-- Command structure outline (sections and line counts)
-- Estimated total size
-- Best practices applied
-- Thinking keyword recommendations
+**Present Plan:**
+- Frontmatter + structure outline + size estimate
 - File path: `.claude/commands/{name}.md` or `.claude/commands/gitstory/{name}.md`
+- Ask: **"Approve? (yes/modify/cancel)"**
 
-**Step 4: Get Approval**
-
-Ask: **"Approve? (yes/modify/cancel)"**
-
-- **yes** → Write to file path
-- **modify** → Ask what to change, regenerate with adjustments
-- **cancel** → Abort, no changes made
-
-**Step 5: Completion**
-
-Show:
-- ✅ Created `/{name}` (or `/gitstory:{name}` if in subdirectory)
-- File path
-- Suggest: "Test with `/{name} <args>`"
+**Execute:**
+- **yes** → Write file, show success message
+- **modify** → Regenerate with adjustments
+- **cancel** → Abort
 
 ---
 
@@ -130,90 +101,52 @@ Show improvement summary:
 - To: Y lines
 - Saved: Z lines (P%)
 
-**Step 4: Get Approval**
+**Step 4: Get Approval & Execute**
 
 Ask: **"Apply improvements? (yes/no/selective)"**
 
-- **yes** → Apply all edits at once
-- **no** → Cancel, no changes
-- **selective** → Show each edit individually, user approves one by one
-
-**Step 5: Apply Edits**
-
-Based on approval:
-
-**If yes (apply all):**
-1. Add/update frontmatter (Write if none exists, Edit if updating)
+**yes** → Apply all edits:
+1. Add/update frontmatter (Write/Edit)
 2. Delete bloat sections (Edit with empty new_string)
 3. Add Execution Constraints section (Edit, insert after header)
 4. Simplify verbose sections (Edit with condensed content)
 
-**If selective:**
-- Present each edit one by one
-- Ask approval for each
-- Apply only approved edits
+**selective** → Present each edit, apply only approved
 
-**Step 6: Report Completion**
+**no** → Cancel
 
-Show:
-- Before: X lines
-- After: Y lines
-- Removed sections: [list]
-- Simplified sections: [list]
-- Consolidated: [constraints added]
-- ✅ Improvement complete
+**Step 5: Report**
+- Before/After line counts
+- Changes applied: [removed/simplified/consolidated]
+- ✅ Complete
 
 ---
 
 ## Error Handling
 
-### File Not Found (IMPROVE mode)
-
+**File Not Found (IMPROVE mode):**
 ```
 ❌ Command file not found: .claude/commands/missing-cmd.md
-
-Recovery:
-- Check file path
-- Use CREATE mode: /gitstory:command new-name
-- List commands: ls .claude/commands/
+Try: /gitstory:command new-name (CREATE) or ls .claude/commands/
 ```
 
-### Invalid Arguments
-
+**Invalid Arguments:**
 ```
 ❌ Missing required argument: <name-or-path>
-
 Usage: /gitstory:command <name-or-path> [--model X] [--think-X]
-
-Examples:
-  /gitstory:command new-cmd                    # Create new command
-  /gitstory:command existing.md                # Improve existing
-  /gitstory:command new-cmd --think-hard       # Create with thinking
-  /gitstory:command .claude/commands/cmd.md    # Full path
 ```
 
-### File Already Exists (CREATE mode)
-
+**File Already Exists (CREATE mode):**
 ```
-⚠️ File already exists: .claude/commands/existing.md
-
-Options:
-1. Use IMPROVE mode to optimize: /gitstory:command existing.md
-2. Choose different name
-3. Delete existing file first (if you want to recreate)
+⚠️ File exists: .claude/commands/existing.md
+Use IMPROVE mode: /gitstory:command existing.md
 ```
 
-### Agent Invocation Failed
-
+**Agent Invocation Failed:**
 ```
 ❌ Failed to invoke gitstory-prompt-generator
-
 Error: [agent error message]
-
-Recovery:
-- Verify agent file exists: .claude/agents/gitstory-prompt-generator.md
-- Check agent has valid YAML frontmatter
-- Review agent logs for details
+Verify: .claude/agents/gitstory-prompt-generator.md exists with valid YAML
 ```
 
 ---
