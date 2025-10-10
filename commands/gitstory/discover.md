@@ -8,23 +8,11 @@ timeout: 30s
 
 # /discover - Standalone Gap Discovery Command
 
-**Purpose:** Perform comprehensive gap analysis at any ticket hierarchy level without creating/modifying tickets.
-
 **Usage:**
 
 ```bash
-/discover TICKET-ID          # Analyze gaps for specific ticket
-/discover --genesis          # Strategic initiative genesis analysis
-```
-
-**Examples:**
-
-```bash
-/discover INIT-0001          # Find missing/incomplete epics
-/discover EPIC-0001.2        # Find missing/incomplete stories
-/discover STORY-0001.2.4     # Find missing/incomplete tasks
-/discover TASK-0001.2.4.3    # Validate single task quality
-/discover --genesis          # Validate strategic scope for new initiative
+/discover TICKET-ID          # Analyze gaps (INIT/EPIC/STORY/TASK)
+/discover --genesis          # Strategic initiative genesis
 ```
 
 **Related Commands:**
@@ -41,13 +29,10 @@ timeout: 30s
 ### Requirements
 
 - Parse TICKET-ID (INIT/EPIC/STORY/TASK) or `--genesis` flag
-- Map ticket type → operation (INIT→initiative-gaps, EPIC→epic-gaps, etc.)
+- Map ticket type → operation (INIT→initiative-gaps, EPIC→epic-gaps, etc)
 - Invoke gitstory-discovery-orchestrator via Task tool
-- Validate output against AGENT_CONTRACT.md
+- Validate output against [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
 - Present gaps with priority/status indicators
-- Show pattern suggestions with examples
-- Show complexity flags with severity
-- Show quality issues with scores
 - Suggest next command based on results
 
 ### Tool Usage
@@ -55,29 +40,32 @@ timeout: 30s
 - Read: Ticket hierarchy files
 - Task: Invoke gitstory-discovery-orchestrator agent
 
+### Simplicity Rules
+
+- Read-only operation (no ticket creation/modification)
+- All gap analysis logic delegated to orchestrator agent
+- Output formatting follows contract schema exactly
+
 ---
 
 ## Command Flow
 
 ### 1. Parse Arguments
 
-**Requirements:**
-
-- Accept TICKET-ID (INIT-NNNN, EPIC-NNNN.N, STORY-NNNN.N.N, TASK-NNNN.N.N.N)
-- Accept `--genesis` flag for strategic analysis
-- Validate format with regex patterns
+- Accept TICKET-ID (INIT/EPIC/STORY/TASK format) or `--genesis`
+- Validate format, extract ticket type
 - Return: `{"mode": "ticket"|"genesis", "target": ID|None, "ticket_type": str}`
-- Error if invalid format → show usage
+- Error if invalid → show usage
 
 ### 2. Determine Operation
 
-**Mapping:**
+**Ticket Type → Operation:**
 
-- `genesis` → operation: `initiative-gaps`, target: `NONE`
-- `initiative` → operation: `initiative-gaps`
-- `epic` → operation: `epic-gaps`
-- `story` → operation: `story-gaps`
-- `task` → operation: `task-gaps`
+- `genesis` → `initiative-gaps` (target: NONE)
+- `initiative` → `initiative-gaps`
+- `epic` → `epic-gaps`
+- `story` → `story-gaps`
+- `task` → `task-gaps`
 
 ### 3. Invoke Discovery Orchestrator
 
@@ -94,99 +82,35 @@ Execute comprehensive gap discovery and return structured JSON output per [AGENT
 
 ### 4. Parse & Validate Output
 
-**Validation:**
-
-- Parse JSON from orchestrator
-- Required fields: `status`, `agent`, `version`, `operation`
-- Agent name must be `gitstory-discovery-orchestrator`
-- If status=`error` → show message + recovery_suggestions
+- Parse JSON, validate required fields per [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
+- Verify agent=`gitstory-discovery-orchestrator`
+- If status=`error` → show message + recovery
 - If invalid JSON → error message
-- Return parsed dict or None
-
-**Contract:** See [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md)
 
 ### 5. Present Results
 
 **Show User:**
 
-- Header: `📊 Gap Discovery: {target}` or `📊 Strategic Initiative Genesis Analysis`
-- Operation and status (SUCCESS/PARTIAL/ERROR)
+- Header: `📊 Gap Discovery: {target}` with operation, status
 - Summary: total_gaps, ready_to_write, blocked, overengineering_flags
 - Warnings (if partial): type, message, impact, recovery
-- Gaps section:
-  - Each gap: icon (✅/❌), ID, title, type, priority, effort, context, blocker
-- Pattern suggestions (if any):
-  - Pattern name, location link, purpose, reuse_for, example code
-- Complexity flags (if any):
-  - Severity icon (🔴/🟡/🟢), ticket, issue, recommendation, effort_saved, risk_reduced
-- Quality issues (if any):
-  - Score icon (✅/⚠️/❌), ticket, score %, issue list
-- Metadata footer:
-  - Agents invoked, execution time, failed agents (if any)
+- Gaps: icon (✅/❌), ID, title, type, priority, effort, blocker
+- Patterns (if any): name, location, purpose, reuse_for, example
+- Complexity flags (if any): severity (🔴/🟡/🟢), ticket, issue, recommendation, savings
+- Quality issues (if any): score (✅/⚠️/❌), ticket, score %, issues
+- Metadata: agents invoked, execution time, failures
 
 ### 6. Suggest Next Actions
 
-**Logic:**
-
 **If total_gaps = 0:**
-
-- `initiative-gaps` → Suggest: `/discover EPIC-ID` (drill down)
-- `epic-gaps` → Suggest: `/discover STORY-ID` (drill down)
-- `story-gaps` → Suggest: `/start-next-task STORY-ID` (begin work)
+- `initiative/epic/story-gaps` → Suggest drill down or start work
 
 **If ready_to_write > 0:**
-
-- `initiative-gaps` → `/plan-initiative {target}` or `/plan-initiative --genesis`
-- `epic-gaps` → `/plan-epic {target}`
-- `story-gaps` → `/plan-story {target}`
+- Suggest matching `/plan-*` command
 - `task-gaps` → Fix quality issues first
 
 **If blocked > 0:** Warn + list blockers
-**If overengineering/quality issues:** Suggest `/review-ticket {target}`
-
----
-
-## Example Output Structure
-
-### Epic Gap Discovery
-
-```text
-📊 Gap Discovery: EPIC-0001.2 | epic-gaps | SUCCESS
-
-Summary: 5 gaps (3 ready, 2 blocked), 1 overengineering flag
-
-Gaps:
-  ✅ GAP-P0-001: Missing story (type: missing_story, P0, 5pts)
-  ❌ GAP-P1-001: Incomplete STORY-0001.2.3 (blocker: vague criteria)
-
-Patterns: e2e_git_repo_factory → Reuse for GAP-P0-001, GAP-P0-002
-Complexity: 🟡 STORY-0001.2.4 proposes custom DB (use LanceDB, save 20h)
-Quality: ⚠️ EPIC-0001.2 (78%) - vague criteria, missing BDD scenario
-
-Next: /plan-epic EPIC-0001.2 (fix blockers first)
-```
-
-### Genesis Analysis
-
-```text
-📊 Strategic Initiative Genesis Analysis | initiative-gaps | SUCCESS
-
-Summary: 0 gaps, scope validated
-Complexity: None (appropriate scope)
-
-Next: /plan-initiative --genesis
-```
-
-### Task Validation
-
-```text
-📊 Gap Discovery: TASK-0001.2.4.3 | task-gaps | SUCCESS
-
-Summary: 0 gaps
-Quality: ⚠️ TASK-0001.2.4.3 (92%) - vague step, missing verification
-
-Next: Fix quality issues before starting work
-```
+**If overengineering/quality:** Suggest `/review-ticket {target}`
 
 ---
 
@@ -194,56 +118,25 @@ Next: Fix quality issues before starting work
 
 ### Invalid Ticket ID
 
-```bash
-$ /discover INVALID-123
-
+```text
 ❌ Invalid argument: INVALID-123
 Usage: /discover TICKET-ID or /discover --genesis
-
-Valid ticket formats:
-  - INIT-NNNN (initiative)
-  - EPIC-NNNN.N (epic)
-  - STORY-NNNN.N.N (story)
-  - TASK-NNNN.N.N.N (task)
+Valid formats: INIT-NNNN, EPIC-NNNN.N, STORY-NNNN.N.N, TASK-NNNN.N.N.N
 ```
 
-### Missing Ticket File
+### Missing Ticket
 
-```bash
-$ /discover STORY-9999.9.9
-
+```text
 ❌ Discovery Error: Target ticket STORY-9999.9.9 not found
-
-**Recovery Options:**
-  - Verify ticket ID is correct (check parent epic for story list)
-  - Create story README first using /plan-epic EPIC-9999.9
-  - If story exists elsewhere, provide correct path
+Recovery: Verify ID, check parent epic, or create with /plan-epic
 ```
 
 ### Orchestrator Partial Results
 
-```bash
-$ /discover EPIC-0001.2
-
-# 📊 Gap Discovery: EPIC-0001.2
-
-**Operation:** epic-gaps
-**Status:** PARTIAL
-
-## Summary
-
-- **Total Gaps:** 5
-- **Ready to Write:** 3
-- **Blocked:** 2
-- **Overengineering Flags:** 1
-
-## ⚠️  Warnings
-
-**degraded_analysis:** gitstory-pattern-discovery agent failed - fixture suggestions unavailable
-- **Impact:** No automatic pattern reuse suggestions for new stories
-- **Recovery:** Manually review tests/conftest.py for reusable fixtures
-
-[... rest of results ...]
+```text
+📊 Gap Discovery: EPIC-0001.2 | epic-gaps | PARTIAL
+⚠️ Warning: gitstory-pattern-discovery failed - no pattern suggestions
+Recovery: Manually review tests/conftest.py
 ```
 
 ---
