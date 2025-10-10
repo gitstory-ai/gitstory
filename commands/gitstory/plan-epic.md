@@ -1,3 +1,10 @@
+---
+description: Define stories for an epic with pattern reuse and complexity awareness
+argument-hint: EPIC-ID
+allowed-tools: Read, Write, Bash(find), Task(gitstory-discovery-orchestrator, gitstory-specification-quality-checker)
+model: inherit
+---
+
 # /plan-epic - Epic Story Planning Command
 
 **Purpose:** Define stories for an epic with pattern reuse and complexity awareness.
@@ -22,41 +29,42 @@
 
 ---
 
+## Execution Constraints
+
+### Requirements
+- Story quality ≥85% before creation (ensures concrete acceptance criteria and BDD)
+- Show pattern suggestions during technical design question (not after)
+- Explicit pattern reuse confirmation after technical design
+- Epic README path: `docs/tickets/INIT-{NNNN}/EPIC-{NNNN.E}/README.md`
+- Story README path: `docs/tickets/INIT-{NNNN}/EPIC-{NNNN.E}/STORY-{NNNN.E.S}/README.md`
+
+### Workflow
+- Load epic → invoke orchestrator → present gaps → (optional) fix epic quality → story interview → draft READMEs → validate drafts → create files → update epic
+- Story interview order: user story → criteria → BDD → design (show patterns) → confirm patterns → deps → points → risks
+- Complexity flags presented as questions (user decides, not blocked)
+- Pattern reuse: suggest during design, confirm after design, challenge new patterns
+
+### Error Handling
+- Epic not found → suggest `/plan-initiative` or verify ID
+- Orchestrator fails → fallback to manual mode (ask story count)
+- All gaps blocked → suggest `/review-ticket` to fix epic quality
+- Story quality <85% → offer revise/skip/proceed-anyway
+
+### Agent Integration
+- `gitstory-discovery-orchestrator` (epic-gaps): Finds missing/incomplete stories, pattern suggestions, complexity flags
+- `gitstory-specification-quality-checker` (full-ticket): Validates story drafts (85% threshold)
+
+---
+
 ## Workflow
 
 ### Step 1: Load Epic README
 
-```python
-def load_epic(epic_id: str) -> dict:
-    """Load epic README and extract metadata"""
-    # Parse epic ID to find path
-    parts = epic_id.split('-')[1].split('.')  # "0001.2" from "EPIC-0001.2"
-    init_id = f"INIT-{parts[0]}"
-    epic_num = parts[1]
-
-    path = f"docs/tickets/{init_id}/EPIC-{epic_id.split('-')[1]}/README.md"
-
-    # Validate file exists
-    if not os.path.exists(path):
-        raise FileNotFoundError(
-            f"Epic {epic_id} not found at {path}\n"
-            f"Create epic first: /plan-initiative {init_id}"
-        )
-
-    # Parse README
-    content = read_file(path)
-
-    return {
-        "id": epic_id,
-        "path": path,
-        "parent_init": init_id,
-        "overview": extract_overview(content),
-        "story_points": extract_story_points(content),
-        "key_scenarios": extract_scenarios(content),
-        "technical_approach": extract_technical_approach(content),
-        "existing_stories": extract_story_list(content)
-    }
-```
+**Requirements:**
+- Parse EPIC-ID format: `EPIC-NNNN.E`
+- Build path: `docs/tickets/INIT-{NNNN}/EPIC-{NNNN.E}/README.md`
+- Extract: overview, story_points, scenarios, technical_approach, existing_stories
+- Error if file not found → suggest `/plan-initiative`
 
 ### Step 2: Discovery - Invoke Orchestrator
 
@@ -69,63 +77,25 @@ def load_epic(epic_id: str) -> dict:
 Execute comprehensive gap discovery and return structured JSON output per [AGENT_CONTRACT.md](../agents/AGENT_CONTRACT.md).
 ```
 
-Expected output from orchestrator:
-```json
-{
-  "status": "success",
-  "result": {
-    "summary": {
-      "total_gaps": 5,
-      "ready_to_write": 3,
-      "blocked": 2,
-      "overengineering_flags": 1
-    },
-    "gaps": [
-      {
-        "id": "GAP-P0-001",
-        "type": "missing_story",
-        "title": "Vector Search Implementation",
-        "priority": "P0",
-        "estimated_effort": "5 story points",
-        "context": "Epic deliverable 'Semantic search' requires vector search but no story exists"
-      },
-      {
-        "id": "GAP-P1-001",
-        "type": "incomplete_story",
-        "title": "STORY-0001.2.3 - Missing Acceptance Criteria",
-        "priority": "P1",
-        "status": "blocked",
-        "blocker": "Acceptance criteria too vague - needs clarification"
-      }
-    ],
-    "pattern_suggestions": [
-      {
-        "pattern": "e2e_git_repo_factory",
-        "location": "tests/conftest.py:78",
-        "purpose": "Provides isolated git repository with configurable commits",
-        "reuse_for": ["GAP-P0-001", "GAP-P0-002"],
-        "example": "def test_search(e2e_git_repo_factory): repo = e2e_git_repo_factory(commits=10)"
-      }
-    ],
-    "complexity_flags": [
-      {
-        "ticket": "STORY-0001.2.4",
-        "severity": "medium",
-        "issue": "Story proposes custom vector DB when LanceDB already chosen",
-        "recommendation": "Use LanceDB consistently",
-        "effort_saved": "~20 hours"
-      }
-    ],
-    "quality_issues": [
-      {
-        "ticket": "EPIC-0001.2",
-        "score": 78,
-        "issues": ["Vague acceptance: 'handle errors properly'"]
-      }
-    ]
-  }
-}
-```
+**Orchestrator Output Schema:**
+- `summary`: total_gaps, ready_to_write, blocked, overengineering_flags
+- `gaps[]`: id, type (missing_story/incomplete_story), title, priority (P0/P1/P2), estimated_effort, context, status, blocker
+- `pattern_suggestions[]`: pattern, location, purpose, reuse_for[], example
+- `complexity_flags[]`: ticket, severity, issue, recommendation, effort_saved
+- `quality_issues[]`: ticket, score, issues[]
+
+**Gap Types:**
+- `missing_story`: Epic deliverable not covered by any story
+- `incomplete_story`: Existing story with quality issues
+
+**Priority Levels:**
+- P0: Blocks epic completion
+- P1: Recommended for completeness
+- P2: Optional enhancement
+
+**Status Values:**
+- `ready`: Can create story immediately
+- `blocked`: Requires epic quality fix first
 
 ### Step 3: Present Gap Analysis
 
@@ -279,61 +249,21 @@ If story has complexity flag, challenge user:
 
 ### Step 7: Draft Story READMEs
 
-Create story README drafts using template:
+**Template Sections:**
+- Header: ID, title, parent epic link, status, story points, progress bar
+- User Story: As a/I want/So that
+- Acceptance Criteria: Testable checklist items
+- BDD Scenarios: Gherkin format
+- Technical Design: Implementation approach + Pattern Reuse list
+- Tasks: Empty table with note to run `/plan-story`
+- BDD Progress: `0/{N} scenarios passing`
+- Dependencies: Other stories/external services
+- Risks & Mitigations: Table with risk/likelihood/impact/mitigation
 
-```markdown
-# STORY-{ID}: {Title from user story}
-
-**Parent Epic**: [{EPIC-ID}](../README.md)
-**Status**: 🔵 Not Started
-**Story Points**: {Estimate}
-**Progress**: ░░░░░░░░░░ 0%
-
-## User Story
-
-{As a/I want/So that statement}
-
-## Acceptance Criteria
-
-{Criteria as testable checklist}
-- [ ] {Criterion 1}
-- [ ] {Criterion 2}
-...
-
-## BDD Scenarios
-
-```gherkin
-{Gherkin scenarios}
-```
-
-## Technical Design
-
-{Implementation approach, architecture, technology}
-
-**Pattern Reuse:**
-- `{pattern1}` - {purpose}
-- `{pattern2}` - {purpose}
-
-## Tasks
-
-(To be defined - run /plan-story STORY-{ID})
-
-| ID | Title | Status | Hours | Progress |
-|----|-------|--------|-------|----------|
-
-**BDD Progress**: 0/{N} scenarios passing
-
-## Dependencies
-
-- {Dependency 1}
-- {Dependency 2}
-
-## Risks & Mitigations
-
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| {Risk 1} | {L/M/H} | {L/M/H} | {Strategy} |
-```
+**File Creation:**
+- Path: `docs/tickets/{INIT-ID}/{EPIC-ID}/STORY-{ID}/README.md`
+- Status: Always `🔵 Not Started`
+- Progress: Always `0%`
 
 ### Step 8: Validate Story Drafts
 
@@ -536,71 +466,31 @@ Choose: (1/2/3)
 
 ### Suggesting Patterns During Interview
 
-When asking technical design question, show relevant patterns:
+**When:** During technical design question
 
-```markdown
-**Technical Design** (Implementation approach)
+**Show Pattern Info:**
+- Pattern name + location (file:line)
+- Purpose (one-line description)
+- Usage count (N tests)
+- Example code snippet
 
-💡 **Suggested Patterns for this story:**
-
-1. **e2e_git_repo_factory** (tests/conftest.py:78)
-   - Provides isolated git repository with configurable commits
-   - Used by: 15 tests in tests/e2e/
-   - Example: `repo = e2e_git_repo_factory(commits=10)`
-
-2. **config_factory** (tests/conftest.py:198)
-   - Creates Config with isolated paths
-   - Used by: 23 tests across unit/e2e
-   - Example: `config = config_factory(db_path='/tmp/test.lance')`
-
-**Will you reuse these patterns?** (yes/no/partial)
-> yes
-
----
-
-Now describe your technical approach:
-> Use LanceDB for vector storage with IVF-PQ indexing...
-[User's answer is informed by pattern suggestions]
-```
+**Ask:** "Will you reuse these patterns?" (yes/no/partial)
+**Then:** User describes technical approach (informed by suggestions)
 
 ### Validating Pattern Reuse
 
-After technical design, confirm patterns will be used:
-
-```markdown
-**Pattern Reuse Confirmation:**
-
-Based on your technical design, I recommend:
-- ✅ `e2e_git_repo_factory` for git operations testing
-- ✅ `config_factory` for LanceDB configuration
-
-Will you use these? (yes/modify)
-> yes
-
-✅ Patterns confirmed for STORY-0001.2.6
-```
+**After technical design:** Confirm which patterns will be used
+- List recommended patterns based on user's design
+- Ask: "Will you use these?" (yes/modify)
+- Document confirmed patterns in story README
 
 ### Challenging New Patterns
 
-If user proposes new pattern when existing one exists:
-
-```markdown
-**⚠️  Pattern Duplication Alert**
-
-You mentioned: "Create fixture for git repository setup"
-
-**Existing pattern found:**
-- **e2e_git_repo_factory** (tests/conftest.py:78)
-  - Already provides git repository with configurable commits
-  - Used by 15 tests successfully
-  - Supports: commit history, file changes, branch creation
-
-**Why create new pattern instead of reusing this?**
-> [User must justify or accept reuse]
-
-If justified: Document why existing insufficient
-If not: Use existing pattern instead
-```
+**If user proposes new pattern:** Check if existing pattern exists
+- Show existing pattern details (location, usage, capabilities)
+- Ask: "Why create new pattern instead of reusing this?"
+- If justified: Document justification
+- If not: Use existing pattern
 
 ---
 
@@ -627,54 +517,6 @@ If not: Use existing pattern instead
 
 ---
 
-## Design Decisions
-
-### Why Pattern Suggestions in Interview?
-
-**Problem:** Users reinvent fixtures that already exist
-
-**Solution:** Show relevant patterns during technical design question
-
-**Benefits:**
-- User sees existing solutions before designing
-- Pattern reuse becomes default (not afterthought)
-- Reduces duplicate test infrastructure
-
-### Why Confirm Pattern Reuse?
-
-**Problem:** User might say "yes" but not actually use patterns
-
-**Solution:** Explicit confirmation step after technical design
-
-**Benefits:**
-- Ensures understanding of which patterns to use
-- Catches misunderstandings early
-- Documents pattern reuse intent in story README
-
-### Why Challenge Complexity Flags?
-
-**Problem:** User might not realize simpler alternatives exist
-
-**Solution:** Present gitstory-design-guardian flags as questions, not blocks
-
-**Benefits:**
-- User makes informed decision (not forced)
-- Reduces overengineering through awareness
-- Documents why complex approach chosen (if justified)
-
-### Why 85% Quality Threshold?
-
-**Problem:** Low-quality stories → vague tasks → poor implementation
-
-**Solution:** Enforce 85% quality for stories (higher than epic's 70%)
-
-**Reason:**
-- Stories are task planning input (must be concrete)
-- Tasks inherit story ambiguity (garbage in, garbage out)
-- 85% ensures acceptance criteria are testable, BDD is specific
-
----
-
 ## Success Criteria
 
 - ✅ Discovers story gaps accurately (missing + incomplete)
@@ -685,15 +527,3 @@ If not: Use existing pattern instead
 - ✅ Epic README updated with story list
 - ✅ Suggests appropriate next command
 - ✅ Handles all error cases gracefully
-
----
-
-## Version History
-
-**1.0** (2025-10-09)
-- Initial implementation
-- Discovery-orchestrator integration (epic-gaps)
-- Pattern suggestion during interview
-- Complexity flag challenges
-- Pattern reuse confirmation
-- 85% quality threshold for stories
