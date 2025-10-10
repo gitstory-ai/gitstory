@@ -112,18 +112,18 @@ Show improvement summary:
 
 **Step 4: Get Approval & Execute**
 
-Ask: **"Apply improvements? (yes/no/selective)"**
+Ask: **"Apply improvements? (yes/no)"**
 
-**yes** → Apply all edits:
+**yes** → Write improved file:
 
-1. Add/update frontmatter (Write/Edit)
-2. Delete bloat sections (Edit with empty new_string)
-3. Add Execution Constraints section (Edit, insert after header)
-4. Simplify verbose sections (Edit with condensed content)
-
-**selective** → Present each edit, apply only approved
+1. Extract `complete_improved_content` from improver agent JSON output
+2. Validate content is complete (not empty, has frontmatter, reasonable length)
+3. Use single Write tool call to replace entire file
+4. No Edit operations needed - atomic file replacement
 
 **no** → Cancel
+
+**Note:** The improver agent generates the complete improved file content in the `complete_improved_content` field. This eliminates the need for multiple Edit calls and prevents 400 tool concurrency errors.
 
 **Step 5: Report**
 

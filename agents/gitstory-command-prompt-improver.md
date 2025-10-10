@@ -180,6 +180,7 @@ After (10 lines):
       "proposed_section": "## Execution Constraints\n\n### Requirements\n- User provides explicit STORY-ID parameter\n- Validate STORY-NNNN.E.S format\n\n### Simplicity Rules\n- No branch inference (user provides ID)\n- No automatic task selection\n\n### Workflow\n- 1 story = 1 branch/PR\n- 1 task = 1 commit\n\n### Error Handling\n- Invalid format → show usage\n- File not found → verify story exists"
     }
   },
+  "complete_improved_content": "---\ndescription: Start next pending task\nargument-hint: STORY-ID\nallowed-tools: Read, Write, Edit, Task, Bash(git:*)\nmodel: inherit\n---\n\n# /start-next-task\n\n...[COMPLETE FILE CONTENT WITH ALL IMPROVEMENTS APPLIED]...",
   "estimated_reduction": {
     "from": 658,
     "to": 205,
@@ -188,6 +189,13 @@ After (10 lines):
   }
 }
 ```
+
+**IMPORTANT:** The `complete_improved_content` field must contain the entire improved file with ALL changes applied:
+- Frontmatter added/updated
+- Bloat sections removed
+- Pseudocode simplified
+- Constraints consolidated
+- Ready to use with single Write tool call (no Edit operations needed)
 
 ## Error Handling
 

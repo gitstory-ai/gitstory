@@ -204,29 +204,27 @@ Show improvement summary:
 
 **Step 5: Get Approval**
 
-Ask: **"Apply improvements? (yes/no/selective)"**
+Ask: **"Apply improvements? (yes/no)"**
 
-- **yes** → Apply all edits
+- **yes** → Write improved file
 - **no** → Cancel
-- **selective** → Show each edit, user approves individually
 
-**Step 6: Apply Edits**
+**Step 6: Write Improved File**
 
-In order:
+1. Extract `complete_improved_content` from improver agent JSON output
+2. Validate content is complete:
+   - Has YAML frontmatter (not Markdown headers)
+   - Has required fields: name, description, tools, model
+   - Has JSON output schema section
+   - Reasonable length (not empty, not truncated)
+3. Use single Write tool call to replace entire file
+4. No Edit operations needed - atomic file replacement
 
-1. Convert frontmatter (Markdown → YAML)
-2. Fix contract violations:
-   - Remove interactive patterns
-   - Add JSON schema section
-   - Update tools list (remove "*")
-3. Delete bloat sections
-4. Add missing sections
-5. Simplify verbose sections
-6. Consolidate constraints
+**Note:** The improver agent generates the complete improved file content with all changes applied (frontmatter conversion, contract fixes, bloat removal, etc.). This eliminates the need for multiple Edit calls and prevents 400 tool concurrency errors.
 
-**Step 7: Re-validate Contract**
+**Step 7: Re-validate Contract (Optional)**
 
-Invoke gitstory-subagent-prompt-improver again to verify:
+If contract violations were CRITICAL, optionally invoke gitstory-subagent-prompt-improver again on the new file to verify compliance:
 
 - ✅ Single-shot execution (no user interaction)
 - ✅ JSON output schema present

@@ -183,6 +183,7 @@ Apply same operations as command-prompt-improver:
       "proposed_section": "## Contract Requirements\n\n- Single-shot execution\n- Returns JSON\n- No user interaction"
     }
   },
+  "complete_improved_content": "---\nname: gitstory-agent-name\ndescription: Single responsibility. Use PROACTIVELY when X.\ntools: Read, Grep\nmodel: sonnet\n---\n\n# gitstory-agent-name\n\n...[COMPLETE FILE CONTENT WITH ALL IMPROVEMENTS APPLIED]...",
   "estimated_reduction": {
     "from": 450,
     "to": 185,
@@ -191,6 +192,14 @@ Apply same operations as command-prompt-improver:
   }
 }
 ```
+
+**IMPORTANT:** The `complete_improved_content` field must contain the entire improved file with ALL changes applied:
+- YAML frontmatter (converted from Markdown headers)
+- Contract violations fixed
+- Bloat sections removed
+- Pseudocode simplified
+- Constraints consolidated
+- Ready to use with single Write tool call (no Edit operations needed)
 
 ## Error Handling
 
