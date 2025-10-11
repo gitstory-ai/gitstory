@@ -42,6 +42,7 @@ curl -fsSL "$ARCHIVE_URL" | tar xz -C "$TMP_DIR" --strip-components=1
 
 # Sync installable directories to hidden .gitstory/ (rsync --delete handles orphan cleanup)
 echo "📦 Installing GitStory files..."
+mkdir -p .gitstory/agents .gitstory/commands .gitstory/docs
 rsync -av --delete "$TMP_DIR/gitstory/agents/" .gitstory/agents/
 rsync -av --delete "$TMP_DIR/gitstory/commands/" .gitstory/commands/
 rsync -av --delete "$TMP_DIR/gitstory/docs/" .gitstory/docs/
