@@ -22,31 +22,23 @@ model: inherit
 /start-next-task STORY-0005.1.1
 ```
 
-**Related Commands:**
-
-- `/review-ticket STORY-ID` - Quality check before starting
-- `/plan-story STORY-ID` - Create tasks if missing
-
 ---
 
 ## Execution Constraints
 
 **Requirements:**
-
 - Requires explicit STORY-ID parameter (no branch detection)
 - Direct README read only (no filesystem scanning)
 - Validate single task only (not whole story)
 - Quality score ≥95% for autonomous execution
 
 **Workflow:**
-
 - Enforce user is on STORY-ID branch (create if doesn't exist)
 - Present task context before implementation
 - Guide TDD workflow: tests first, then code
 - Each task = 1 commit on story branch
 
 **Error Handling:**
-
 - Invalid format → show expected format with examples
 - Missing files → suggest recovery commands
 - No pending tasks → show completion status and PR creation
@@ -58,8 +50,6 @@ model: inherit
 
 ### Step 1: Parse STORY-ID
 
-**Requirements:**
-
 - Validate format: STORY-NNNN.E.S
 - Extract components: INIT, EPIC from ID
 - Build paths: docs/tickets/{INIT}/{EPIC}/{STORY}/
@@ -67,22 +57,16 @@ model: inherit
 
 ### Step 2: Load Story README
 
-**Requirements:**
-
 - Read story README at path
 - Extract: user story, acceptance criteria, tasks table, BDD scenarios
 - Error if file not found → suggest /plan-story
 
 ### Step 3: Find Next Task
 
-**Requirements:**
-
 - Query tasks for first status="🔵 Not Started"
 - Return None if all complete
 
 ### Step 4: Load Single Task File
-
-**Requirements:**
 
 - Read task file at {story_dir}/{task_id}.md
 - Extract: objective, checklist, BDD progress, hours, files, patterns
@@ -120,17 +104,12 @@ Expected output:
 
 ### Step 6: Enforce Story Branch
 
-**Check current branch:**
-```bash
-git rev-parse --abbrev-ref HEAD
-```
-
-**If not on STORY-ID branch:**
-- Check if STORY-ID branch exists: `git show-ref --verify refs/heads/{STORY-ID}`
-- If exists: `git checkout {STORY-ID}`
-- If not exists: `git checkout -b {STORY-ID}`
-
-**Rationale:** 1 Story = 1 Branch. Each task creates 1 commit on the story branch. When all tasks complete, create 1 PR for the entire story.
+- Check current branch: `git rev-parse --abbrev-ref HEAD`
+- If not on STORY-ID branch:
+  - Check if exists: `git show-ref --verify refs/heads/{STORY-ID}`
+  - If exists: `git checkout {STORY-ID}`
+  - If not exists: `git checkout -b {STORY-ID}`
+- Rationale: 1 Story = 1 Branch. Each task creates 1 commit on the story branch. When all tasks complete, create 1 PR for the entire story.
 
 ### Step 7: Present Task Context
 
@@ -154,34 +133,26 @@ git rev-parse --abbrev-ref HEAD
 - TDD: Write tests first (specific test files from checklist)
 - Implement minimal code (specific files from checklist)
 - BDD: Implement step definitions
-- Run quality gates:
-
-  ```bash
-  uv run ruff check src tests
-  uv run ruff format src tests
-  uv run mypy src
-  uv run pytest
-  ```
-
+- Run quality gates: `ruff check`, `ruff format`, `mypy`, `pytest`
 - Update task file: mark complete, set actual hours, update status
 - Commit on story branch with task scope:
 
-  ```bash
-  # Verify on correct branch
-  git rev-parse --abbrev-ref HEAD  # Should show: STORY-ID
+```bash
+# Verify on correct branch
+git rev-parse --abbrev-ref HEAD  # Should show: STORY-ID
 
-  # Commit with TASK-ID scope (on STORY-ID branch)
-  git add .
-  git commit -m "feat({TASK-ID}): {title}
+# Commit with TASK-ID scope (on STORY-ID branch)
+git add .
+git commit -m "feat({TASK-ID}): {title}
 
-  {summary}
+{summary}
 
-  BDD Progress: {X}/{N} → {Y}/{N}
+BDD Progress: {X}/{N} → {Y}/{N}
 
-  🤖 Generated with [Claude Code](https://claude.com/claude-code)
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-  Co-Authored-By: Claude <noreply@anthropic.com>"
-  ```
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 **Note:** Commit is made on STORY-ID branch with TASK-ID scope. All tasks in a story create sequential commits on the same branch.
 
