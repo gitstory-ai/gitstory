@@ -28,7 +28,7 @@ model: inherit
 - `/plan-story STORY-ID` - Create tasks after stories are defined
 - `/review-ticket EPIC-ID` - Quality check epic before story planning
 
-**Interview Reference:** See [PLANNING_INTERVIEW_GUIDE.md](../../docs/PLANNING_INTERVIEW_GUIDE.md) for question templates and best practices
+**Interview Reference:** See [PLANNING_INTERVIEW_GUIDE.md](../docs/PLANNING_INTERVIEW_GUIDE.md) for question templates and best practices
 
 ---
 

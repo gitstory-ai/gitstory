@@ -27,7 +27,7 @@ model: inherit
 - `/plan-epic EPIC-ID` - Create stories after epics are defined
 - `/review-ticket INIT-ID` - Quality check initiative after epic planning
 
-**Interview Reference:** See [PLANNING_INTERVIEW_GUIDE.md](../../docs/PLANNING_INTERVIEW_GUIDE.md) for question templates and best practices
+**Interview Reference:** See [PLANNING_INTERVIEW_GUIDE.md](../docs/PLANNING_INTERVIEW_GUIDE.md) for question templates and best practices
 
 ---
 

@@ -43,20 +43,32 @@ curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/install.s
 ```
 
 **What this does:**
-- Copies agents, commands, and guides into `.claude/` and `docs/`
-- No external dependencies, no git pollution
+- Downloads GitStory to hidden `.gitstory/` directory
+- Creates symlinks in `.claude/` for commands and agents
+- Symlinks ticket spec to `docs/tickets/CLAUDE.md` for Claude context
+- No external dependencies (requires rsync)
 - Files are **yours to modify**—adapt them for your workflow
 
-**Specific version:** `GITSTORY_REF=v1.0.0 curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/install.sh | bash`
+**Specific branch/commit:** `GITSTORY_REF=dev curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/install.sh | bash`
 
 ### What You Get
 
-**~16 files total:**
-- **6 agents** - Analysis, quality checking, gap discovery
-- **7 commands** - Planning workflows (plan-initiative, plan-epic, plan-story, etc.)
-- **3 guides** - Ticket hierarchy, interview templates, agent contracts
+**Installed structure:**
+```
+.gitstory/              (hidden - GitStory infrastructure)
+  agents/              (10 agents + contract)
+  commands/gitstory/   (11 commands)
+  docs/                (guides and specs)
 
-**Everything is markdown.** Edit, delete, or extend any file.
+.claude/
+  agents/              (symlinks to .gitstory/agents/)
+  commands/gitstory/   (symlink to .gitstory/commands/gitstory/)
+
+docs/tickets/
+  CLAUDE.md            (symlink to .gitstory/docs/TICKET_SPECIFICATION.md)
+```
+
+**Everything is markdown.** Edit files in `.gitstory/` and changes reflect immediately via symlinks.
 
 ### Manual Install
 
@@ -66,38 +78,27 @@ Prefer to pick what you need?
 # Browse the repo
 https://github.com/gitstory-ai/gitstory/tree/main
 
-# Copy specific files
-curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/agents/gitstory-ticket-analyzer.md \
-  -o .claude/agents/gitstory-ticket-analyzer.md
+# Download GitHub archive
+curl -fsSL https://github.com/gitstory-ai/gitstory/archive/refs/heads/main.tar.gz | tar xz
 
-# Copy entire directories from commands/gitstory/, agents/, docs/
+# Extract just the gitstory/ directory
+mv gitstory-main/gitstory .gitstory
+rm -rf gitstory-main
+
+# Create symlinks
+mkdir -p .claude/agents .claude/commands docs/tickets
+ln -sf ../../.gitstory/agents/*.md .claude/agents/
+ln -sf ../../.gitstory/commands/gitstory .claude/commands/
+ln -sf ../../.gitstory/docs/TICKET_SPECIFICATION.md docs/tickets/CLAUDE.md
+
+# Customize placeholders
+find .gitstory -name "*.md" -exec sed -i \
+  -e "s/{{GITHUB_ORG}}/your-org/g" \
+  -e "s/{{PROJECT_NAME}}/your-repo/g" \
+  {} \;
 ```
 
-**After copying files, customize for your project:**
-
-```bash
-# Set your GitHub org/repo
-GITHUB_ORG="your-org"
-PROJECT_NAME="your-repo"
-
-# Replace placeholders in GitStory files (NOT your existing code!)
-for file in \
-  .claude/agents/gitstory-*.md \
-  .claude/agents/GITSTORY_AGENT_CONTRACT.md \
-  .claude/commands/gitstory/*.md \
-  docs/tickets/CLAUDE.md \
-  docs/PLANNING_INTERVIEW_GUIDE.md; do
-
-  if [ -f "$file" ]; then
-    sed -i \
-      -e "s/{{GITHUB_ORG}}/$GITHUB_ORG/g" \
-      -e "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
-      "$file"
-  fi
-done
-```
-
-**Note:** This only updates GitStory-installed files with your org/repo name.
+**Note:** Manual install requires rsync for future upgrades, or re-run these steps.
 
 **Start minimal, add as needed.**
 
@@ -401,14 +402,14 @@ This is a collaborative experiment. Let's figure it out together.
 
 ### Core References
 - **[CLAUDE.md](CLAUDE.md)** - Development workflow, BDD/TDD patterns, commit standards
-- **[docs/tickets/CLAUDE.md](docs/tickets/CLAUDE.md)** - Ticket hierarchy specification
-- **[agents/GITSTORY_AGENT_CONTRACT.md](agents/GITSTORY_AGENT_CONTRACT.md)** - Agent input/output contract
-- **[docs/PLANNING_INTERVIEW_GUIDE.md](docs/PLANNING_INTERVIEW_GUIDE.md)** - Requirements gathering templates
+- **[gitstory/docs/TICKET_SPECIFICATION.md](gitstory/docs/TICKET_SPECIFICATION.md)** - Ticket hierarchy specification
+- **[gitstory/agents/GITSTORY_AGENT_CONTRACT.md](gitstory/agents/GITSTORY_AGENT_CONTRACT.md)** - Agent input/output contract
+- **[gitstory/docs/PLANNING_INTERVIEW_GUIDE.md](gitstory/docs/PLANNING_INTERVIEW_GUIDE.md)** - Requirements gathering templates
 
 ### Examples
 - **[docs/tickets/](docs/tickets/)** - Real ticket hierarchy from GitStory development
-- **[agents/](agents/)** - Agent specifications (self-documenting)
-- **[.claude/commands/gitstory/](.claude/commands/gitstory/)** - Slash command implementations
+- **[gitstory/agents/](gitstory/agents/)** - Agent specifications (self-documenting)
+- **[gitstory/commands/gitstory/](gitstory/commands/gitstory/)** - Slash command implementations
 
 ---
 
