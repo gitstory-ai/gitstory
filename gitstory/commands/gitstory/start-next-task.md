@@ -1,7 +1,7 @@
 ---
 description: Start next pending task for a specific story
 argument-hint: STORY-ID
-allowed-tools: Read, Bash(git:checkout)
+allowed-tools: Read, Bash(git:*)
 model: inherit
 ---
 
@@ -40,9 +40,10 @@ model: inherit
 
 **Workflow:**
 
-- Create task branch from current location (no branch enforcement)
+- Enforce user is on STORY-ID branch (create if doesn't exist)
 - Present task context before implementation
 - Guide TDD workflow: tests first, then code
+- Each task = 1 commit on story branch
 
 **Error Handling:**
 
@@ -117,13 +118,19 @@ Expected output:
 }
 ```
 
-### Step 6: Create Task Branch
+### Step 6: Enforce Story Branch
 
+**Check current branch:**
 ```bash
-git checkout -b {TASK-ID}
+git rev-parse --abbrev-ref HEAD
 ```
 
-**Note:** Creates task branch from current location (no branch enforcement).
+**If not on STORY-ID branch:**
+- Check if STORY-ID branch exists: `git show-ref --verify refs/heads/{STORY-ID}`
+- If exists: `git checkout {STORY-ID}`
+- If not exists: `git checkout -b {STORY-ID}`
+
+**Rationale:** 1 Story = 1 Branch. Each task creates 1 commit on the story branch. When all tasks complete, create 1 PR for the entire story.
 
 ### Step 7: Present Task Context
 
@@ -157,9 +164,13 @@ git checkout -b {TASK-ID}
   ```
 
 - Update task file: mark complete, set actual hours, update status
-- Commit command:
+- Commit on story branch with task scope:
 
   ```bash
+  # Verify on correct branch
+  git rev-parse --abbrev-ref HEAD  # Should show: STORY-ID
+
+  # Commit with TASK-ID scope (on STORY-ID branch)
   git add .
   git commit -m "feat({TASK-ID}): {title}
 
@@ -171,6 +182,8 @@ git checkout -b {TASK-ID}
 
   Co-Authored-By: Claude <noreply@anthropic.com>"
   ```
+
+**Note:** Commit is made on STORY-ID branch with TASK-ID scope. All tasks in a story create sequential commits on the same branch.
 
 ### Step 9: Suggest Next Steps
 
@@ -277,4 +290,29 @@ $ /start-next-task STORY-0001.2.4
 2. **Proceed anyway**: Manual interpretation needed during implementation
 
 Choose: (1/2)
+```
+
+### Wrong Branch
+
+```bash
+$ /start-next-task STORY-0001.2.4
+
+📍 Current branch: TASK-0001.2.4.3
+
+⚠️  Wrong branch! You're on a task branch, but you should be on the story branch.
+
+**Expected:** STORY-0001.2.4
+**Current:**  TASK-0001.2.4.3
+
+**Workflow reminder:**
+- 1 Story = 1 Branch (named STORY-ID)
+- 1 Task = 1 Commit (on the story branch)
+- Each task creates sequential commits on STORY-0001.2.4
+
+**Switching to story branch...**
+```bash
+git checkout STORY-0001.2.4
+```
+
+✅ Now on STORY-0001.2.4 branch
 ```
