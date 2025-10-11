@@ -89,10 +89,10 @@ model: inherit
 
 ### Step 5: Validate Single Task
 
-Invoke gitstory-discovery-orchestrator for task-only validation:
+Invoke gitstory-gap-analyzer for task-only validation:
 
 ```markdown
-**Agent:** gitstory-discovery-orchestrator
+**Agent:** gitstory-gap-analyzer
 **Operation:** task-gaps
 **Target:** {TASK-ID}
 **Mode:** pre-planning
@@ -211,7 +211,7 @@ $ /start-next-task STORY-9999.9.9
 **Recovery:**
 - Verify story ID is correct
 - Create tasks first: /plan-story STORY-9999.9.9
-- Check parent epic exists: /discover EPIC-9999.9
+- Check parent epic exists: /analyze-gaps EPIC-9999.9
 ```
 
 ### No Pending Tasks

@@ -4,7 +4,7 @@ description: Depth-aware quality review with proposed fixes for any ticket type
 argument-hint: TICKET-ID [--focus="specific concern"]
 allowed-tools: Read, Edit, Bash(git:*)
 invokes-agents:
-  - gitstory-discovery-orchestrator
+  - gitstory-gap-analyzer
   - gitstory-ticket-analyzer
   - gitstory-pattern-discovery
   - gitstory-design-guardian
@@ -37,7 +37,7 @@ model: inherit
 ```
 
 **Related Commands:**
-- `/discover TICKET-ID` - Gap analysis without quality fixes
+- `/analyze-gaps TICKET-ID` - Gap analysis without quality fixes
 - `/plan-epic EPIC-ID` - Create stories after fixing epic quality
 - `/start-next-task STORY-ID` - Start work after confirming story quality
 
@@ -88,7 +88,7 @@ git diff --name-only main..HEAD  # Get changed files
 - Current branch name contains ticket ID
 - Commits exist on branch
 
-### Step 4: Invoke Discovery Orchestrator
+### Step 4: Invoke Gap Analyzer
 
 **Determine Operation:**
 
@@ -101,7 +101,7 @@ git diff --name-only main..HEAD  # Get changed files
 
 **Invoke Agent:**
 ```markdown
-**Agent:** gitstory-discovery-orchestrator
+**Agent:** gitstory-gap-analyzer
 **Operation:** {operation}
 **Target:** {TICKET-ID}
 **Mode:** quality-review
@@ -215,7 +215,7 @@ Show:
 
 **Additional Suggestions:**
 - Review children: `/review-ticket {CHILD-ID}`
-- Gap analysis: `/discover {TICKET-ID}`
+- Gap analysis: `/analyze-gaps {TICKET-ID}`
 
 ---
 
@@ -280,7 +280,7 @@ Optional `--focus` parameter narrows analysis scope.
 **Ticket Not Found:**
 - Show expected path, suggest verification or creation commands
 
-**Discovery Orchestrator Fails:**
+**Gap Analyzer Fails:**
 - Fall back to manual review mode (basic file checks)
 - Show "Unable to calculate" for quality scores
 - List manual review criteria

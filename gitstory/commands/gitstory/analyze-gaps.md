@@ -5,13 +5,13 @@ allowed-tools: Read, Task
 model: inherit
 ---
 
-# /discover - Standalone Gap Discovery Command
+# /analyze-gaps - Gap Analysis Command
 
 **Usage:**
 
 ```bash
-/discover TICKET-ID          # Analyze gaps (INIT/EPIC/STORY/TASK)
-/discover --genesis          # Strategic initiative genesis
+/analyze-gaps TICKET-ID      # Analyze gaps (INIT/EPIC/STORY/TASK)
+/analyze-gaps --genesis      # Strategic initiative genesis
 ```
 
 ---
@@ -22,14 +22,14 @@ model: inherit
 
 - Parse TICKET-ID (INIT/EPIC/STORY/TASK) or --genesis flag
 - Map ticket type → operation (INIT→initiative-gaps, EPIC→epic-gaps, etc)
-- Invoke gitstory-discovery-orchestrator via Task tool
+- Invoke gitstory-gap-analyzer via Task tool
 - Validate JSON output against [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md)
 - Present gaps with priority/status indicators
 
 ### Workflow
 
 - Read-only (no ticket creation/modification)
-- All gap analysis delegated to orchestrator agent
+- All gap analysis delegated to gap-analyzer agent
 - Tools: Read (tickets), Task (orchestrator)
 
 ---
@@ -53,16 +53,16 @@ model: inherit
 - `story` → `story-gaps`
 - `task` → `task-gaps`
 
-### 3. Invoke Discovery Orchestrator
+### 3. Invoke Gap Analyzer
 
-- Agent: gitstory-discovery-orchestrator
+- Agent: gitstory-gap-analyzer
 - Pass: operation, target, mode=pre-planning
 - Expect: JSON per [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md)
 
 ### 4. Parse & Validate Output
 
 - Parse JSON, validate required fields per [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md)
-- Verify agent=`gitstory-discovery-orchestrator`
+- Verify agent=`gitstory-gap-analyzer`
 - If status=`error` → show message + recovery
 - If invalid JSON → error message
 
@@ -108,7 +108,7 @@ Recovery: Manually review tests/conftest.py
 
 ## Related Documentation
 
-- [gitstory-discovery-orchestrator.md](../agents/gitstory-discovery-orchestrator.md) - Orchestrator agent specification
+- [gitstory-gap-analyzer.md](../agents/gitstory-gap-analyzer.md) - Gap analyzer agent specification
 - [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md) - Agent input/output contract
 - [plan-initiative.md](plan-initiative.md) - Create epics after discovering gaps
 - [plan-epic.md](plan-epic.md) - Create stories after discovering gaps

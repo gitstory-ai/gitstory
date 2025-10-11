@@ -374,8 +374,8 @@ Tickets are created through focused planning commands or manually:
 
 #### Planning Commands
 
-**Discovery & Planning:**
-- `/discover TARGET-ID` - Analyze gaps without creating tickets (read-only)
+**Gap Analysis & Planning:**
+- `/analyze-gaps TARGET-ID` - Analyze gaps without creating tickets (read-only)
 - `/plan-initiative [--genesis]` - Create initiative from scratch or define epics
 - `/plan-epic EPIC-ID` - Define stories for an epic
 - `/plan-story STORY-ID` - Define tasks for a story

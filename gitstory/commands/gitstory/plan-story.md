@@ -24,7 +24,7 @@ model: inherit
 
 **Related Commands:**
 
-- `/discover STORY-ID` - See task gaps without creating them
+- `/analyze-gaps STORY-ID` - See task gaps without creating them
 - `/start-next-task STORY-ID` - Begin implementation after tasks defined
 - `/review-ticket STORY-ID` - Quality check story before task planning
 
@@ -77,7 +77,7 @@ model: inherit
 ### Step 2: Discovery - Invoke Orchestrator
 
 ```markdown
-**Agent:** gitstory-discovery-orchestrator
+**Agent:** gitstory-gap-analyzer
 **Operation:** story-gaps
 **Target:** {STORY-ID}
 **Mode:** pre-planning

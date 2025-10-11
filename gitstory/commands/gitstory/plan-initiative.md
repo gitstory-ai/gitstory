@@ -1,7 +1,7 @@
 ---
 description: Create initiatives from scratch or define epics for existing initiatives
 argument-hint: [--genesis | INIT-ID]
-allowed-tools: Read, Write, Bash(git:*), Subagent(gitstory-discovery-orchestrator, gitstory-specification-quality-checker)
+allowed-tools: Read, Write, Bash(git:*), Subagent(gitstory-gap-analyzer, gitstory-specification-quality-checker)
 model: inherit
 ---
 
@@ -22,8 +22,8 @@ model: inherit
 ```
 
 **Related Commands:**
-- `/discover --genesis` - Validate strategic scope before genesis
-- `/discover INIT-ID` - See epic gaps without creating them
+- `/analyze-gaps --genesis` - Validate strategic scope before genesis
+- `/analyze-gaps INIT-ID` - See epic gaps without creating them
 - `/plan-epic EPIC-ID` - Create stories after epics are defined
 - `/review-ticket INIT-ID` - Quality check initiative after epic planning
 
@@ -156,7 +156,7 @@ Use existing mode when:
 #### Step 2: Discovery - Invoke Orchestrator
 
 ```markdown
-**Agent:** gitstory-discovery-orchestrator
+**Agent:** gitstory-gap-analyzer
 **Operation:** initiative-gaps
 **Target:** {INIT-ID}
 **Mode:** pre-planning

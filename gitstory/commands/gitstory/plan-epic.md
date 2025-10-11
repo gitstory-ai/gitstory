@@ -1,7 +1,7 @@
 ---
 description: Define stories for an epic with pattern reuse and complexity awareness
 argument-hint: EPIC-ID
-allowed-tools: Read, Write, Bash(find), Task(gitstory-discovery-orchestrator, gitstory-specification-quality-checker)
+allowed-tools: Read, Write, Bash(find), Task(gitstory-gap-analyzer, gitstory-specification-quality-checker)
 model: inherit
 ---
 
@@ -24,7 +24,7 @@ model: inherit
 
 **Related Commands:**
 
-- `/discover EPIC-ID` - See story gaps without creating them
+- `/analyze-gaps EPIC-ID` - See story gaps without creating them
 - `/plan-story STORY-ID` - Create tasks after stories are defined
 - `/review-ticket EPIC-ID` - Quality check epic before story planning
 
@@ -58,7 +58,7 @@ model: inherit
 
 ### Agent Integration
 
-- `gitstory-discovery-orchestrator` (epic-gaps): Finds missing/incomplete stories, pattern suggestions, complexity flags
+- `gitstory-gap-analyzer` (epic-gaps): Finds missing/incomplete stories, pattern suggestions, complexity flags
 - `gitstory-specification-quality-checker` (full-ticket): Validates story drafts (85% threshold)
 
 ---
@@ -77,7 +77,7 @@ model: inherit
 ### Step 2: Discovery - Invoke Orchestrator
 
 ```markdown
-**Agent:** gitstory-discovery-orchestrator
+**Agent:** gitstory-gap-analyzer
 **Operation:** epic-gaps
 **Target:** {EPIC-ID}
 **Mode:** pre-planning

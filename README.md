@@ -284,7 +284,7 @@ GitStory uses specialized agents (not monolithic commands) for structured analys
 
 | Agent | Purpose | Used By |
 |-------|---------|---------|
-| **gitstory-discovery-orchestrator** | Multi-level gap analysis (what's missing?) | /plan-*, /discover, /review-ticket |
+| **gitstory-gap-analyzer** | Multi-level gap analysis (what's missing?) | /plan-*, /analyze-gaps, /review-ticket |
 | **gitstory-ticket-analyzer** | Completeness scoring (is it ready?) | /start-next-task, /review-ticket |
 | **gitstory-specification-quality-checker** | Vagueness detection (make it concrete) | /plan-*, /review-ticket |
 | **gitstory-design-guardian** | Anti-overengineering (flag abstractions) | /plan-story, /start-next-task |
@@ -316,7 +316,7 @@ GitStory uses specialized agents (not monolithic commands) for structured analys
 ### Execution Phase
 ```bash
 /gitstory:start-next-task STORY-ID     # Begin next pending task
-/gitstory:discover TICKET-ID           # Gap analysis without creating tickets
+/gitstory:analyze-gaps TICKET-ID       # Gap analysis without creating tickets
 ```
 
 ### Review Phase
