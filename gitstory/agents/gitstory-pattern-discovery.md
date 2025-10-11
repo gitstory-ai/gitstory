@@ -9,7 +9,7 @@ model: sonnet
 
 Discover and catalog existing code patterns, test fixtures, helpers, and anti-patterns to maximize reuse and minimize duplication.
 
-**Contract:** This agent follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md) for input/output formats and error handling.
+**Contract:** This agent follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for input/output formats and error handling.
 
 ## Input Format
 
@@ -48,7 +48,7 @@ Find 2-3 most relevant test files for similar functionality. Returns patterns to
 
 ## JSON Output Schema
 
-All operations return JSON per [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md):
+All operations return JSON per [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md):
 
 ```json
 {
@@ -276,7 +276,7 @@ All operations return JSON per [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTR
 
 ## Error Handling
 
-Follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md#standard-error-types).
+Follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md#standard-error-types).
 
 **Common errors:**
 - `missing_file` - conftest.py or pattern files not found

@@ -82,7 +82,7 @@ model: inherit
 **Target:** {STORY-ID}
 **Mode:** pre-planning
 
-Execute comprehensive gap discovery and return structured JSON output per [GITSTORY_AGENT_CONTRACT.md](../agents/GITSTORY_AGENT_CONTRACT.md).
+Execute comprehensive gap discovery and return structured JSON output per [AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md).
 ```
 
 Expected output:

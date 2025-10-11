@@ -1,0 +1,1 @@
+../../gitstory/agents/gitstory-git-state-analyzer.md

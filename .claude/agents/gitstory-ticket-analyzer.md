@@ -1,0 +1,1 @@
+../../gitstory/agents/gitstory-ticket-analyzer.md

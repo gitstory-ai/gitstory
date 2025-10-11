@@ -9,7 +9,7 @@ model: sonnet
 
 Detect vague terms, unquantified requirements, missing details, and ambiguous specifications in tickets to ensure agent-friendly, executable documentation.
 
-**Contract:** This agent follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md) for input/output formats and error handling.
+**Contract:** This agent follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for input/output formats and error handling.
 
 ---
 
@@ -125,7 +125,7 @@ Your goal: **Every spec must be executable by an agent without clarification.**
 
 ## Output Format
 
-Return JSON with specification quality analysis. Follow error handling contract from [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md#standard-error-types).
+Return JSON with specification quality analysis. Follow error handling contract from [AGENT_CONTRACT.md](AGENT_CONTRACT.md#standard-error-types).
 
 ```json
 {

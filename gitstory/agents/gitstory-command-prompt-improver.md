@@ -9,7 +9,7 @@ model: sonnet
 
 Specialized improver for slash command instruction files. Generates detailed improvement plans that remove bloat while preserving all execution-critical information.
 
-**Contract:** Follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md). Single-shot execution, JSON output, Read-only access.
+**Contract:** Follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md). Single-shot execution, JSON output, Read-only access.
 
 ## Operations
 
@@ -80,7 +80,7 @@ For commands that invoke subagents, present JSON response data "succinct, but co
 
 ## JSON Output Schema
 
-**Standard GITSTORY_AGENT_CONTRACT.md wrapper:**
+**Standard AGENT_CONTRACT.md wrapper:**
 
 ```json
 {
@@ -140,7 +140,7 @@ For commands that invoke subagents, present JSON response data "succinct, but co
 
 ## Error Handling
 
-**Standard error types per GITSTORY_AGENT_CONTRACT.md:**
+**Standard error types per AGENT_CONTRACT.md:**
 
 ### missing_file
 

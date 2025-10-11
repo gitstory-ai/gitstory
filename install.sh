@@ -46,20 +46,25 @@ rsync -av --delete "$TMP_DIR/gitstory/agents/" .gitstory/agents/
 rsync -av --delete "$TMP_DIR/gitstory/commands/" .gitstory/commands/
 rsync -av --delete "$TMP_DIR/gitstory/docs/" .gitstory/docs/
 
-# Setup .claude/ integration
+# Setup .claude/ integration (PRESERVES user's custom agents/commands)
 echo "🔗 Setting up .claude/ integration..."
 mkdir -p .claude/agents .claude/commands
 
-# Clean old symlinks
-find .claude/agents -type l -lname "*gitstory*" -delete 2>/dev/null || true
-find .claude/commands -type l -lname "*gitstory*" -delete 2>/dev/null || true
+# Clean old GitStory symlinks only
+find .claude/agents -type l -lname "*/.gitstory/agents/gitstory-*.md" -delete 2>/dev/null || true
+rm -f .claude/commands/gitstory 2>/dev/null || true
+rm -f .claude/docs 2>/dev/null || true
 
-# Create symlinks to .gitstory
-for file in .gitstory/agents/*.md; do
-  ln -sf "../../$file" .claude/agents/
+# Symlink individual GitStory agents (user's custom agents preserved)
+for agent in .gitstory/agents/gitstory-*.md; do
+  ln -sf "../../$agent" .claude/agents/
 done
 
+# Symlink GitStory commands namespace (user's custom commands preserved)
 ln -sf ../../.gitstory/commands/gitstory .claude/commands/gitstory
+
+# Symlink docs (safeguard for path resolution edge cases)
+ln -sf ../../.gitstory/docs .claude/docs
 
 # Create ticket spec symlink for Claude context
 echo "📝 Setting up docs/tickets/ integration..."

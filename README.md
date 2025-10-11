@@ -44,7 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/install.s
 
 **What this does:**
 - Downloads GitStory to hidden `.gitstory/` directory
-- Creates symlinks in `.claude/` for commands and agents
+- Creates symlinks in `.claude/` for commands, agents, and docs
 - Symlinks ticket spec to `docs/tickets/CLAUDE.md` for Claude context
 - No external dependencies (requires rsync)
 - Files are **yours to modify**—adapt them for your workflow
@@ -63,6 +63,7 @@ curl -fsSL https://raw.githubusercontent.com/gitstory-ai/gitstory/main/install.s
 .claude/
   agents/              (symlinks to .gitstory/agents/)
   commands/gitstory/   (symlink to .gitstory/commands/gitstory/)
+  docs/                (symlink to .gitstory/docs/)
 
 docs/tickets/
   CLAUDE.md            (symlink to .gitstory/docs/TICKET_SPECIFICATION.md)
@@ -87,8 +88,11 @@ rm -rf gitstory-main
 
 # Create symlinks
 mkdir -p .claude/agents .claude/commands docs/tickets
-ln -sf ../../.gitstory/agents/*.md .claude/agents/
-ln -sf ../../.gitstory/commands/gitstory .claude/commands/
+for agent in .gitstory/agents/gitstory-*.md; do
+  ln -sf "../../$agent" .claude/agents/
+done
+ln -sf ../../.gitstory/commands/gitstory .claude/commands/gitstory
+ln -sf ../../.gitstory/docs .claude/docs
 ln -sf ../../.gitstory/docs/TICKET_SPECIFICATION.md docs/tickets/CLAUDE.md
 
 # Customize placeholders
@@ -299,7 +303,7 @@ GitStory uses specialized agents (not monolithic commands) for structured analys
 - Reusable across multiple commands
 - Testable independently
 
-**See also:** [agents/GITSTORY_AGENT_CONTRACT.md](agents/GITSTORY_AGENT_CONTRACT.md) for agent input/output specifications
+**See also:** [gitstory/docs/AGENT_CONTRACT.md](gitstory/docs/AGENT_CONTRACT.md) for agent input/output specifications
 
 ---
 
@@ -403,7 +407,7 @@ This is a collaborative experiment. Let's figure it out together.
 ### Core References
 - **[CLAUDE.md](CLAUDE.md)** - Development workflow, BDD/TDD patterns, commit standards
 - **[gitstory/docs/TICKET_SPECIFICATION.md](gitstory/docs/TICKET_SPECIFICATION.md)** - Ticket hierarchy specification
-- **[gitstory/agents/GITSTORY_AGENT_CONTRACT.md](gitstory/agents/GITSTORY_AGENT_CONTRACT.md)** - Agent input/output contract
+- **[gitstory/docs/AGENT_CONTRACT.md](gitstory/docs/AGENT_CONTRACT.md)** - Agent input/output contract
 - **[gitstory/docs/PLANNING_INTERVIEW_GUIDE.md](gitstory/docs/PLANNING_INTERVIEW_GUIDE.md)** - Requirements gathering templates
 
 ### Examples

@@ -9,7 +9,7 @@ model: sonnet
 
 Apply GitStory design principles, detect anti-patterns, enforce simplicity and pattern reuse.
 
-**Contract:** This agent follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md) for input/output formats and error handling.
+**Contract:** This agent follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for input/output formats and error handling.
 
 ---
 
@@ -260,7 +260,7 @@ These are ALWAYS appropriate, even when they add complexity:
 
 ## Output Format
 
-Wrapped in standard contract (see [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md)):
+Wrapped in standard contract (see [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md)):
 
 ```json
 {
@@ -410,7 +410,7 @@ Roadmap: No other vector store backends planned.
 
 ## Error Handling
 
-This agent follows the standard error handling contract defined in [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md#standard-error-types).
+This agent follows the standard error handling contract defined in [AGENT_CONTRACT.md](AGENT_CONTRACT.md#standard-error-types).
 
 **Common error scenarios:**
 - `missing_file` - Target ticket/file not found for complexity review
@@ -419,7 +419,7 @@ This agent follows the standard error handling contract defined in [GITSTORY_AGE
 
 **Graceful degradation:** When ticket exists but pattern discovery incomplete, return `partial` status with complexity analysis and warnings about missing pattern context.
 
-See [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md#graceful-degradation-strategy) for complete error handling specification.
+See [AGENT_CONTRACT.md](AGENT_CONTRACT.md#graceful-degradation-strategy) for complete error handling specification.
 
 ---
 

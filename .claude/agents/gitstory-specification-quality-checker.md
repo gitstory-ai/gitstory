@@ -1,0 +1,1 @@
+../../gitstory/agents/gitstory-specification-quality-checker.md

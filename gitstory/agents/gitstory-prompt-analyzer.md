@@ -9,7 +9,7 @@ model: sonnet
 
 Specialized analyzer for slash command and subagent instruction files. Identifies bloat, categorizes sections, and extracts hidden constraints from documentation.
 
-**Contract:** Follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md) for standard input/output formats.
+**Contract:** Follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for standard input/output formats.
 
 ## Operations
 

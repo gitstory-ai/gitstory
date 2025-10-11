@@ -7,6 +7,8 @@ model: sonnet
 
 Deep analysis of ticket structure, hierarchy, completeness, and state accuracy.
 
+**Contract:** This agent follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for input/output formats and error handling.
+
 ---
 
 ## Agent Mission

@@ -1,0 +1,1 @@
+../../gitstory/agents/gitstory-gap-analyzer.md

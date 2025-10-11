@@ -9,7 +9,7 @@ model: sonnet
 
 Analyze git commit history and compare to ticket expectations to detect drift and validate implementation matches documentation.
 
-**Contract:** This agent follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md) for input/output formats and error handling.
+**Contract:** This agent follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for input/output formats and error handling.
 
 ---
 
@@ -360,7 +360,7 @@ If any missing → `ticket_ahead_of_reality`
 
 ## Error Handling
 
-Follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md#standard-error-types) error handling.
+Follows [AGENT_CONTRACT.md](AGENT_CONTRACT.md#standard-error-types) error handling.
 
 **Common errors:**
 - `missing_file` - Not in git repo or ticket files not found

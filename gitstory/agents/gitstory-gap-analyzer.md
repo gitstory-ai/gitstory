@@ -9,7 +9,7 @@ model: sonnet
 
 Coordinate multi-agent gap analysis to identify missing/incomplete elements across ticket hierarchy levels.
 
-**Contract:** This agent follows [GITSTORY_AGENT_CONTRACT.md](GITSTORY_AGENT_CONTRACT.md) for input/output formats and error handling.
+**Contract:** This agent follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for input/output formats and error handling.
 
 ---
 
@@ -357,4 +357,4 @@ OPERATION_AGENTS = {
 - [ ] Errors when ALL agents fail → error_type: "internal_error"
 - [ ] Maps patterns to gaps correctly
 - [ ] Prioritizes gaps (P0-P3) and scores quality (0-100)
-- [ ] Output validates against GITSTORY_AGENT_CONTRACT.md
+- [ ] Output validates against AGENT_CONTRACT.md

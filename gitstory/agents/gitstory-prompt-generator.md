@@ -9,6 +9,8 @@ model: sonnet
 
 Generates slash command and subagent instruction files following Claude Code best practices with proper frontmatter, no bloat, and clear structure.
 
+**Contract:** This agent follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for input/output formats and error handling.
+
 ## Operations
 
 ### generate-command
@@ -145,7 +147,7 @@ Recommend thinking intensity for commands only (not subagents):
 - Complete JSON output schema
 - Single-shot stateless execution (no user interaction)
 - Specific tools only (never "*")
-- Reference GITSTORY_AGENT_CONTRACT.md for standard error handling
+- Reference AGENT_CONTRACT.md for standard error handling
 - Target: 180-230 lines
 
 **Both Must Avoid:**

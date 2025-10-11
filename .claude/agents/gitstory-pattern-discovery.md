@@ -1,0 +1,1 @@
+../../gitstory/agents/gitstory-pattern-discovery.md

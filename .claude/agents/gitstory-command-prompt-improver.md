@@ -1,0 +1,1 @@
+../../gitstory/agents/gitstory-command-prompt-improver.md

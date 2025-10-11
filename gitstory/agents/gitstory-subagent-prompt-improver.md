@@ -9,6 +9,8 @@ model: sonnet
 
 Validates subagent contract compliance, converts frontmatter to YAML, removes bloat, ensures single-shot stateless execution.
 
+**Contract:** This agent follows [AGENT_CONTRACT.md](../docs/AGENT_CONTRACT.md) for input/output formats and error handling.
+
 ## Contract Violations Detected
 
 **CRITICAL:**
@@ -17,7 +19,7 @@ Validates subagent contract compliance, converts frontmatter to YAML, removes bl
 - Unrestricted tools (tools: "*")
 
 **WARNING:**
-- Missing GITSTORY_AGENT_CONTRACT.md reference
+- Missing AGENT_CONTRACT.md reference
 - Unclear output format
 - Broad/multi-purpose design
 - Multiple unrelated operations
