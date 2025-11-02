@@ -7,9 +7,9 @@
 
 ## Overview
 
-Establish the foundational directory structure, template system, command configuration, and basic skill registration for GitStory as a Claude Skill. This epic combines skill scaffolding, template infrastructure, and the groundwork needed for workflow-agnostic operation. Uses proven {baseDir} pattern from anthropics/skills, implements priority lookup (project → user → skill), and creates all foundational files needed for subsequent epics.
+Create the skills/gitstory/ directory structure with 6 default ticket templates (initiative, epic, story, task, bug, generic), command configuration files (plan.yaml with 6 ticket type interview sections, review.yaml with quality thresholds), SKILL.md (200-500 words), and .claude-plugin/config.json validated against official schema. Success: All files pass JSON/YAML validation, {baseDir} pattern tested on Linux/macOS, templates include YAML frontmatter field schemas. This epic combines skill scaffolding, template infrastructure, and the groundwork needed for workflow-agnostic operation. Uses proven {baseDir} pattern from anthropics/skills, implements priority lookup (project → user → skill), and creates all foundational files needed for subsequent epics.
 
-**Deliverables:** skills/gitstory/ directory structure, SKILL.md scaffold (200-500 words), .claude-plugin/config.json validated against official schema, 6 default templates with YAML frontmatter field schemas, commands/plan.yaml and commands/review.yaml with priority lookup, install.sh stub, documentation drafts for template authoring and command configuration.
+**Deliverables:** skills/gitstory/ directory structure, SKILL.md scaffold (200-500 words), .claude-plugin/config.json with 9 required fields (name, id, version, entry_point, author, description, keywords, license, repository) validated with python -m json.tool, 6 default templates with YAML frontmatter field schemas, commands/plan.yaml (18-36 interview questions across 6 ticket types) and commands/review.yaml (quality thresholds per type) with priority lookup infrastructure, documentation content (500-1000 words each) for template authoring and command configuration guides.
 
 ## Key Scenarios
 
@@ -29,7 +29,7 @@ Scenario: Template with YAML frontmatter defines field schemas
   Then it defines fields: title, parent_epic, status, story_points, progress
   And each field specifies: type (string/integer/enum), required (bool), validation (regex/range)
   And field schemas include help text for interview prompts
-  And template body uses Jinja2-style variables: {{ticket_id}}, {{title}}, {{parent}}
+  And template body uses string.Template variables: ${ticket_id}, ${title}, ${parent}
 
 Scenario: Project template overrides skill default via priority lookup
   Given skill default template: skills/gitstory/templates/story.md
@@ -60,11 +60,11 @@ Scenario: Marketplace config enables skill installation
 
 | ID | Title | Status | Points | Progress |
 |----|-------|--------|--------|----------|
-| STORY-0001.1.1 | Create skills/gitstory/ structure with {baseDir} pattern | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
-| STORY-0001.1.2 | Create SKILL.md scaffold & marketplace config | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
-| STORY-0001.1.3 | Create template system with 6 default templates | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
-| STORY-0001.1.4 | Create command configuration system | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
-| STORY-0001.1.5 | Create install.sh stub & documentation | 🔵 Not Started | 4 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.1](STORY-0001.1.1/README.md) | Create skills/gitstory/ structure with {baseDir} pattern | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create SKILL.md scaffold & marketplace config | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.3](STORY-0001.1.3/README.md) | Create template system with 6 default templates | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create command configuration system | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create documentation guides | 🔵 Not Started | 4 | ░░░░░░░░░░ 0% |
 
 ## Technical Approach
 
@@ -73,7 +73,7 @@ Scenario: Marketplace config enables skill installation
 Implement command-to-skill references using **{baseDir} pattern** from anthropics/skills repository (proven standard):
 
 **Approach:**
-1. Review 3+ anthropics/skills examples (git-subcommands, bash-scripting, git-commit-guide), document {baseDir} usage patterns with code snippets (1 hour)
+1. Review ALL skills in anthropics/skills repository, document {baseDir} usage patterns with code snippets from representative examples (2 hours)
 2. Implement {baseDir} pattern in SKILL.md and commands (e.g., `{baseDir}/references/workflow-schema.md`)
 3. Document usage in skills/gitstory/README.md with code examples
 4. Verify cross-platform compatibility (Linux/macOS testing, Windows deferred to CI in EPIC-0001.4)
@@ -134,68 +134,68 @@ fields:
     help: "Current status of the story"
 ---
 
-# {{ticket_id}}: {{title}}
+# ${ticket_id}: ${title}
 
-**Parent Epic**: [{{parent}}](../README.md)
-**Status**: {{status}}
-**Story Points**: {{story_points}}
-**Progress**: {{progress_bar}}
+**Parent Epic**: [${parent}](../README.md)
+**Status**: ${status}
+**Story Points**: ${story_points}
+**Progress**: ${progress_bar}
 
 ## User Story
 
-As a {{user_role}}
-I want {{goal}}
-So that {{benefit}}
+As a ${user_role}
+I want ${goal}
+So that ${benefit}
 
 ## Acceptance Criteria
 
-{{acceptance_criteria}}
+${acceptance_criteria}
 
 ## Tasks
 
-{{tasks_table}}
+${tasks_table}
 ```
 
 ### Default Templates (6 total)
 
 1. **templates/initiative.md** - Strategic objective level
    - Fields: title, timeline, owner, objective, key_results
-   - Variables: {{ticket_id}}, {{title}}, {{timeline}}, {{owner}}
+   - Variables: ${ticket_id}, ${title}, ${timeline}, ${owner}
 
 2. **templates/epic.md** - Feature set level
    - Fields: title, parent_initiative, story_points, overview
-   - Variables: {{ticket_id}}, {{parent}}, {{title}}, {{story_points}}
+   - Variables: ${ticket_id}, ${parent}, ${title}, ${story_points}
 
 3. **templates/story.md** - User story level
    - Fields: title, parent_epic, story_points, user_story, acceptance_criteria
-   - Variables: {{ticket_id}}, {{parent}}, {{title}}, {{user_role}}, {{goal}}, {{benefit}}
+   - Variables: ${ticket_id}, ${parent}, ${title}, ${user_role}, ${goal}, ${benefit}
 
 4. **templates/task.md** - Technical task level
    - Fields: title, parent_story, estimated_hours, implementation_steps
-   - Variables: {{ticket_id}}, {{parent}}, {{title}}, {{estimated_hours}}
+   - Variables: ${ticket_id}, ${parent}, ${title}, ${estimated_hours}
 
 5. **templates/bug.md** - Bug report
    - Fields: title, severity, reproduction_steps, environment
-   - Variables: {{ticket_id}}, {{title}}, {{severity}}, {{status}}
+   - Variables: ${ticket_id}, ${title}, ${severity}, ${status}
 
 6. **templates/generic.md** - Fallback for custom ticket types
    - Fields: title, description, status
-   - Variables: {{ticket_id}}, {{title}}, {{description}}
+   - Variables: ${ticket_id}, ${title}, ${description}
 
-### Variable Substitution (Jinja2-style)
+### Variable Substitution (string.Template)
 
 **Supported variables:**
-- `{{ticket_id}}` - Full ticket ID (e.g., STORY-0001.2.3)
-- `{{title}}` - Ticket title
-- `{{parent}}` - Parent ticket ID
-- `{{status}}` - Current status emoji
-- `{{progress_bar}}` - Visual progress: ████████░░ 80%
-- `{{user_role}}` - From user story
-- `{{goal}}` - From user story
-- `{{benefit}}` - From user story
+- `${ticket_id}` - Full ticket ID (e.g., STORY-0001.2.3)
+- `${title}` - Ticket title
+- `${parent}` - Parent ticket ID
+- `${status}` - Current status emoji
+- `${progress_bar}` - Visual progress: ████████░░ 80%
+- `${user_role}` - From user story
+- `${goal}` - From user story
+- `${benefit}` - From user story
 - Custom variables from interview responses
 
-**Implementation:** Simple string replacement (not full Jinja2 engine to avoid dependency).
+**Implementation:** Use Python's string.Template with safe_substitute() method (stdlib, no dependencies). Template syntax: ${ticket_id}, ${title}, ${parent}, etc. Error handling: safe_substitute() leaves missing variables as literal '${unknown_var}' in output and logs warning. Falsy values (None, False, 0, empty string, empty list, empty dict) replaced with empty string ''. Boolean False becomes '' not 'False'. Example: `Template(template_text).safe_substitute(context_dict)`.
 
 ### Template Lookup Priority
 
@@ -351,7 +351,7 @@ acceptance_criteria_requirements:
 
 Create SKILL.md following anthropics/skills conventions (no frontmatter needed):
 - **Body:** 200-500 word markdown describing GitStory purpose and workflow plugin system overview
-- **Activation section:** Clear triggers for when Claude should invoke (e.g., "When user runs /gitstory:* commands OR mentions ticket planning, workflow customization, or state machine configuration")
+- **Activation section:** Specific activation triggers: (1) User runs /gitstory:plan, /gitstory:review, or /gitstory:install commands, (2) User mentions 'create ticket', 'plan epic', 'review story quality', or 'customize workflow templates', (3) User references ticket IDs matching INIT-*, EPIC-*, STORY-*, TASK-*, or BUG-* patterns in conversation
 - **Validation:** Compare against anthropics/skills examples, ensure markdown renders correctly
 
 **Note:** Metadata (name, version, description) goes in .claude-plugin/config.json, not SKILL.md frontmatter. SKILL.md focuses on instructions/context for Claude. Complete SKILL.md documentation (expand from 200-500 word scaffold to 3000-4000 word production version with examples, troubleshooting, references) happens in EPIC-0001.4.
@@ -378,33 +378,6 @@ Create `.claude-plugin/config.json` validated against official schema:
 - JSON syntax check: `jq . .claude-plugin/config.json`
 - Schema validation: Compare fields against anthropics/skills examples
 - Entry point exists: `test -f skills/gitstory/SKILL.md`
-
-### Install Script Stub
-
-Create install.sh placeholder for future expansion (full implementation in EPIC-0001.4):
-
-```bash
-#!/usr/bin/env bash
-# install.sh - GitStory installation script
-# Full implementation in EPIC-0001.4 (will create .gitstory/ structure)
-
-set -euo pipefail
-
-# Verify run from repo root
-if [[ ! -f "skills/gitstory/SKILL.md" ]]; then
-    echo "Error: Run install.sh from repository root"
-    exit 1
-fi
-
-echo "GitStory installation stub"
-echo "Full .gitstory/ structure creation deferred to EPIC-0001.4"
-echo "Current epic (EPIC-0001.1) focuses on skills/gitstory/ foundation only"
-```
-
-**Rationale:**
-- Avoid creating empty .gitstory/ directories without workflow.yaml (created in EPIC-0001.2)
-- Avoid creating empty plugins/ without default plugins (created in EPIC-0001.3)
-- EPIC-0001.4 (dogfooding) will implement complete install.sh with all files ready
 
 ## Dependencies
 
@@ -436,7 +409,9 @@ echo "Current epic (EPIC-0001.1) focuses on skills/gitstory/ foundation only"
 ### Skill Scaffold
 - [ ] SKILL.md created (200-500 word markdown body, no frontmatter)
 - [ ] SKILL.md contains activation description with concrete triggers
-- [ ] SKILL.md compared against anthropics/skills examples for format validation
+- [ ] Review ALL skills in anthropics/skills repository to identify common patterns and best practices
+- [ ] Document findings: SKILL.md structure patterns, activation trigger styles, common sections, word count ranges, use of examples/code blocks
+- [ ] SKILL.md validated against discovered patterns: (1) No YAML frontmatter (if pattern holds), (2) Consistent heading structure, (3) Activation section present, (4) File renders correctly in markdown preview, (5) Word count appropriate for scope
 - [ ] .claude-plugin/config.json created with all required fields
 - [ ] .claude-plugin/config.json validated (JSON syntax check with jq)
 - [ ] .claude-plugin/config.json matches anthropics/skills format
@@ -448,8 +423,8 @@ echo "Current epic (EPIC-0001.1) focuses on skills/gitstory/ foundation only"
 - [ ] templates/task.md created with YAML frontmatter field schemas
 - [ ] templates/bug.md created with YAML frontmatter field schemas
 - [ ] templates/generic.md created with YAML frontmatter field schemas
-- [ ] All field schemas include: type, required, validation, help text
-- [ ] All templates use Jinja2-style variables ({{ticket_id}}, {{parent}}, etc.)
+- [ ] All field schemas include 4 required keys validated: type ('string'|'integer'|'enum'|'list'|'textarea'), required (boolean), validation (regex ^.+$ or range ^\\d+-\\d+$), help (non-empty string). If type=enum then values list must exist with 2+ items.
+- [ ] All templates use string.Template variables (${ticket_id}, ${parent}, etc.)
 - [ ] Template lookup priority implemented (project → user → skill)
 - [ ] Variable substitution implemented (simple string replacement)
 
@@ -461,22 +436,20 @@ echo "Current epic (EPIC-0001.1) focuses on skills/gitstory/ foundation only"
 - [ ] Quality thresholds defined: initiative (85%), epic (70%), story (85%), task (95%), bug (85%), generic (70%)
 - [ ] Vague term penalty weights included (high/-10, medium/-5, low/-2)
 - [ ] BDD and acceptance criteria requirements defined
-- [ ] Command config lookup priority implemented (project → user → skill)
+- [ ] Command config lookup checks paths in order: (1) .gitstory/commands/{command}.yaml (project), (2) ~/.claude/skills/gitstory/commands/{command}.yaml (user), (3) {baseDir}/commands/{command}.yaml (skill), returns first existing file. If none exist, raise FileNotFoundError with message 'Command config {command}.yaml not found in project, user, or skill directories'.
 
 ### Documentation & Scripts
-- [ ] install.sh stub created (placeholder, documents deferral to EPIC-0001.4)
-- [ ] Template authoring guide content drafted (for references/ in EPIC-0001.4)
-- [ ] Command configuration guide content drafted (for references/ in EPIC-0001.4)
+- [ ] Template authoring guide content created (500-1000 words, for references/ in EPIC-0001.4)
+- [ ] Command configuration guide content created (500-1000 words, for references/ in EPIC-0001.4)
 - [ ] All deliverables tested on Linux/macOS (Windows CI deferred to EPIC-0001.4)
 
 ## Risks & Mitigations
 
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|------------|
-| {baseDir} pattern breaks on Windows | Low | Low | Pattern proven in anthropics/skills (cross-platform tested), defer Windows CI to EPIC-0001.4 for validation |
-| .claude-plugin/config.json invalid format | Medium | Low | Validate with jq, compare against anthropics/skills examples field-by-field, use exact format from official repo |
-| YAML frontmatter parsing errors | Medium | Medium | Validate YAML syntax, provide clear error messages with line numbers, test with malformed input |
-| Variable substitution conflicts with markdown syntax | Low | Low | Use specific delimiter ({{var}}), escape literal braces in templates, document escaping in authoring guide |
-| Priority lookup confusing (which template/config is active?) | Medium | Medium | Document lookup order clearly, add --show-template flag to /gitstory:plan (in EPIC-0001.3) to display active path |
-| Template field schemas too rigid for custom workflows | Medium | Low | Allow additionalFields: true in frontmatter, provide generic.md fallback, document customization in authoring guide |
-| Empty install.sh stub confuses users | Low | Medium | Add clear comment explaining deferral to EPIC-0001.4, show placeholder message when run |
+| Risk | Impact (Hours/%) | Likelihood (%) | Mitigation |
+|------|------------------|----------------|------------|
+| {baseDir} pattern breaks on Windows | 2h rework | 5% | Pattern proven in anthropics/skills (cross-platform tested), defer Windows CI to EPIC-0001.4 for validation |
+| .claude-plugin/config.json invalid format | 1h rework | 10% | Validate with python -m json.tool, compare against anthropics/skills examples field-by-field, use exact format from official repo |
+| YAML frontmatter parsing errors | 4h debugging | 25% | Validate YAML syntax, provide clear error messages with line numbers, test with malformed input |
+| Variable substitution conflicts with markdown syntax | 2h fix | 10% | Use specific delimiter (${var}), escape literal braces in templates, document escaping in authoring guide |
+| Priority lookup confusing (which template/config is active?) | 3h documentation | 30% | Document lookup order clearly, add --show-template flag to /gitstory:plan (in EPIC-0001.3) to display active path |
+| Template field schemas too rigid for custom workflows | 6h refactor | 15% | Allow additionalFields: true in frontmatter, provide generic.md fallback, document customization in authoring guide |
