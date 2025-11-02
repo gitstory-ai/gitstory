@@ -1,8 +1,8 @@
-# INIT-0001: Make GitStory Workflow-Agnostic via Plugin-Based State Machines
+# uinINIT-0001: Make GitStory Workflow-Agnostic via Plugin-Based State Machines
 
-**Timeline**: Q4 2025
-**Status**: 🟡 In Progress
-**Owner**: Bram Swenson
+**Timeline**: Q4 2025  
+**Status**: 🟡 In Progress  
+**Owner**: Bram Swenson  
 **Progress**: ░░░░░░░░░░ 0%
 
 ## Objective
@@ -13,9 +13,11 @@ Transform GitStory into a **workflow-agnostic ticket management system** distrib
 
 - [ ] **Formal Workflow State Machine**: Create `workflow.yaml` schema (v1.0) defining states (nodes with constraints/entry/exit conditions), transitions (edges with events/guards/actions), ticket hierarchy, and `plugin_security` mode (strict/warn/permissive), following FSM theory with self-documenting 200+ comment lines showing Kanban/Scrum/custom patterns (supports ticket reopening via backward transitions). Skill provides reference implementation—users MUST have `.gitstory/workflow.yaml` or commands error. Validate `config_version` field on load.
 - [ ] **Workflow Plugin System**: Implement `run_workflow_plugin` with priority lookup (`.gitstory/plugins/` → `~/.claude/skills/gitstory/plugins/` → skill defaults), supporting three plugin types via **shorthand notation** (string in list = convention path, object = inline code or custom config):
+
   - **Guards**: Boolean checks (exit 0=pass, 1=fail, 2=error) - e.g., `all_children_done`, `quality_gates_passed`
   - **Events**: Occurrence detectors (exit 0=occurred, 1=not, 2=error) - e.g., `pr_merged`, `branch_merged`, `manual_state_change`
   - **Actions**: Operations with side effects (exit 0=success, 1=failure, 2=error) - e.g., `create_git_branch`, `update_ticket_status`
+
 - [ ] **20 Default Workflow Plugins**: Implement workflow plugins (guards: 6 inline + 6 external, events: 4 external, actions: 4 external) covering 80% of common workflows, all extensionless with shebang, JSON output, 30-second timeout
 - [ ] **Plugin Security System**: Implement security modes in `run_workflow_plugin` (strict requires allowlist/signing, warn prompts on first run, permissive runs without checks), audit logging for all plugin executions, documentation in references/security.md
 - [ ] **3 Core Scripts**: Implement internal utilities (`parse_ticket`, `run_workflow_plugin`, `validate_workflow`) for command infrastructure—not overridable, not referenced in workflow.yaml
@@ -28,18 +30,15 @@ Transform GitStory into a **workflow-agnostic ticket management system** distrib
 
 ## Epics
 
-| ID | Title | Status | Story Points | Progress | Owner |
-|----|-------|--------|--------------|----------|-------|
-| [EPIC-0001.1](EPIC-0001.1/README.md) | Repository Restructuring & Skill Foundation | 🔵 Not Started | 6 | ░░░░░░░░░░ 0% | TBD |
-| [EPIC-0001.2](EPIC-0001.2/README.md) | Formal Workflow State Machine & YAML Schema | 🔵 Not Started | 17 | ░░░░░░░░░░ 0% | TBD |
-| [EPIC-0001.3](EPIC-0001.3/README.md) | Core Scripts & Plugin Execution Engine | 🔵 Not Started | 24 | ░░░░░░░░░░ 0% | TBD |
-| [EPIC-0001.4](EPIC-0001.4/README.md) | Default Workflow Plugins (Guards/Events/Actions) | 🔵 Not Started | 18 | ░░░░░░░░░░ 0% | TBD |
-| [EPIC-0001.5](EPIC-0001.5/README.md) | Template System & Command Configuration | 🔵 Not Started | 8 | ░░░░░░░░░░ 0% | TBD |
-| [EPIC-0001.6](EPIC-0001.6/README.md) | Universal Commands & Config Validation | 🔵 Not Started | 14 | ░░░░░░░░░░ 0% | TBD |
-| [EPIC-0001.7](EPIC-0001.7/README.md) | Skill Distribution & Dogfooding | 🔵 Not Started | 6 | ░░░░░░░░░░ 0% | TBD |
+| ID                                   | Title                                            | Status         | Story Points | Progress      | Owner |
+| ------------------------------------ | ------------------------------------------------ | -------------- | ------------ | ------------- | ----- |
+| [EPIC-0001.1](EPIC-0001.1/README.md) | Skills Foundation & Infrastructure               | 🔵 Not Started | 20           | ░░░░░░░░░░ 0% | TBD   |
+| [EPIC-0001.2](EPIC-0001.2/README.md) | Workflow Engine & Core Scripts                   | 🔵 Not Started | 41           | ░░░░░░░░░░ 0% | TBD   |
+| [EPIC-0001.3](EPIC-0001.3/README.md) | Workflow Plugins & Universal Commands            | 🔵 Not Started | 32           | ░░░░░░░░░░ 0% | TBD   |
+| [EPIC-0001.4](EPIC-0001.4/README.md) | Distribution, Documentation & Validation         | 🔵 Not Started | 20           | ░░░░░░░░░░ 0% | TBD   |
 
-**Total Story Points**: 93
-**Epic Dependencies**: EPIC-0001.1 → EPIC-0001.2 → EPIC-0001.3 → EPIC-0001.4 → EPIC-0001.5 → EPIC-0001.6 → EPIC-0001.7
+**Total Story Points**: 113
+**Epic Dependencies**: EPIC-0001.1 → EPIC-0001.2 → EPIC-0001.3 → EPIC-0001.4
 
 ## Architecture Overview
 
@@ -61,7 +60,7 @@ Transform GitStory into a **workflow-agnostic ticket management system** distrib
 
 ### System Components
 
-```
+````
 gitstory/                           # Source (git-tracked)
 ├── skills/gitstory/                # GitStory Skill definition
 │   ├── SKILL.md                    # Core instructions (3000-4000 words)
@@ -138,7 +137,7 @@ gitstory/                           # Source (git-tracked)
 ├── plugins/                        # User plugins (override skill)
 └── templates/                      # User templates (override skill)
 # Note: workflow.yaml MUST be in .gitstory/ - no user/skill fallback
-```
+````
 
 ### Plugin Execution Flow
 
@@ -167,23 +166,29 @@ transitions:
       - update_parent_progress
 ```
 
-**When user runs `/gitstory:review STORY-0001.2.3`:**
+**When user runs** **`/gitstory:review STORY-0001.2.3`** **/gitstory:review STORY-0001.2.3** **/gitstory:review STORY-0001.2.3****:**
 
 1. **Core script** (internal utility): `scripts/parse_ticket --mode=review STORY-0001.2.3`
+
    - Returns ticket metadata, current state, available transitions
+
 2. Find transitions from current state (`in_progress`)
 3. **Workflow plugin** (overridable): For each transition, check event via `scripts/run_workflow_plugin --type=event --name=pr_merged STORY-0001.2.3`
 4. If event occurred (exit 0), check guards:
+
    - **Workflow plugin**: `scripts/run_workflow_plugin --type=guard --name=all_children_done STORY-0001.2.3`
    - **Workflow plugin**: `scripts/run_workflow_plugin --type=guard --name=quality_gates_passed STORY-0001.2.3`
+
 5. If all guards pass (exit 0), execute actions:
+
    - **Workflow plugin**: `scripts/run_workflow_plugin --type=action --name=update_ticket_status STORY-0001.2.3 done`
    - **Workflow plugin**: `scripts/run_workflow_plugin --type=action --name=update_parent_progress STORY-0001.2.3`
+
 6. Transition complete, display result
 
 **Plugin lookup for workflow plugins (convention path with priority override):**
 
-```
+````
 String "all_children_done" in guards list implies:
 1. Check: .gitstory/plugins/guards/all_children_done      (project override)
 2. Check: ~/.claude/skills/gitstory/plugins/guards/all_children_done  (user override)
@@ -192,7 +197,7 @@ String "all_children_done" in guards list implies:
 
 Note: Core scripts (parse_ticket, run_workflow_plugin, validate_workflow)
 are NOT subject to override—they live in scripts/ and are internal infrastructure.
-```
+````
 
 ### Flexible Plugin References
 
@@ -223,8 +228,8 @@ plugins:
 **Rules:**
 
 - **String** → Convention path (`plugins/{type}/{name}`)
-- **Object with `inline:`** → Execute inline code
-- **Object with `file:`** → Use explicit path
+- **Object with** **`inline:`** **inline:** **inline:** → Execute inline code
+- **Object with** **`file:`** **file:** **file:** → Use explicit path
 - **Object without both** → Convention path + metadata/config
 
 ### Plugin Contracts
@@ -294,9 +299,11 @@ sys.exit(0 if success else 1)
 - ⬜ **workflow.yaml**: Define 4-state simple workflow (not-started/in-progress/blocked/done) + 6 transitions, with inline comment sections (200+ lines) showing Kanban (5 states, WIP limits) and Scrum (6 states, sprint integration) alternatives using **shorthand notation** for workflow plugins
 - ⬜ **Workflow Plugin Execution**: `scripts/run_workflow_plugin` supports all three types (guard/event/action), shorthand notation works (string=convention, object=inline/custom), priority lookup correct (project > user > skill), security modes functional
 - ⬜ **Default Workflow Plugins**: 20 workflow plugins implement core workflow with mix of inline and external:
+
   - Guards: 6 inline (`ticket_file_exists`, `has_acceptance_criteria`, `ready_to_begin`, `blocker_identified`, `blocker_resolved`, `reopened_explicitly`) + 6 external (`all_children_done`, `quality_gates_passed`, `git_branch_exists`, `check_children_recursive`, `work_complete`, `quality_verified`)
   - Events: 4 external (`pr_merged` for GitHub, `branch_merged` for generic git, `manual_or_pr_merged`, `branch_created`)
   - Actions: 4 external (`create_git_branch`, `update_ticket_status`, `update_parent_progress`, `close_git_branch`)
+
 - ⬜ **Core Scripts**: 3 internal utilities (`parse_ticket`, `run_workflow_plugin`, `validate_workflow`) in `scripts/` directory—not overridable, not referenced in workflow.yaml
 - ⬜ **Universal Commands**: `/gitstory:plan TICKET-ID` works with any ticket type defined in workflow.yaml (not just INIT/EPIC/STORY/TASK), reads planning config, applies template, creates file
 - ⬜ **Workflow Validation**: `/gitstory:validate-workflow` checks YAML syntax, state machine structure (reachability, transition validity), workflow plugin references (existence, inline syntax), displays clear errors with line numbers
@@ -314,7 +321,7 @@ Validate during dogfooding (EPIC-0001.7):
 - [ ] `/gitstory:validate-workflow` returns results near-instantly
 - [ ] Workflow plugin execution doesn't create frustrating delays during normal workflows
 
-**Acceptance criteria**: Commands complete in timeframe where user doesn't wonder "is this stuck?"
+**Acceptance criteria**: Commands complete in timeframe where user doesn't wonder "is this stuck?"  
 (Rough guideline: <5 seconds for review operations, <1 second for validation)
 
 If performance issues arise, profile with `time` command and optimize specific bottlenecks.
@@ -327,11 +334,13 @@ If performance issues arise, profile with `time` command and optimize specific b
 - ⬜ **Shorthand Notation**: Convention path resolution works correctly for workflow plugins, inline code executes properly, priority lookup (project > user > skill) validated
 - ⬜ **Plugin Security**: Security modes (strict/warn/permissive) work correctly, audit log captures executions, documentation covers threat model
 - ⬜ **End-to-End Use Cases**: 5 use cases documented and validated:
+
   1. Create and complete simple task (not-started → in-progress → done)
   2. Story with multiple tasks (progressive completion)
   3. Hit blocker mid-work (in-progress → blocked → in-progress → done)
   4. Review catches quality issue (guards fail, cannot transition)
   5. Reopen completed ticket (done → in-progress, backward transition)
+
 - ⬜ **Custom Workflow**: External project creates custom workflow (3-level hierarchy, 5 states), adds 3 custom inline guards, completes ≥3 tickets without modifying GitStory code
 - ⬜ **User Documentation**: SKILL.md 3000-4000 words core instructions + references/ directory with 7+ on-demand docs, includes installation steps, 5+ examples showing shorthand notation and customization, troubleshooting section with 10+ common issues
 - ⬜ **Plugin Testing UX**: `/gitstory:test-plugin` command works for all plugin types, --dry-run and --verbose flags functional
@@ -355,13 +364,13 @@ If performance issues arise, profile with `time` command and optimize specific b
 
 ## Risks
 
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|------------|
-| Workflow plugin security (arbitrary code execution) | High | Medium | Implement plugin security modes (strict/warn/permissive) with warn as default, audit logging for all executions, documentation covering threat model and sandboxing strategies, users control `.gitstory/plugins/` with explicit trust model |
-| Performance degradation (many plugin calls) | Medium | Medium | Manual validation during dogfooding, profile with `time` command if issues arise, cache plugin results (`.gitstory/cache/`), implement lazy evaluation (only check relevant transitions) |
-| Complex state machine configuration | High | High | Provide working defaults (simple 4-state workflow), 200+ comment lines in workflow.yaml showing patterns, validate on init (catch errors early), references/ directory with progressive disclosure |
-| Breaking existing workflows | High | Medium | Maintain backward compatibility: GitStory repo migrates first (validate with real usage), provide migration guide, default workflow matches current behavior exactly |
-| Workflow plugin debugging difficulty | Medium | High | `/gitstory:test-plugin` command for isolated testing, structured JSON output (parse errors easily), clear exit codes (0/1/2 meaning), --verbose mode (show plugin paths/args), test plugins independently (unit tests) |
+| Risk                                                | Impact | Likelihood | Mitigation                                                                                                                                                                                                                                   |
+| --------------------------------------------------- | ------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workflow plugin security (arbitrary code execution) | High   | Medium     | Implement plugin security modes (strict/warn/permissive) with warn as default, audit logging for all executions, documentation covering threat model and sandboxing strategies, users control `.gitstory/plugins/` with explicit trust model |
+| Performance degradation (many plugin calls)         | Medium | Medium     | Manual validation during dogfooding, profile with `time` command if issues arise, cache plugin results (`.gitstory/cache/`), implement lazy evaluation (only check relevant transitions)                                                     |
+| Complex state machine configuration                 | High   | High       | Provide working defaults (simple 4-state workflow), 200+ comment lines in workflow.yaml showing patterns, validate on init (catch errors early), references/ directory with progressive disclosure                                           |
+| Breaking existing workflows                         | High   | Medium     | Maintain backward compatibility: GitStory repo migrates first (validate with real usage), provide migration guide, default workflow matches current behavior exactly                                                                         |
+| Workflow plugin debugging difficulty                | Medium | High       | `/gitstory:test-plugin` command for isolated testing, structured JSON output (parse errors easily), clear exit codes (0/1/2 meaning), --verbose mode (show plugin paths/args), test plugins independently (unit tests)                       |
 
 ## Error Handling
 
@@ -395,6 +404,7 @@ This will copy the default workflow configuration to your project.
 All config files include a `config_version` field tracking the format version:
 
 **workflow.yaml**:
+
 ```yaml
 metadata:
   config_version: "1.0"
@@ -403,6 +413,7 @@ metadata:
 ```
 
 **commands/plan.yaml**:
+
 ```yaml
 config_version: "1.0"
 interview_questions:
@@ -410,6 +421,7 @@ interview_questions:
 ```
 
 **commands/review.yaml**:
+
 ```yaml
 config_version: "1.0"
 quality_thresholds:
@@ -421,11 +433,13 @@ quality_thresholds:
 **Current Version**: `1.0` (all config files)
 
 **Version Checking**:
+
 - Commands validate `config_version` field on load
 - Error if version > supported (e.g., user has `2.0`, GitStory supports `1.0`)
 - Warn if version < current (e.g., user has `1.0`, GitStory supports `1.5`)
 
 **Future Migrations**:
+
 - When format changes, increment `config_version` to `1.1`, `2.0`, etc.
 - Provide migration script: `/gitstory:migrate-config` to upgrade old configs
 - Keep backward compatibility for 2 major versions
@@ -806,6 +820,7 @@ workflow:
 
 - [ ] Write SKILL.md core instructions (3000-4000 words) with overview, quick start, core concepts, command reference, troubleshooting
 - [ ] Create references/ directory with 7+ on-demand documentation files:
+
   - [ ] workflow-schema.md (full workflow.yaml format)
   - [ ] plugin-authoring.md (writing custom workflow plugins)
   - [ ] plugin-contracts.md (guard/event/action specifications)
@@ -813,6 +828,7 @@ workflow:
   - [ ] command-configuration.md (commands/*.yaml format)
   - [ ] state-machine-patterns.md (Kanban/Scrum examples)
   - [ ] security.md (security model, threat mitigation, sandboxing)
+
 - [ ] Create examples/ directory with example workflows and custom plugins
 - [ ] Verify SKILL.md uses "GitStory Skill" and "workflow plugins" terminology consistently
 - [ ] Add glossary to SKILL.md distinguishing GitStory Skill vs workflow plugins vs slash commands
@@ -831,21 +847,25 @@ workflow:
 
 Since we have essentially no users, we can do a clean replacement without backward compatibility:
 
-1. **Build the new system** (EPIC-0001.1 through EPIC-0001.6)
-   - Implement all 7 epics in sequence
+1. **Build the new system** (EPIC-0001.1 through EPIC-0001.3)
+
+   - Implement all 4 epics in sequence
    - Write comprehensive tests as we go
 
-2. **Dogfood on GitStory repo** (EPIC-0001.7)
+2. **Dogfood on GitStory repo** (EPIC-0001.4)
+
    - Create `.gitstory/workflow.yaml` for GitStory repo itself
    - Configure to match current behavior (4-level hierarchy, simple states)
    - Complete 3+ real tickets using the new system
    - Fix any bugs discovered during self-hosting
 
-3. **Ship it** (EPIC-0001.7)
+3. **Ship it** (EPIC-0001.4)
+
    - Remove old hardcoded workflow logic
    - Update all documentation
    - Distribute via Claude Skills marketplace
    - No deprecation period needed—just replace the old system
+
 
 **No backward compatibility needed.** Clean break.
 
@@ -853,21 +873,27 @@ Since we have essentially no users, we can do a clean replacement without backwa
 
 Initiative is complete when:
 
-1. ✅ All 7 epics marked complete (93 story points delivered)
+1. ✅ All 4 epics marked complete (113 story points delivered)
 2. ✅ GitStory repo successfully migrated to workflow.yaml with shorthand notation and plugin_security: warn (3+ tickets completed)
 3. ✅ GitStory Skill installable via Claude Code plugin system (`/plugin install gitstory`)
 4. ✅ External project creates custom workflow (3-level hierarchy, 5 states, 3 custom inline guards) and completes 3+ tickets
 5. ✅ All 5 end-to-end use cases validated (documented with transcripts)
 6. ✅ All 20 default workflow plugins pass validation:
+
    - 6 inline guard plugins syntax-checked (bash/python)
    - 14 external plugins pass unit tests (100% pass rate, 5+ tests each)
+
 7. ✅ All 3 core scripts pass validation:
+
    - `parse_ticket`, `run_workflow_plugin`, `validate_workflow` each have ≥10 unit tests (100% pass rate)
    - Security mode tests included (strict/warn/permissive behavior verified)
+
 8. ✅ Plugin security system functional:
+
    - Security modes work correctly (strict/warn/permissive)
    - Audit log captures all workflow plugin executions
    - Documentation covers threat model and mitigation strategies
+
 9. ✅ State machine validation detects all error types (documented with 10+ test cases)
 10. ✅ Shorthand notation works correctly (string=convention, inline, file)
 11. ✅ Performance validation passed during dogfooding (commands feel responsive, no frustrating delays)
@@ -875,12 +901,14 @@ Initiative is complete when:
 13. ✅ `/gitstory:test-plugin` command works for all workflow plugin types with --dry-run and --verbose
 14. ✅ Multi-git-host support: `pr_merged` (GitHub) and `branch_merged` (generic) both functional
 15. ✅ Documentation complete:
-    - SKILL.md 3000-4000 words core instructions
-    - references/ directory with 7+ on-demand docs
-    - Terminology consistent (GitStory Skill vs workflow plugins)
-    - Shorthand notation examples throughout
-    - Troubleshooting with 10+ issues
-    - Glossary distinguishing skill/plugins/commands
+
+- SKILL.md 3000-4000 words core instructions
+- references/ directory with 7+ on-demand docs
+- Terminology consistent (GitStory Skill vs workflow plugins)
+- Shorthand notation examples throughout
+- Troubleshooting with 10+ issues
+- Glossary distinguishing skill/plugins/commands
+
 16. ✅ Directory structure tested and documented (slash command → skill resource references working)
 17. ✅ No regressions in existing GitStory functionality (verified via manual testing)
 
@@ -889,21 +917,25 @@ Initiative is complete when:
 ### Claude Skills Documentation
 
 - **Claude Code Skills Documentation**: [docs.claude.com/en/docs/claude-code/skills](https://docs.claude.com/en/docs/claude-code/skills)
+
   - Official documentation for Claude Code Skills feature
   - Covers skill creation, SKILL.md format, distribution, and best practices
   - Primary reference for skill implementation standards
 
 - **Anthropic Skills Repository**: [github.com/anthropics/skills](https://github.com/anthropics/skills/tree/main)
+
   - Official collection of Claude Skills from Anthropic
   - Used to research skill structure (SKILL.md format, progressive disclosure, `{baseDir}` pattern)
   - Reference implementation for skill distribution and marketplace integration
 
 - **Equipping Agents for the Real World with Agent Skills**: [anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+
   - Official Anthropic blog post introducing Claude Skills (October 2025)
   - Explains model-invoked vs user-invoked distinction
   - Documents SKILL.md structure, progressive disclosure, and distribution via plugin marketplace
 
 - **Claude Skills Deep Dive**: [leehanchung.github.io/blogs/2025/10/26/claude-skills-deep-dive](https://leehanchung.github.io/blogs/2025/10/26/claude-skills-deep-dive/)
+
   - Comprehensive technical analysis of Claude Skills architecture
   - Details on script execution, portability patterns (`{baseDir}`), and best practices
   - Referenced for understanding flexible script references and execution models
