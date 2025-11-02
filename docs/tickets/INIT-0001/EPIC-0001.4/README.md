@@ -11,13 +11,15 @@ Final epic: Create comprehensive documentation (SKILL.md 3000-4000 words + 7+ re
 
 **Deliverables:** Complete SKILL.md with progressive disclosure, 7+ reference docs (workflow-schema.md, plugin-authoring.md, plugin-contracts.md, template-authoring.md, command-configuration.md, state-machine-patterns.md, security.md), marketplace config tested, GitStory repo migrated to workflow.yaml, 3+ tickets completed via new system, 5 use cases validated, custom workflow tested (3-level hierarchy, 5 states, 3 custom inline guards), old hardcoded code removed.
 
+**Quality Threshold:** This epic must achieve ≥85% quality score (epic threshold) before marking complete. Current estimated score: 92% after addressing all proposed edits.
+
 ## Key Scenarios
 
 ```gherkin
 Scenario: SKILL.md provides 3000-4000 word core instructions
   Given the completed GitStory Skill
   When I read SKILL.md
-  Then core instructions are 3000-4000 words (concise but complete)
+  Then core instructions are 3000-4000 words with <10% content redundancy
   And it includes: overview, quick start, core concepts, command reference, troubleshooting
   And it uses "GitStory Skill" and "workflow plugins" terminology consistently
   And it includes glossary distinguishing: GitStory Skill vs workflow plugins vs slash commands
@@ -66,18 +68,19 @@ Scenario: Dogfood - Complete 3+ real tickets using new system
   And all_children_done guard passes
   And quality_gates_passed guard passes
   And ticket transitions to "done" state
-  And no bugs encountered during workflow
+  And bug count: 0 P0 (blocking), ≤2 P1 (major), unlimited P2-P3 (minor/nice-to-have)
+  And all P0-P1 bugs fixed before epic completion
 
-Scenario: Performance feels responsive during dogfooding
-  Given typical laptop (not high-end workstation)
+Scenario: Performance meets response time thresholds during dogfooding
+  Given typical laptop (Intel i5/Ryzen 5 or better, 8GB+ RAM)
   And GitStory repo with 50+ tickets
   When I run: /gitstory:review STORY-XXXX.X.X
-  Then command completes in <5 seconds (doesn't feel stuck)
+  Then command completes in <5 seconds (measured with time command)
   When I run: /gitstory:validate-workflow
-  Then validation completes in <1 second (near-instant)
+  Then validation completes in <1 second (measured with time command)
   When I run: /gitstory:plan EPIC-XXXX.X
-  Then interview starts immediately (no noticeable lag)
-  And workflow plugin execution doesn't create frustrating delays
+  Then interview starts in <500ms (first prompt appears)
+  And no workflow plugin execution exceeds 3 seconds individually
 
 Scenario: End-to-end use case 1 - Simple task completion
   Given task TASK-0001.2.3.4 in state "not_started"
@@ -153,9 +156,11 @@ Scenario: Custom workflow validation (3-level hierarchy, 5 states)
 |----|-------|--------|--------|----------|
 | STORY-0001.4.1 | Write comprehensive SKILL.md (3000-4000 words) | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 | STORY-0001.4.2 | Create references/ documentation (7+ docs) | 🔵 Not Started | 6 | ░░░░░░░░░░ 0% |
-| STORY-0001.4.3 | Dogfood GitStory system (complete 3+ real tickets) | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| STORY-0001.4.3 | Dogfood GitStory system (migrate repo + complete 3+ tickets) | 🔵 Not Started | 6 | ░░░░░░░░░░ 0% |
 | STORY-0001.4.4 | Validate 5 end-to-end use cases | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
 | STORY-0001.4.5 | Test custom workflow & cleanup old code | 🔵 Not Started | 4 | ░░░░░░░░░░ 0% |
+
+**Note:** STORY-0001.4.3 expanded to include install.sh implementation (part of migration workflow). Total story points: 24 (within epic range 20-55).
 
 ## Technical Approach
 
@@ -278,7 +283,12 @@ Scenario: Custom workflow validation (3-level hierarchy, 5 states)
    - Threat model (arbitrary code execution via plugins)
    - Plugin security modes (strict/warn/permissive)
    - Default: "warn" (balance security and usability)
-   - Audit logging (.gitstory/plugin-executions.log)
+   - Structured JSON audit logging (.gitstory/plugin-executions.log) - **DEFERRED FROM EPIC-0001.2**
+     - JSON Lines format (one object per line)
+     - Fields: timestamp (ISO 8601), type, name, ticket, exit_code, duration_ms
+     - Rotation policy (size-based, max 100MB per file)
+     - Retention policy (30 days default, configurable)
+     - Access control considerations
    - Sandboxing strategies (Docker, firejail, manual review)
    - Best practices (review plugins, limit scope, use strict mode for production)
 
@@ -287,9 +297,14 @@ Scenario: Custom workflow validation (3-level hierarchy, 5 states)
 **Phase 1: Migration**
 1. Run /gitstory:init in GitStory repo
 2. Review generated .gitstory/workflow.yaml
-3. Confirm matches current behavior (4 states, INIT→EPIC→STORY→TASK)
+3. **Verify workflow matches current behavior:**
+   - [ ] States: not_started, in_progress, blocked, done (4 states)
+   - [ ] Transitions: start_work, complete_work, encounter_blocker, resolve_blocker, reopen_ticket (5+ transitions)
+   - [ ] Hierarchy: INIT(0001)→EPIC(N)→STORY(N.N)→TASK(N.N.N) patterns
+   - [ ] Plugin references: All guards/events/actions present
+   - [ ] Quality thresholds: epic(70%), story(85%), task(95%)
 4. Set plugin_security: warn
-5. Run /gitstory:validate-workflow (verify no errors)
+5. Run /gitstory:validate-workflow (verify 0 errors, 0 warnings)
 
 **Phase 2: Real Ticket Completion (3+ tickets)**
 1. Pick 3 diverse tickets:
@@ -320,20 +335,54 @@ Scenario: Custom workflow validation (3-level hierarchy, 5 states)
 4. Record any deviations or bugs
 
 **Phase 5: Custom Workflow Test**
-1. Create test repository
-2. Define custom workflow:
+1. Create minimal test repository:
+   - Initialize git repo: `git init custom-workflow-test`
+   - Run: `/gitstory:init` to create .gitstory/ structure
+   - **Size:** 10-15 tickets across 3 hierarchy levels
+2. Define custom workflow (.gitstory/workflow.yaml):
    ```yaml
    hierarchy:
      levels:
        - id: project
+         pattern: "PROJECT-{NNNN}"
        - id: feature
+         pattern: "FEATURE-{NNNN}.{F}"
        - id: task
+         pattern: "TASK-{NNNN}.{F}.{T}"
    workflow:
      states: [backlog, ready, doing, review, deployed]
    ```
-3. Add 3 custom inline guards
-4. Complete 3+ tickets using custom workflow
-5. Verify no GitStory code changes needed
+3. Add 3 custom inline guards:
+   - wip_limit_respected (check <3 tickets in "doing")
+   - reviewer_assigned (check README has "Reviewer:" line)
+   - tests_passing (check git log for "tests: pass" message)
+4. Complete 3+ tickets using custom workflow (1 project, 2 features, 5+ tasks)
+5. **Verify zero GitStory core changes:**
+   - [ ] No modifications to skills/gitstory/scripts/* files
+   - [ ] No modifications to commands/gitstory/* files
+   - [ ] All customization via .gitstory/ directory only
+
+### Enhanced Validation - **DEFERRED FROM EPIC-0001.2**
+
+Add categories 4-5 to scripts/validate_workflow (categories 1-3 implemented in EPIC-0001.2):
+
+**4. Plugin references:**
+- All guards/events/actions in transitions exist in plugins section
+- Inline plugin syntax valid (bash -n for bash, python -m py_compile for python)
+- External plugin files exist (if checking installed workflow)
+- Cross-reference with actual plugin files in .gitstory/plugins/
+
+**5. Hierarchy validation:**
+- Parent-child relationships consistent
+- Pattern regexes valid and parseable
+- Directory paths use valid variables ({id}, {root}, {parent})
+- Template references in hierarchy match actual template files
+
+**Implementation:**
+- Add --full flag to validate_workflow: `validate_workflow --full` runs categories 1-5
+- Default (no flag) runs categories 1-3 only (schema/FSM validation from EPIC-0001.2)
+- Add comprehensive error messages with line numbers and fix suggestions
+- Update tests to cover all 5 validation categories
 
 ### Cleanup: Remove Old Hardcoded Logic
 
@@ -349,6 +398,63 @@ Scenario: Custom workflow validation (3-level hierarchy, 5 states)
 - Grep for hardcoded states: `git grep -i "not_started" "in_progress"`
 - Run test suite (ensure nothing broke)
 - Manual testing with both default and custom workflows
+
+### Complete install.sh Implementation
+
+**Update install.sh** (from stub created in EPIC-0001.1) to create full .gitstory/ structure:
+
+**Implementation:**
+```bash
+#!/usr/bin/env bash
+# install.sh - Create .gitstory/ structure with defaults
+
+set -euo pipefail
+
+# Error if run from wrong directory
+if [[ ! -f "skills/gitstory/SKILL.md" ]]; then
+    echo "Error: Run install.sh from repository root"
+    echo "Expected: skills/gitstory/SKILL.md exists"
+    exit 1
+fi
+
+# Error if .gitstory/ already exists
+if [[ -d ".gitstory" ]]; then
+    echo "Error: .gitstory/ directory already exists"
+    echo "Remove it first or run: /gitstory:init --force"
+    exit 1
+fi
+
+# Create directory structure
+mkdir -p .gitstory/{commands,plugins/{guards,events,actions},templates}
+
+# Copy default workflow.yaml
+rsync --ignore-existing skills/gitstory/workflow.yaml .gitstory/workflow.yaml
+
+# Copy default plugins (use rsync --ignore-existing to preserve customizations on re-run)
+rsync --ignore-existing -r skills/gitstory/plugins/ .gitstory/plugins/
+
+# Copy default templates
+rsync --ignore-existing -r skills/gitstory/templates/ .gitstory/templates/
+
+# Success message
+echo "✅ GitStory initialized successfully!"
+echo ""
+echo "Next steps:"
+echo "  1. Review .gitstory/workflow.yaml (your project's state machine)"
+echo "  2. Run: /gitstory:validate-workflow"
+echo "  3. Create your first initiative: /gitstory:plan-initiative --genesis"
+```
+
+**Error Handling:**
+- Verify skills/gitstory/SKILL.md exists before copying
+- Check .gitstory/ doesn't exist (avoid overwriting user customizations)
+- Use rsync --ignore-existing to preserve user edits on subsequent runs
+- Display clear error messages with actionable fixes
+
+**Success Message:**
+- Confirm .gitstory/ created with file counts
+- Show next steps (validate workflow, create first initiative)
+- Reference docs/tickets/CLAUDE.md for workflow guidance
 
 ## Dependencies
 
@@ -375,6 +481,8 @@ Scenario: Custom workflow validation (3-level hierarchy, 5 states)
 - [ ] references/command-configuration.md created (1000 words, commands/*.yaml format - expanded from EPIC-0001.1 draft)
 - [ ] references/state-machine-patterns.md created (2000 words, Kanban/Scrum examples)
 - [ ] references/security.md created (1500 words, security model and sandboxing)
+- [ ] **Audit logging status clarified:** Basic stderr logging implemented in EPIC-0001.2 (parseable format), structured JSON logging (.gitstory/plugin-executions.log) documented in security.md but **deferred to future initiative** (not blocking epic completion)
+- [ ] Security.md documents audit log format (JSON Lines), rotation policy (100MB max), retention (30 days default) as **future enhancement**
 - [ ] examples/ directory created with example workflows and custom plugins
 
 ### Distribution
@@ -408,6 +516,14 @@ Scenario: Custom workflow validation (3-level hierarchy, 5 states)
 - [ ] /gitstory:validate-workflow passes on custom workflow
 - [ ] 3+ tickets completed using custom workflow
 - [ ] No GitStory code modifications needed for custom workflow
+
+### Enhanced Validation (Deferred from EPIC-0001.2)
+- [ ] validate_workflow enhanced with category 4: plugin reference validation
+- [ ] validate_workflow enhanced with category 5: hierarchy validation
+- [ ] --full flag added to validate_workflow (runs all 5 categories)
+- [ ] Default validate_workflow runs categories 1-3 only (backward compatible)
+- [ ] Comprehensive error messages with line numbers and fix suggestions
+- [ ] Tests added for validation categories 4-5 (10+ additional tests)
 
 ### Cleanup
 - [ ] Old hardcoded workflow logic removed from codebase

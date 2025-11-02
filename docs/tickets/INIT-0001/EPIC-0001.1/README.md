@@ -73,7 +73,7 @@ Scenario: Marketplace config enables skill installation
 Implement command-to-skill references using **{baseDir} pattern** from anthropics/skills repository (proven standard):
 
 **Approach:**
-1. Study anthropics/skills repo examples (1 hour)
+1. Review 3+ anthropics/skills examples (git-subcommands, bash-scripting, git-commit-guide), document {baseDir} usage patterns with code snippets (1 hour)
 2. Implement {baseDir} pattern in SKILL.md and commands (e.g., `{baseDir}/references/workflow-schema.md`)
 3. Document usage in skills/gitstory/README.md with code examples
 4. Verify cross-platform compatibility (Linux/macOS testing, Windows deferred to CI in EPIC-0001.4)
@@ -354,7 +354,7 @@ Create SKILL.md following anthropics/skills conventions (no frontmatter needed):
 - **Activation section:** Clear triggers for when Claude should invoke (e.g., "When user runs /gitstory:* commands OR mentions ticket planning, workflow customization, or state machine configuration")
 - **Validation:** Compare against anthropics/skills examples, ensure markdown renders correctly
 
-**Note:** Metadata (name, version, description) goes in .claude-plugin/config.json, not SKILL.md frontmatter. SKILL.md focuses on instructions/context for Claude. Full expansion to 3000-4000 words happens in EPIC-0001.4.
+**Note:** Metadata (name, version, description) goes in .claude-plugin/config.json, not SKILL.md frontmatter. SKILL.md focuses on instructions/context for Claude. Complete SKILL.md documentation (expand from 200-500 word scaffold to 3000-4000 word production version with examples, troubleshooting, references) happens in EPIC-0001.4.
 
 ### .claude-plugin/config.json (Marketplace Registration)
 

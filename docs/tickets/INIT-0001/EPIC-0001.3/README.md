@@ -7,7 +7,7 @@
 
 ## Overview
 
-Implement 20 default workflow plugins (6 inline guards, 6 external guards, 4 external events, 4 external actions) covering 80% of common workflow scenarios, and rewrite GitStory's three primary commands to be completely workflow-agnostic. External plugins are production-quality with comprehensive unit tests (70+ tests total), multi-git-host support (GitHub via gh CLI, generic git fallback), and all follow standardized contracts (extensionless files with shebang, JSON output, exit codes 0/1/2). Universal commands read workflow.yaml for ticket types, states, and transitions instead of hardcoded logic, with validation commands to catch configuration errors before execution.
+Implement 20 default workflow plugins (6 inline guards, 6 external guards, 4 external events, 4 external actions) covering 80% of common workflow scenarios (simple linear, blocker handling, PR-based completion, branch lifecycle, quality gates), and rewrite GitStory's three primary commands to be completely workflow-agnostic. External plugins are production-quality (100% unit test pass rate, error handling for all edge cases, 70+ tests total: 30 guards + 20 events + 20 actions) with multi-git-host support (GitHub via gh CLI, generic git fallback), and all follow standardized contracts (extensionless files with shebang, JSON output, exit codes 0/1/2). Universal commands read workflow.yaml for ticket types, states, and transitions instead of hardcoded logic, with validation commands to catch configuration errors before execution.
 
 **Deliverables:** 6 inline guards with syntax validation, 14 external plugins (guards/events/actions) with 70+ unit tests, workflow-agnostic /gitstory:plan/review/execute with config_version validation, /gitstory:validate-workflow with comprehensive error detection, /gitstory:test-plugin with --dry-run and --verbose flags, /gitstory:validate-config for command configs, /gitstory:init for repository setup.
 
@@ -233,7 +233,7 @@ Actions:
 - No extension: `all_children_done` not `all_children_done.py`
 - Shebang required: `#!/usr/bin/env python3`
 - Executable permissions: `chmod +x`
-- Timeout: 30 seconds (from workflow.yaml plugins.defaults.timeout)
+- Timeout: 30 seconds (from workflow.yaml plugins.defaults.timeout). Enforced by run_workflow_plugin using subprocess timeout - returns exit code 2 on timeout.
 
 ### /gitstory:plan Rewrite (Workflow-Agnostic)
 
@@ -311,12 +311,17 @@ def review_ticket(ticket_id: str):
     transitions = workflow.workflow.transitions
     available = [t for t in transitions if t.from == current_state]
 
-    # 6. Check each transition (command-driven event detection, 7-day window)
+    # 6. Check each transition (command-driven event detection, 7-day window from workflow.yaml plugins.defaults.event_lookback_days)
     for transition in available:
         # Check if event occurred
         event_result = run_workflow_plugin("event", transition.on, ticket_id)
         if not event_result["occurred"]:
             continue  # Event hasn't occurred, skip this transition
+
+        # Cache result to prevent duplicate checks
+        # Stored in .gitstory/cache/transitions/{ticket_id}.json
+        # Format: {"transition_id": {"checked_at": "ISO8601", "result": {...}}}
+        # Cached for 24 hours
 
         # Event occurred, check guards
         all_guards_pass = True
@@ -346,6 +351,27 @@ def review_ticket(ticket_id: str):
 - ✅ Support ANY state machine defined in workflow
 - ✅ Command-driven event detection (no background polling)
 - ✅ 7-day lookback window for events (configurable)
+
+### Transition Result Caching
+
+**Location:** `.gitstory/cache/transitions/{ticket_id}.json`
+
+**Format:**
+```json
+{
+  "STORY-0001.2.3": {
+    "complete_work": {
+      "checked_at": "2025-11-01T14:30:00Z",
+      "event_occurred": true,
+      "guards_passed": false,
+      "details": {"failed_guard": "quality_gates_passed"}
+    }
+  }
+}
+```
+
+**Expiration:** 24 hours (configurable via workflow.yaml plugins.defaults.cache_ttl)
+**Purpose:** Prevent redundant event detection within same day
 
 ### /gitstory:execute Rewrite (Workflow-Agnostic)
 
@@ -464,15 +490,15 @@ Check commands/*.yaml files for:
 - [ ] work_complete (deliverable checklist verification)
 - [ ] quality_verified (post-completion quality check)
 - [ ] All 6 external guards: no extension, shebang, JSON output, exit codes 0/1/2
-- [ ] 30+ unit tests for guards (5+ per guard, 100% pass rate)
+- [ ] 30+ unit tests for guards (5+ per guard covering edge cases, error handling, JSON format, timeout behavior, 100% pass rate)
 
 ### External Events (5+ Tests Each)
-- [ ] pr_merged (GitHub PR detection via gh CLI)
+- [ ] pr_merged (GitHub PR detection via gh CLI v2.0+, gracefully degrades to branch_merged if gh not available)
 - [ ] branch_merged (generic git merge detection)
 - [ ] manual_or_pr_merged (combined with fallback)
 - [ ] branch_created (branch existence as event)
 - [ ] All 4 external events: no extension, shebang, JSON output, exit codes 0/1/2
-- [ ] Multi-git-host support: pr_merged for GitHub, branch_merged for generic git
+- [ ] Multi-git-host support: pr_merged for GitHub (requires gh CLI v2.0+), branch_merged for GitLab/Bitbucket/generic git (uses git log --merges)
 - [ ] 20+ unit tests for events (5+ per event, 100% pass rate)
 
 ### External Actions (5+ Tests Each)
@@ -494,7 +520,7 @@ Check commands/*.yaml files for:
 - [ ] /gitstory:plan validates config_version before execution
 - [ ] /gitstory:plan reads commands/plan.yaml for interview questions
 - [ ] /gitstory:plan loads templates with field schemas and applies validation
-- [ ] /gitstory:plan works with ANY ticket hierarchy (not hardcoded INIT/EPIC/STORY/TASK)
+- [ ] /gitstory:plan works with ANY ticket hierarchy (not hardcoded INIT/EPIC/STORY/TASK) - errors immediately if .gitstory/workflow.yaml not found
 - [ ] /gitstory:review rewritten to read .gitstory/workflow.yaml (required, error if missing)
 - [ ] /gitstory:review validates config_version before execution
 - [ ] /gitstory:review reads commands/review.yaml for quality thresholds (optional)
@@ -514,6 +540,7 @@ Check commands/*.yaml files for:
 - [ ] --dry-run flag shows execution plan without running
 - [ ] --verbose flag shows full output and resolved paths
 - [ ] Exit code matches plugin exit code (0/1/2)
+- [ ] Performance: completes in <1s for simple guard plugins, <5s for complex event plugins
 - [ ] /gitstory:validate-config implemented for commands/*.yaml validation
 - [ ] Checks YAML syntax, config_version, interview questions, quality thresholds
 

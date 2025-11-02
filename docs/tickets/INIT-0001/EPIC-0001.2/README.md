@@ -7,9 +7,9 @@
 
 ## Overview
 
-Design and implement the workflow.yaml schema and core plugin execution engine that powers GitStory's workflow-agnostic system. Creates a formal finite state machine (FSM) specification with default 4-state simple workflow, extensive commented examples (200+ lines) demonstrating Kanban/Scrum alternatives, and three core infrastructure scripts (run_workflow_plugin, parse_ticket, validate_workflow) with comprehensive testing (40+ tests). Establishes plugin security modes (strict/warn/permissive), priority lookup (project → user → skill), and complete plugin execution infrastructure including audit logging and timeout handling.
+Design and implement the workflow.yaml schema and core plugin execution engine that powers GitStory's workflow-agnostic system. Creates a formal finite state machine (FSM) specification with default 4-state simple workflow, 400+ comment lines (200 Kanban + 200 Scrum) with fully-worked state definitions and working plugin examples, and three core infrastructure scripts (run_workflow_plugin, parse_ticket, validate_workflow) with 40+ unit tests achieving 100% pass rate and >90% code coverage. Establishes plugin security modes (strict/warn/permissive), priority lookup (project → user → skill), and complete plugin execution infrastructure including basic stderr logging and 30-second default timeout.
 
-**Deliverables:** JSON schema for workflow.yaml with plugin_security field, default simple workflow (4 states, 6 transitions), 400+ comment lines showing Kanban/Scrum patterns, 3 core scripts with full priority lookup and security enforcement, shorthand notation support (string/inline/file), 40+ unit tests achieving 100% pass rate.
+**Deliverables:** JSON schema document (skills/gitstory/references/workflow-schema.md) defining workflow.yaml structure, default simple workflow config file (skills/gitstory/workflow.yaml) with 4 states and 6 transitions, inline comment blocks totaling 400+ lines (200 Kanban + 200 Scrum), 3 executable scripts (skills/gitstory/scripts/{run_workflow_plugin,parse_ticket,validate_workflow}) with shebang and exit code contracts, shorthand notation support (string=convention path, inline=code, file=explicit path+config), 40+ unit tests in tests/unit/scripts/ with pytest achieving 100% pass and >90% coverage.
 
 ## Key Scenarios
 
@@ -26,17 +26,23 @@ Scenario: Default workflow defines 4-state simple FSM
 Scenario: Workflow comments demonstrate Kanban alternative (200+ lines)
   Given the default workflow.yaml file
   When I read the commented Kanban example
-  Then it shows 5 states (backlog, ready, in_progress, review, done)
-  And it demonstrates WIP limits per state
-  And it uses shorthand notation for workflow plugins
-  And it includes pull-based transition logic
+  Then it contains comment block starting with "# KANBAN WORKFLOW (200+ lines)"
+  And comment defines exactly 5 states: backlog, ready, in_progress, review, done
+  And each state definition includes wip_limit field with integer value
+  And at least 3 plugins use string form (e.g., - wip_limit_respected)
+  And at least 2 plugins use inline form with bash/python code
+  And comment block totals 200+ lines
+  And transitions define pull-based logic (from: ready, to: in_progress requires wip check)
 
 Scenario: Workflow comments demonstrate Scrum alternative (200+ lines)
   Given the default workflow.yaml file
   When I read the commented Scrum example
-  Then it shows 6 states (product_backlog, sprint_backlog, in_progress, review, done, cancelled)
-  And it demonstrates sprint-aware guards
-  And it shows velocity tracking integration points
+  Then it contains comment block starting with "# SCRUM WORKFLOW (200+ lines)"
+  And comment defines exactly 6 states: product_backlog, sprint_backlog, in_progress, review, done, cancelled
+  And guards include in_active_sprint with inline implementation checking sprint dates
+  And actions include update_velocity_metrics plugin reference
+  And comment block totals 200+ lines
+  And transitions show sprint planning flow (product_backlog → sprint_backlog on sprint_started event)
 
 Scenario: run_workflow_plugin supports shorthand notation (string form)
   Given workflow.yaml contains guard "all_children_done" (string)
@@ -59,10 +65,15 @@ Scenario: Plugin security mode "warn" prompts on first run
   Given workflow.yaml has plugin_security: warn
   And a workflow plugin has never been executed (not in cache)
   When I run scripts/run_workflow_plugin for that plugin
-  Then it displays plugin details (path, shebang, first 10 lines)
-  And it prompts: "Execute this plugin? (yes/no/always)"
+  Then it displays plugin absolute path (e.g., /home/user/.gitstory/plugins/guards/custom_check)
+  And it displays shebang line (e.g., "#!/usr/bin/env python3")
+  And it displays first 10 lines of plugin source code
+  And it displays prompt: "Execute this plugin? (yes/no/always)"
+  And "yes" executes plugin once without caching approval
+  And "no" aborts execution with exit code 2
   And "always" adds plugin to allowlist (.gitstory/plugin-allowlist.txt)
-  And subsequent runs don't prompt for allowlisted plugins
+  And allowlist stores SHA256 hash of plugin content
+  And subsequent runs skip prompt if hash matches allowlist entry
 
 Scenario: parse_ticket extracts metadata from hierarchical ID
   Given ticket ID "STORY-0001.2.3"
@@ -220,12 +231,18 @@ Both examples use shorthand notation and inline guards where appropriate.
    - Set timeout (default 30s from plugins.defaults.timeout)
    - Pass arguments (TICKET-ID, additional args for actions)
    - Capture stdout (JSON), stderr (logs), exit code
-   - Parse JSON output, validate schema
+   - Parse JSON output, validate against schema:
+     - Guards: require "passed" boolean field, optional "details" object
+     - Events: require "occurred" boolean field, optional "event_data" object
+     - Actions: require "success" boolean field, optional "details" object
+     - All types: JSON object with type-specific required field + optional extras
 
-5. **Audit logging:**
-   ```json
-   {"timestamp": "2025-11-01T14:30:00Z", "type": "guard", "name": "all_children_done", "ticket": "STORY-0001.2.3", "exit_code": 0, "duration_ms": 150}
-   ```
+5. **Basic logging (to stderr):**
+   - Log plugin executions to stderr in parseable format
+   - Format: `[ISO8601_timestamp] plugin:type/name ticket:ID exit:code duration:NNNms`
+   - Example: `[2025-11-01T14:30:00Z] plugin:guard/all_children_done ticket:STORY-0001.2.3 exit:0 duration:150ms`
+   - Users can redirect to file: `command 2>> audit.log`
+   - Structured JSON audit logging deferred to EPIC-0001.4 (security epic)
 
 ### scripts/parse_ticket
 
@@ -251,7 +268,7 @@ Both examples use shorthand notation and inline guards where appropriate.
 
 ### scripts/validate_workflow
 
-**Validations:**
+**Validations (Schema & FSM only):**
 1. **YAML syntax** - Parse .gitstory/workflow.yaml, check well-formed
 2. **Config version** - Check metadata.config_version exists and supported
 3. **State machine structure:**
@@ -261,14 +278,8 @@ Both examples use shorthand notation and inline guards where appropriate.
    - At least one start state (type: start)
    - At least one end state (type: end)
    - Backward transitions allowed (explicit support for ticket reopening)
-4. **Plugin references:**
-   - All guards/events/actions in transitions exist in plugins section
-   - Inline plugin syntax valid (bash -n for bash, python -m py_compile for python)
-   - External plugin files exist (if checking installed workflow)
-5. **Hierarchy:**
-   - Parent-child relationships consistent
-   - Pattern regexes valid and parseable
-   - Directory paths use valid variables ({id}, {root}, {parent})
+
+**Note:** Plugin reference validation and hierarchy validation deferred to EPIC-0001.4 when actual plugins and templates exist to validate against.
 
 **Output format:**
 ```json
@@ -341,14 +352,14 @@ return {"success": True}
 - [ ] Plugin security modes implemented (strict/warn/permissive)
 - [ ] Security mode "warn" prompts on first run with plugin preview
 - [ ] Plugin allowlist cache (.gitstory/plugin-allowlist.txt) implemented
-- [ ] Plugin execution audit log implemented (.gitstory/plugin-executions.log)
+- [ ] Basic stderr logging implemented (parseable format with timestamp, type, name, ticket, exit code, duration)
 - [ ] Exit code semantics documented (0=success, 1=failure, 2=error for plugins)
 - [ ] Stop-on-first-failure implemented for action sequences
 - [ ] scripts/parse_ticket implemented with --mode flag
 - [ ] Ticket ID parsing supports all formats (INIT/EPIC/STORY/TASK/BUG)
-- [ ] scripts/validate_workflow implemented for state machine checking
-- [ ] Workflow validation checks: YAML syntax, config_version, reachability, plugin references
-- [ ] Inline plugin syntax validation (bash/python)
+- [ ] scripts/validate_workflow implemented for schema and FSM validation
+- [ ] Workflow validation checks: YAML syntax, config_version, state reachability (categories 1-3 only)
+- [ ] Plugin reference and hierarchy validation deferred to EPIC-0001.4
 
 ### Testing
 - [ ] Unit tests for run_workflow_plugin (15+ tests: priority, security modes, inline, timeouts)
@@ -372,3 +383,4 @@ return {"success": True}
 | Timeout handling inconsistent across platforms | Medium | Low | Use Python subprocess.run(timeout=N), handle TimeoutExpired uniformly, test on Linux/macOS/Windows |
 | Inline code injection vulnerabilities | High | Medium | Validate syntax before execution, escape user input, document safe patterns, recommend external files for complex logic |
 | Core script bugs break all commands | High | Low | Comprehensive unit tests (40+ tests), TDD approach (write tests first), manual testing during dogfooding (EPIC-0001.4) |
+| Epic scope too large (7 stories vs 3-5 guideline) | Medium | High | 7 stories totaling 41 points is within epic range (20-55), story distribution balanced (4-10 points each), complexity justified by foundational nature (schema + 3 core scripts + examples + testing) - acceptable for infrastructure epic |
