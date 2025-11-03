@@ -13,14 +13,22 @@ So that I can use workflow-agnostic ticket management commands in any Claude con
 
 ## Acceptance Criteria
 
+### Happy Path
 - [ ] SKILL.md created at skills/gitstory/SKILL.md with 200-500 word markdown body (no YAML frontmatter)
 - [ ] SKILL.md includes activation section with 3 concrete trigger types: (1) Command patterns (/gitstory:plan, /gitstory:review, /gitstory:install), (2) Natural language phrases (create ticket, plan epic, review story quality, customize workflow templates), (3) Ticket ID patterns (INIT-*, EPIC-*, STORY-*, TASK-*, BUG-*)
-- [ ] SKILL.md structure validated against ALL anthropics/skills examples (minimum 5 skills reviewed for common patterns)
+- [ ] SKILL.md structure validated by reviewing ALL skills in anthropics/skills repository (document specific skills reviewed: list each skill name and repository URL in validation notes)
 - [ ] .claude-plugin/config.json created with 9 required fields: name, id, version, entry_point, author, description, keywords (5+ items), license, repository
 - [ ] config.json validated with `python -m json.tool .claude-plugin/config.json` (valid JSON syntax)
 - [ ] config.json entry_point references skills/gitstory/SKILL.md (verified with `test -f skills/gitstory/SKILL.md`)
-- [ ] SKILL.md renders correctly in markdown preview (headings, lists, code blocks formatted properly)
+- [ ] SKILL.md renders correctly in markdown preview: (1) All headings render with proper hierarchy (H1, H2, H3), (2) Bulleted lists display with proper indentation, (3) Code blocks display with syntax highlighting, (4) Links are clickable and properly formatted, (5) No raw markdown syntax visible (verified in GitHub preview or VSCode preview)
 - [ ] Word count verified: SKILL.md body is 200-500 words (excluding code blocks)
+
+### Edge Cases
+- [ ] If skills/gitstory/ directory missing → Create parent directories with `mkdir -p skills/gitstory` before writing SKILL.md
+- [ ] If .claude-plugin/ directory missing → Create directory before writing config.json
+- [ ] If SKILL.md exists → Fail with error message: 'SKILL.md already exists at skills/gitstory/SKILL.md. Delete or rename before regenerating.'
+- [ ] If config.json exists → Fail with error message: 'config.json already exists at .claude-plugin/config.json. Delete or rename before regenerating.'
+- [ ] If no write permission → Display error with path and permission requirements, exit code 2
 
 ## BDD Scenarios
 
@@ -39,12 +47,12 @@ Scenario: SKILL.md scaffold provides activation guidance
   Then it recognizes command triggers: /gitstory:plan, /gitstory:review, /gitstory:install
   And it recognizes natural language triggers: "create ticket", "plan epic", "review story quality"
   And it recognizes ticket ID patterns: INIT-0001, EPIC-0001.1, STORY-0001.1.1
-  And activation description is concrete and actionable
+  And activation description includes: (1) at least 2 specific example commands with expected output, (2) exact trigger pattern formats with regex or examples, (3) no placeholder text (no TBD, TODO, etc.)
 
 Scenario: SKILL.md follows anthropics/skills conventions
   Given ALL anthropics/skills examples reviewed
   When comparing SKILL.md structure
-  Then it has no YAML frontmatter (if pattern holds across examples)
+  Then it has no YAML frontmatter (first line must be markdown heading, not YAML --- delimiter)
   And it has consistent heading structure matching examples
   And word count is appropriate for scope (200-500 words)
   And it includes code examples or command syntax
@@ -57,14 +65,38 @@ Scenario: SKILL.md follows anthropics/skills conventions
 
 **Location:** `skills/gitstory/SKILL.md`
 
-**Content:** 200-500 word markdown scaffold describing:
-- GitStory purpose (workflow-agnostic ticket management via Claude Skills)
+**Content Structure:**
+
+```markdown
+# GitStory
+
+## Overview
+[Purpose: workflow-agnostic ticket management via Claude Skills]
+
+## Activation
+
+This skill activates when you:
+
+1. **Commands:** `/gitstory:plan`, `/gitstory:review`, `/gitstory:install`
+2. **Natural Language:** "create ticket", "plan epic", "review story quality"
+3. **Ticket IDs:** `INIT-*`, `EPIC-*`, `STORY-*`, `TASK-*`, `BUG-*`
+
+## Features
+
 - Template-driven ticket types with YAML frontmatter field schemas
 - Configurable commands via YAML (plan.yaml, review.yaml)
-- Priority lookup system (project → user → skill)
-- Activation triggers (3 types: commands, natural language, ticket IDs)
-- Quick start examples
-- Reference to {baseDir}/references/ for detailed customization
+- Priority lookup: project → user → skill defaults
+
+## Quick Start
+
+[2-3 concrete examples with commands and expected output]
+
+## Customization
+
+See `{baseDir}/references/` for detailed configuration options.
+```
+
+**Word count target:** 250-350 words (excluding code blocks)
 
 ### .claude-plugin/config.json Structure
 
@@ -98,11 +130,22 @@ Scenario: SKILL.md follows anthropics/skills conventions
 ### Validation Steps
 
 **SKILL.md validation:**
-1. Review ALL anthropics/skills examples
-2. Document common patterns (heading structure, activation styles, word counts)
-3. Compare SKILL.md against patterns
-4. Verify markdown rendering
-5. Check word count (200-500 words)
+
+```bash
+# 1. Clone anthropics/skills repository (if not exists)
+test -d /tmp/anthropics-skills || git clone https://github.com/anthropics/skills /tmp/anthropics-skills
+
+# 2. Document patterns in validation notes (docs/tickets/INIT-0001/EPIC-0001.1/STORY-0001.1.2/validation-notes.md)
+# List each skill reviewed with: name, heading structure, word count, activation patterns
+
+# 3. Compare SKILL.md structure against documented patterns
+diff <(grep '^#' skills/gitstory/SKILL.md | head -5) <(echo 'Expected heading structure')
+
+# 4. Verify markdown rendering (open in GitHub/VSCode preview, check: headings, lists, code blocks, links)
+
+# 5. Check word count (excluding code blocks)
+grep -v '^```' skills/gitstory/SKILL.md | wc -w  # Result must be 200-500
+```
 
 **config.json validation:**
 
@@ -120,20 +163,35 @@ test -f skills/gitstory/SKILL.md && echo "Entry point exists" || echo "ERROR: En
 
 | ID | Title | Status | Hours | Progress |
 |----|-------|--------|-------|----------|
-| | | | | |
+| [TASK-0001.1.2.1](TASK-0001.1.2.1.md) | Write BDD scenarios for marketplace config and SKILL.md | 🔵 Not Started | 3 | - |
+| [TASK-0001.1.2.2](TASK-0001.1.2.2.md) | Create .claude-plugin/config.json with validation | 🔵 Not Started | 3 | - |
+| [TASK-0001.1.2.3](TASK-0001.1.2.3.md) | Research anthropics/skills conventions and create SKILL.md scaffold | 🔵 Not Started | 4 | - |
+| [TASK-0001.1.2.4](TASK-0001.1.2.4.md) | Integration testing and documentation | 🔵 Not Started | 2 | - |
 
-**Note**: Run `/plan-story STORY-0001.1.2` to define tasks
+**Total Estimated Hours**: 12 hours (3 story points × 4)
+
+**BDD Progress**: 0/3 scenarios passing
+
+**Incremental BDD Tracking:**
+
+- TASK-1 (3h): 0/3 (all scenarios stubbed)
+- TASK-2 (3h): 1/3 (foundation + marketplace config)
+- TASK-3 (4h): 3/3 (complete implementation ✅)
+- TASK-4 (2h): 3/3 (integration verification ✅)
 
 ## Dependencies
 
 **Prerequisites:**
-- STORY-0001.1.1 complete (skills/gitstory/ directory structure exists)
+
+- STORY-0001.1.1 complete: Verify with `test -d skills/gitstory && test -f skills/gitstory/README.md` (both must exist)
 
 **Requires:**
+
 - skills/gitstory/ directory created
 - skills/gitstory/README.md with {baseDir} documentation
 
 **Blocks:**
+
 - EPIC-0001.2 (needs SKILL.md for plugin loading)
 - EPIC-0001.3 (needs config.json for skill metadata)
 - EPIC-0001.4 (needs SKILL.md scaffold for documentation expansion)
