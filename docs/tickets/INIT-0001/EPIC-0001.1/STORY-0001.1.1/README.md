@@ -14,12 +14,14 @@ So that skill resources can be referenced portably across different installation
 ## Acceptance Criteria
 
 - [ ] Directory structure created: skills/gitstory/ with 4 subdirectories (templates/, commands/, references/, scripts/)
+  - If directories already exist: verify structure matches spec, fail if unexpected files/dirs present
+  - Create with mode 0755, fail with clear error message if parent directory unwritable
 - [ ] All anthropics/skills examples reviewed and {baseDir} usage patterns documented in skills/gitstory/README.md with 3+ code examples
 - [ ] {baseDir} pattern documented showing how it resolves to skill installation path in different contexts (e.g., ~/.claude/skills/gitstory/, /usr/local/share/claude/skills/gitstory/)
 - [ ] README.md includes template lookup priority documentation: project (.gitstory/templates/) → user (~/.claude/skills/gitstory/templates/) → skill ({baseDir}/templates/)
 - [ ] Placeholder files created: references/.gitkeep and scripts/.gitkeep for future epics
-- [ ] Cross-platform compatibility verified on Linux and macOS (Windows deferred to EPIC-0001.4 CI)
-- [ ] Directory structure matches epic specification exactly with no additional or missing directories
+- [ ] Cross-platform compatibility verified on Linux and macOS: directory creation succeeds, .gitkeep files tracked by git, no symlinks required, {baseDir} pattern resolves correctly in test SKILL.md (Windows automated testing deferred to EPIC-0001.4 CI)
+- [ ] Directory structure matches EPIC-0001.1 specification (4 subdirectories: templates/, commands/, references/, scripts/) exactly with no additional or missing directories, verified with ls -la output comparison
 
 ## BDD Scenarios
 
@@ -56,7 +58,7 @@ Create the following structure:
 
 ```
 skills/gitstory/
-├── README.md                   # {baseDir} usage documentation (500-800 words)
+├── README.md                   # {baseDir} usage documentation (500-800 words) covering: pattern explanation, 3+ code examples, template lookup priority, cross-platform compatibility notes
 ├── templates/                  # 6 default ticket templates (STORY-0001.1.3)
 ├── commands/                   # Command configuration files (STORY-0001.1.4)
 ├── references/                 # Progressive disclosure docs (EPIC-0001.4)
@@ -137,11 +139,23 @@ The {baseDir} pattern works on:
 
 ## Tasks
 
-| ID | Title | Status | Hours | Progress |
-|----|-------|--------|-------|----------|
-| | | | | |
+| ID | Title | Status | Hours | BDD Progress |
+|----|-------|--------|-------|--------------|
+| [TASK-0001.1.1.1](TASK-0001.1.1.1.md) | Write BDD scenarios for directory structure | 🔵 Not Started | 3 | 0/3 (stubbed) |
+| [TASK-0001.1.1.2](TASK-0001.1.1.2.md) | Research ALL {baseDir} patterns from anthropics/skills | 🔵 Not Started | 4 | 0/3 passing |
+| [TASK-0001.1.1.3](TASK-0001.1.1.3.md) | Create directory structure and README.md documentation | 🔵 Not Started | 5 | 2/3 passing |
+| [TASK-0001.1.1.4](TASK-0001.1.1.4.md) | Verify cross-platform compatibility and complete final BDD | 🔵 Not Started | 2 | 3/3 passing ✅ |
 
-**Note**: Run `/plan-story STORY-0001.1.1` to define tasks
+**Total Hours**: 14 (3 story points + 2h comprehensive research)
+
+**BDD Progress**: 0/3 scenarios passing
+
+**Incremental BDD Tracking:**
+
+- TASK-1: 0/3 (all scenarios stubbed and failing - defines behavior)
+- TASK-2: 0/3 (research phase - no implementation)
+- TASK-3: 2/3 (core implementation - scenarios 1-2 passing)
+- TASK-4: 3/3 (complete integration - all scenarios passing ✅)
 
 ## Dependencies
 
