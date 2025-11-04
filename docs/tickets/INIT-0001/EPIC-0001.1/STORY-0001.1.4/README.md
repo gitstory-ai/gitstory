@@ -295,9 +295,21 @@ Template lookup follows 3-level priority:
 
 | ID | Title | Status | Hours | Progress |
 |----|-------|--------|-------|----------|
-| | | | | |
+| [TASK-0001.1.4.1](TASK-0001.1.4.1.md) | Write BDD scenarios for command configuration | 🔵 Not Started | 3 | - |
+| [TASK-0001.1.4.2](TASK-0001.1.4.2.md) | Create command directory structure and YAML schemas | 🔵 Not Started | 4 | - |
+| [TASK-0001.1.4.3](TASK-0001.1.4.3.md) | Implement trigger matching and variable substitution | 🔵 Not Started | 8 | - |
+| [TASK-0001.1.4.4](TASK-0001.1.4.4.md) | Create example configs and implement lookup priority | 🔵 Not Started | 5 | - |
 
-**Note**: Run `/plan-story STORY-0001.1.4` to define tasks
+**Total Estimated Hours**: 20 hours (5 story points × 4)
+
+**BDD Progress**: 0/7 scenarios passing
+
+**Incremental BDD Tracking:**
+
+- TASK-1 (3h): 0/7 (all scenarios stubbed)
+- TASK-2 (4h): 2/7 (directory + YAML validation)
+- TASK-3 (8h): 5/7 (triggers + variables)
+- TASK-4 (5h): 7/7 (complete ✅)
 
 ## Dependencies
 
