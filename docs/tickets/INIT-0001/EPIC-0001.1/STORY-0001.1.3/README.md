@@ -285,9 +285,21 @@ def load_template(template_name: str) -> dict:
 
 | ID | Title | Status | Hours | Progress |
 |----|-------|--------|-------|----------|
-| | | | | |
+| [TASK-0001.1.3.1](TASK-0001.1.3.1.md) | Write BDD scenarios for template system | 🔵 Not Started | 3 | - |
+| [TASK-0001.1.3.2](TASK-0001.1.3.2.md) | Create directory structure and YAML parser foundation | 🔵 Not Started | 4 | - |
+| [TASK-0001.1.3.3](TASK-0001.1.3.3.md) | Create 6 templates with YAML frontmatter and markdown scaffolds | 🔵 Not Started | 8 | - |
+| [TASK-0001.1.3.4](TASK-0001.1.3.4.md) | Implement template lookup priority system | 🔵 Not Started | 5 | - |
 
-**Note**: Run `/plan-story STORY-0001.1.3` to define tasks
+**Total Estimated Hours**: 20 hours (5 story points × 4)
+
+**BDD Progress**: 0/6 scenarios passing
+
+**Incremental BDD Tracking:**
+
+- TASK-1 (3h): 0/6 (all scenarios stubbed)
+- TASK-2 (4h): 2/6 (directory + YAML parser)
+- TASK-3 (8h): 5/6 (all templates created)
+- TASK-4 (5h): 6/6 (complete ✅)
 
 ## Dependencies
 
