@@ -2,7 +2,7 @@
 
 **Parent Initiative**: [INIT-0001](../README.md)
 **Status**: 🔵 Not Started
-**Story Points**: 20
+**Story Points**: 21
 **Progress**: ░░░░░░░░░░ 0%
 
 ## Overview
@@ -64,7 +64,7 @@ Scenario: Marketplace config enables skill installation
 | [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create SKILL.md scaffold & marketplace config | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.3](STORY-0001.1.3/README.md) | Create template system with 6 default templates | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create command configuration system | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create documentation guides | 🔵 Not Started | 4 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create documentation guides | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 
 ## Technical Approach
 

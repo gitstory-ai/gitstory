@@ -32,12 +32,12 @@ Transform GitStory into a **workflow-agnostic ticket management system** distrib
 
 | ID                                   | Title                                            | Status         | Story Points | Progress      | Owner |
 | ------------------------------------ | ------------------------------------------------ | -------------- | ------------ | ------------- | ----- |
-| [EPIC-0001.1](EPIC-0001.1/README.md) | Skills Foundation & Infrastructure               | 🔵 Not Started | 20           | ░░░░░░░░░░ 0% | TBD   |
+| [EPIC-0001.1](EPIC-0001.1/README.md) | Skills Foundation & Infrastructure               | 🔵 Not Started | 21           | ░░░░░░░░░░ 0% | TBD   |
 | [EPIC-0001.2](EPIC-0001.2/README.md) | Workflow Engine & Core Scripts                   | 🔵 Not Started | 41           | ░░░░░░░░░░ 0% | TBD   |
 | [EPIC-0001.3](EPIC-0001.3/README.md) | Workflow Plugins & Universal Commands            | 🔵 Not Started | 32           | ░░░░░░░░░░ 0% | TBD   |
 | [EPIC-0001.4](EPIC-0001.4/README.md) | Distribution, Documentation & Validation         | 🔵 Not Started | 20           | ░░░░░░░░░░ 0% | TBD   |
 
-**Total Story Points**: 113
+**Total Story Points**: 114
 **Epic Dependencies**: EPIC-0001.1 → EPIC-0001.2 → EPIC-0001.3 → EPIC-0001.4
 
 ## Architecture Overview
