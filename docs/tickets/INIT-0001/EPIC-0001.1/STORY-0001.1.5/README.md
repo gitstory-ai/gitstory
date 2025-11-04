@@ -439,11 +439,23 @@ See [example commands]({baseDir}/commands/plan.yaml)
 
 ## Tasks
 
-| ID | Title | Status | Hours | Progress |
-|----|-------|--------|-------|----------|
-| | | | | |
+| ID | Title | Status | Hours | BDD Progress |
+|----|-------|--------|-------|--------------|
+| [TASK-0001.1.5.1](TASK-0001.1.5.1.md) | Write BDD scenarios for documentation guides | 🔵 Not Started | 3 | 0/8 (all stubbed) |
+| [TASK-0001.1.5.2](TASK-0001.1.5.2.md) | Create documentation directory structure and validation framework | 🔵 Not Started | 4 | 2/8 passing |
+| [TASK-0001.1.5.3](TASK-0001.1.5.3.md) | Write core documentation guides | 🔵 Not Started | 8 | 6/8 passing |
+| [TASK-0001.1.5.4](TASK-0001.1.5.4.md) | Write plugin development and troubleshooting guides, validate cross-references | 🔵 Not Started | 5 | 8/8 passing ✅ |
 
-**Note**: Run `/plan-story STORY-0001.1.5` to define tasks
+**Total Estimated Hours**: 20 hours (5 story points × 4)
+
+**BDD Progress**: 0/8 scenarios passing
+
+**Incremental BDD Tracking:**
+
+- TASK-1 (3h): 0/8 (all scenarios stubbed)
+- TASK-2 (4h): 2/8 (directory + validation)
+- TASK-3 (8h): 6/8 (core guides complete)
+- TASK-4 (5h): 8/8 (complete ✅)
 
 ## Dependencies
 
