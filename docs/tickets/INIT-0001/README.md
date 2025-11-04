@@ -1,4 +1,4 @@
-# uinINIT-0001: Make GitStory Workflow-Agnostic via Plugin-Based State Machines
+# INIT-0001: Make GitStory Workflow-Agnostic via Plugin-Based State Machines
 
 **Timeline**: Q4 2025  
 **Status**: 🟡 In Progress  
