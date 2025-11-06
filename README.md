@@ -2,6 +2,8 @@
 
 **AI-powered story-driven development, git-native project management**
 
+[![CI](https://github.com/gitstory-ai/gitstory/workflows/CI/badge.svg)](https://github.com/gitstory-ai/gitstory/actions/workflows/ci.yml)
+
 ---
 
 ## What is GitStory?

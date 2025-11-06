@@ -63,3 +63,13 @@ def test_validate_yaml_file_not_found() -> None:
     assert isinstance(result, str)
     assert "File not found" in result
     assert "/nonexistent/file.yaml" in result
+
+
+def test_validate_yaml_file_generic_error() -> None:
+    """File validation should handle generic I/O errors gracefully."""
+    # Create a directory, then try to read it as a file (causes IsADirectoryError)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        result = validate_yaml_file(temp_dir)
+        assert isinstance(result, str)
+        assert "Error reading" in result
+        assert temp_dir in result
