@@ -1,1 +1,1 @@
-../../gitstory/agents/gitstory-pattern-discovery.md
+../../skills/gitstory/agents/gitstory-pattern-discovery.md

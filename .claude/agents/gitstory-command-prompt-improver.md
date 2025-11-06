@@ -1,1 +1,1 @@
-../../gitstory/agents/gitstory-command-prompt-improver.md
+../../skills/gitstory/agents/gitstory-command-prompt-improver.md

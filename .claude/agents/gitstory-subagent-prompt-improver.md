@@ -1,1 +1,1 @@
-../../gitstory/agents/gitstory-subagent-prompt-improver.md
+../../skills/gitstory/agents/gitstory-subagent-prompt-improver.md
