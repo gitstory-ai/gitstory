@@ -17,7 +17,7 @@ So that I can build the core gitstory engine and supporting Python code that all
 - [ ] pyproject.toml configured with:
   - Project metadata (name, version, description, authors)
   - Python version requirement (>=3.12)
-  - Dependencies: PyYAML (config parsing), Jinja2 (template rendering)
+  - Dependencies: PyYAML (config parsing, workflow.yaml, frontmatter)
   - Dev dependencies: pytest, pytest-cov, ruff, mypy
   - Tool configurations: ruff (linter/formatter), mypy (type checker), pytest (test runner)
 - [ ] Directory structure created:
@@ -74,8 +74,7 @@ description = "Workflow-agnostic ticket management distributed as Claude Code pl
 authors = [{name = "Bram Swenson", email = "bram@craniumisajar.com"}]
 requires-python = ">=3.12"
 dependencies = [
-    "pyyaml>=6.0",      # YAML parsing for configs
-    "jinja2>=3.1",      # Template rendering
+    "pyyaml>=6.0",      # YAML parsing (configs, workflow.yaml, frontmatter)
 ]
 
 [project.optional-dependencies]
