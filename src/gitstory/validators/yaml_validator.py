@@ -39,8 +39,14 @@ def validate_yaml_file(filepath: str) -> bool | str:
 
         if validate_yaml(content):
             return True
-        else:
-            return f"Invalid YAML syntax in {filepath}"
+
+        # Re-parse to get detailed error message
+        try:
+            yaml.safe_load(content)
+        except yaml.YAMLError as e:
+            return f"Invalid YAML syntax in {filepath}: {str(e)}"
+
+        return f"Invalid YAML syntax in {filepath}"
 
     except FileNotFoundError:
         return f"File not found: {filepath}"

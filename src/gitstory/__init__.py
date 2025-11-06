@@ -1,2 +1,1 @@
-def hello() -> str:
-    return "Hello from gitstory!"
+"""GitStory: Workflow-agnostic ticket management for git repositories."""
