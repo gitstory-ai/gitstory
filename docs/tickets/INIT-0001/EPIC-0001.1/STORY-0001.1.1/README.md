@@ -8,20 +8,22 @@
 ## User Story
 
 As a GitStory developer
-I want a Python project with pytest infrastructure
-So that I can write testable validation scripts for templates, configs, and workflow plugins
+I want a Python project foundation for a multi-plugin monorepo with pytest infrastructure
+So that I can build the core gitstory engine and supporting Python code that all GitStory plugins will depend on, distributed via GitHub marketplace
 
 ## Acceptance Criteria
 
-- [ ] Python project initialized with `uv init --lib gitstory`
+- [ ] Python project initialized with `uv init --lib gitstory --python 3.12`
 - [ ] pyproject.toml configured with:
   - Project metadata (name, version, description, authors)
-  - Python version requirement (>=3.11)
+  - Python version requirement (>=3.12)
   - Dependencies: PyYAML (config parsing), Jinja2 (template rendering)
   - Dev dependencies: pytest, pytest-cov, ruff, mypy
   - Tool configurations: ruff (linter/formatter), mypy (type checker), pytest (test runner)
 - [ ] Directory structure created:
-  - `src/gitstory/` - Python package for validation scripts
+  - `.claude-plugin/` - Plugin metadata directory (for core "gitstory" plugin)
+  - `src/gitstory/` - Python package (core engine: ticket parser, workflow engine, utilities)
+  - `skills/` - Plugin skills directory (skill content added in later EPIC-0001.1 stories)
   - `tests/` - Test suite directory
   - `README.md` - Development setup instructions
 - [ ] Testing strategy documented in `TESTING.md`:
@@ -44,16 +46,19 @@ So that I can write testable validation scripts for templates, configs, and work
 ### Project Structure
 
 ```
-gitstory/
-├── pyproject.toml           # Project config, dependencies, tool settings
+gitstory/                    # Repo root = Python package + core plugin
+├── .claude-plugin/          # Plugin metadata (added in later tasks)
+├── .python-version          # 3.12
+├── pyproject.toml           # Python package config (--lib)
 ├── TESTING.md               # Testing strategy and guidelines
 ├── README.md                # Development setup
 ├── src/
 │   └── gitstory/
 │       ├── __init__.py
-│       └── validators/
+│       └── validators/      # Example utilities
 │           ├── __init__.py
 │           └── yaml_validator.py  # Example: YAML syntax checker
+├── skills/                  # Plugin skills (content added in EPIC-0001.1)
 └── tests/
     ├── __init__.py
     └── test_yaml_validator.py     # Example: Unit tests
@@ -65,9 +70,9 @@ gitstory/
 [project]
 name = "gitstory"
 version = "0.1.0"
-description = "Git-native story-driven development with AI-optimized workflows"
-authors = [{name = "Bram Swenson"}]
-requires-python = ">=3.11"
+description = "Workflow-agnostic ticket management distributed as Claude Code plugin"
+authors = [{name = "Bram Swenson", email = "bram@craniumisajar.com"}]
+requires-python = ">=3.12"
 dependencies = [
     "pyyaml>=6.0",      # YAML parsing for configs
     "jinja2>=3.1",      # Template rendering
@@ -87,13 +92,13 @@ build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -272,25 +277,25 @@ def validate_yaml_file(filepath: str) -> Union[bool, str]:
 ## Dependencies
 
 **Prerequisites:**
-- Git repository initialized at /Users/bram/Code/gitstory-ai/gitstory/
-- Basic directory structure (docs/, gitstory/)
+- Git repository initialized at gitstory-ai/gitstory
+- Basic directory structure (docs/, existing folders)
 
 **Requires:**
 - None - This is the foundation story (first in epic)
 
 **Blocks:**
-- STORY-0001.1.2 (needs Python project for potential validators)
-- STORY-0001.1.3 (needs testing infrastructure)
-- STORY-0001.1.4 (needs testing infrastructure for template validation)
-- STORY-0001.1.5 (needs testing infrastructure)
-- STORY-0001.1.6 (needs testing infrastructure)
+- STORY-0001.1.2+ (all subsequent stories need Python package foundation)
+- EPIC-0001.2 (needs Python package for core scripts)
+- EPIC-0001.3 (needs Python package for plugin base classes)
+
+**Note:** This story establishes the foundation for multi-plugin monorepo distributed via GitHub marketplace
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
 | uv not installed on all platforms | 1h setup | 10% | Document installation in README, uv is cross-platform |
-| Python 3.11+ not available | 2h workaround | 5% | Python 3.11+ widely available, document requirement clearly |
+| Python 3.12 not available | 2h workaround | 5% | Python 3.12 widely available, document requirement clearly |
 | Tool config conflicts (ruff/mypy) | 2h debugging | 15% | Use standard configs from ruff/mypy docs, test on clean environment |
 | Testing strategy unclear to contributors | 1h docs | 20% | Write clear TESTING.md with philosophy and examples |
-| Validator example too simple/complex | 1h rework | 10% | Use YAML validator - practical, demonstrates pattern, useful for later stories |
+| Plugin structure confusion | 2h clarification | 15% | Document multi-plugin architecture clearly in README and TESTING.md |
