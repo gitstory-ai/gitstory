@@ -232,6 +232,110 @@ gh pr create \
 
 ---
 
+## Development
+
+Want to contribute to GitStory? Here's how to set up your development environment.
+
+### Prerequisites
+
+- **Python 3.12 or higher**
+- **[uv](https://github.com/astral-sh/uv)** - Modern Python package manager
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/gitstory-ai/gitstory.git
+cd gitstory
+
+# Install dependencies (including dev dependencies)
+uv sync --all-extras
+
+# Verify installation
+uv run pytest --version
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage report
+uv run pytest --cov=src/gitstory --cov-report=html
+
+# Open coverage report
+open htmlcov/index.html  # macOS
+xdg-open htmlcov/index.html  # Linux
+```
+
+### Quality Gates
+
+Before committing, run all quality gates:
+
+```bash
+# Linting
+uv run ruff check src tests
+
+# Formatting
+uv run ruff format src tests
+
+# Type checking
+uv run mypy src
+
+# All tests
+uv run pytest
+```
+
+**Combined command (run before commits):**
+```bash
+uv run ruff check src tests && \
+uv run ruff format src tests && \
+uv run mypy src && \
+uv run pytest
+```
+
+### Testing Philosophy
+
+GitStory uses a pragmatic testing approach:
+
+- ✅ **Unit tests for Python code** (validators, parsers, workflow plugins)
+- 📝 **Documentation for markdown prompts** (agents, commands)
+- ❌ **No BDD/pytest-bdd** (markdown prompts aren't suitable for BDD)
+- 🎯 **Coverage goal**: >80% for Python code
+
+See [TESTING.md](TESTING.md) for complete testing strategy and rationale.
+
+### Project Structure
+
+```
+gitstory/
+├── src/gitstory/         # Python package (core engine)
+│   └── validators/       # Config validators and parsers
+├── tests/                # Unit tests
+├── skills/               # Plugin skills (added in EPIC-0001.1)
+├── docs/                 # Documentation
+│   └── tickets/          # Story hierarchy (INIT→EPIC→STORY→TASK)
+├── pyproject.toml        # Dependencies and tool configs
+├── TESTING.md            # Testing strategy and philosophy
+└── CLAUDE.md             # Development workflow guide
+```
+
+### Development Workflow
+
+GitStory uses **story-driven development**:
+
+1. **1 Story = 1 Branch = 1 PR**
+2. **1 Task = 1 Commit** (after manual approval)
+3. Branch names match ticket IDs: `STORY-0001.1.1`
+4. Follow BDD/TDD: tests first, then implementation
+5. Run quality gates before every commit
+6. Update task and story progress tracking
+
+See [CLAUDE.md](CLAUDE.md) for complete development workflow, commit standards, and BDD/TDD patterns.
+
+---
+
 ## Core Concepts
 
 ### Hierarchical Ticket System
