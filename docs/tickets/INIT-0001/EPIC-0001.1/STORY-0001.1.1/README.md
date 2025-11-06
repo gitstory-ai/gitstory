@@ -1,181 +1,300 @@
-# STORY-0001.1.1: Create skills/gitstory/ structure with {baseDir} pattern
+# STORY-0001.1.1: Python Project Bootstrap & Testing Strategy
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
-**Status**: 🔵 Not Started
+**Status**: ✅ Complete
 **Story Points**: 3
-**Progress**: ░░░░░░░░░░ 0%
+**Progress**: ██████████ 100%
 
 ## User Story
 
 As a GitStory developer
-I want a well-structured skills/gitstory/ directory using the proven {baseDir} pattern
-So that skill resources can be referenced portably across different installation locations and operating systems
+I want a Python project foundation for a multi-plugin monorepo with pytest infrastructure
+So that I can build the core gitstory engine and supporting Python code that all GitStory plugins will depend on, distributed via GitHub marketplace
 
 ## Acceptance Criteria
 
-- [ ] Directory structure created: skills/gitstory/ with 4 subdirectories (templates/, commands/, references/, scripts/)
-  - If directories already exist: verify structure matches spec, fail if unexpected files/dirs present
-  - Create with mode 0755, fail with clear error message if parent directory unwritable
-- [ ] All anthropics/skills examples reviewed and {baseDir} usage patterns documented in skills/gitstory/README.md with 3+ code examples
-- [ ] {baseDir} pattern documented showing how it resolves to skill installation path in different contexts (e.g., ~/.claude/skills/gitstory/, /usr/local/share/claude/skills/gitstory/)
-- [ ] README.md includes template lookup priority documentation: project (.gitstory/templates/) → user (~/.claude/skills/gitstory/templates/) → skill ({baseDir}/templates/)
-- [ ] Placeholder files created: references/.gitkeep and scripts/.gitkeep for future epics
-- [ ] Cross-platform compatibility verified on Linux and macOS: directory creation succeeds, .gitkeep files tracked by git, no symlinks required, {baseDir} pattern resolves correctly in test SKILL.md (Windows automated testing deferred to EPIC-0001.4 CI)
-- [ ] Directory structure matches EPIC-0001.1 specification (4 subdirectories: templates/, commands/, references/, scripts/) exactly with no additional or missing directories, verified with ls -la output comparison
-
-## BDD Scenarios
-
-```gherkin
-Scenario: Skill directory structure uses {baseDir} pattern from anthropics/skills
-  Given the GitStory repository
-  When I create the skills/gitstory/ directory structure
-  Then it includes skills/gitstory/templates/ for ticket templates
-  And it includes skills/gitstory/commands/ for command configuration
-  And it includes skills/gitstory/references/ for progressive disclosure docs
-  And SKILL.md can reference resources using {baseDir}/references/workflow-schema.md
-  And pattern works across Linux/macOS/Windows without symlinks
-
-Scenario: {baseDir} pattern resolves correctly in different installation contexts
-  Given skills/gitstory/ installed at ~/.claude/skills/gitstory/
-  When SKILL.md references {baseDir}/templates/story.md
-  Then {baseDir} resolves to ~/.claude/skills/gitstory/
-  And the full path becomes ~/.claude/skills/gitstory/templates/story.md
-  And the file is accessible to Claude
-
-Scenario: Directory structure includes placeholders for future epics
-  Given the skills/gitstory/ directory structure
-  When I check for placeholder files
-  Then references/.gitkeep exists for EPIC-0001.4 documentation
-  And scripts/.gitkeep exists for EPIC-0001.2 plugin infrastructure
-  And git tracks these empty directories
-```
+- [ ] Python project initialized with `uv init --lib gitstory --python 3.12`
+- [ ] pyproject.toml configured with:
+  - Project metadata (name, version, description, authors)
+  - Python version requirement (>=3.12)
+  - Dependencies: PyYAML (config parsing, workflow.yaml, frontmatter)
+  - Dev dependencies: pytest, pytest-cov, ruff, mypy
+  - Tool configurations: ruff (linter/formatter), mypy (type checker), pytest (test runner)
+- [ ] Directory structure created:
+  - `.claude-plugin/` - Plugin metadata directory (for core "gitstory" plugin)
+  - `src/gitstory/` - Python package (core engine: ticket parser, workflow engine, utilities)
+  - `skills/` - Plugin skills directory (skill content added in later EPIC-0001.1 stories)
+  - `tests/` - Test suite directory
+  - `README.md` - Development setup instructions
+- [ ] Testing strategy documented in `TESTING.md`:
+  - **Unit tests for Python scripts only** (workflow plugins, validators, parsers)
+  - **No BDD/pytest-bdd** (markdown prompts not suitable for BDD)
+  - Pragmatic approach: Test code, document prompts
+  - Coverage goal: >80% for Python scripts
+- [ ] Basic validation script implemented and tested:
+  - `src/gitstory/validators/yaml_validator.py` - Validates YAML syntax
+  - `tests/test_yaml_validator.py` - Unit tests for validator
+  - Demonstrates testing pattern for future scripts
+- [ ] All quality gates pass:
+  - `uv run ruff check src tests` (linting)
+  - `uv run ruff format src tests` (formatting)
+  - `uv run mypy src` (type checking)
+  - `uv run pytest` (tests passing)
 
 ## Technical Design
 
-### Directory Structure Implementation
-
-Create the following structure:
+### Project Structure
 
 ```
-skills/gitstory/
-├── README.md                   # {baseDir} usage documentation (500-800 words) covering: pattern explanation, 3+ code examples, template lookup priority, cross-platform compatibility notes
-├── templates/                  # 6 default ticket templates (STORY-0001.1.3)
-├── commands/                   # Command configuration files (STORY-0001.1.4)
-├── references/                 # Progressive disclosure docs (EPIC-0001.4)
-│   └── .gitkeep               # Placeholder for future content
-└── scripts/                    # Core infrastructure (EPIC-0001.2)
-    └── .gitkeep               # Placeholder for future content
+gitstory/                    # Repo root = Python package + core plugin
+├── .claude-plugin/          # Plugin metadata (added in later tasks)
+├── .python-version          # 3.12
+├── pyproject.toml           # Python package config (--lib)
+├── TESTING.md               # Testing strategy and guidelines
+├── README.md                # Development setup
+├── src/
+│   └── gitstory/
+│       ├── __init__.py
+│       └── validators/      # Example utilities
+│           ├── __init__.py
+│           └── yaml_validator.py  # Example: YAML syntax checker
+├── skills/                  # Plugin skills (content added in EPIC-0001.1)
+└── tests/
+    ├── __init__.py
+    └── test_yaml_validator.py     # Example: Unit tests
 ```
 
-### {baseDir} Pattern Research
+### pyproject.toml Configuration
 
-**Implementation Steps:**
+```toml
+[project]
+name = "gitstory"
+version = "0.1.0"
+description = "Workflow-agnostic ticket management distributed as Claude Code plugin"
+authors = [{name = "Bram Swenson", email = "bram@craniumisajar.com"}]
+requires-python = ">=3.12"
+dependencies = [
+    "pyyaml>=6.0",      # YAML parsing (configs, workflow.yaml, frontmatter)
+]
 
-1. **Review anthropics/skills repository:**
-   - Clone or browse https://github.com/anthropics/anthropic-quickstarts/tree/main/skills
-   - Document ALL skills that use {baseDir} pattern
-   - Extract code examples showing {baseDir} usage (minimum 3 examples)
-   - Note common patterns: resource references, path resolution, cross-platform handling
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.1",
+    "mypy>=1.7",
+]
 
-2. **Document findings in skills/gitstory/README.md:**
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=src/gitstory --cov-report=term-missing"
+```
+
+### TESTING.md Content
 
 ```markdown
-# GitStory Skill Foundation
+# GitStory Testing Strategy
 
-## {baseDir} Pattern Usage
+## Philosophy
 
-GitStory uses the `{baseDir}` pattern from anthropics/skills for portable resource references.
+GitStory is primarily **markdown-based prompts** with **Python validation scripts**.
+Our testing approach reflects this reality:
 
-### How {baseDir} Works
+- ✅ **Unit test Python code** (validators, parsers, workflow plugins)
+- 📝 **Document markdown prompts** (agents, commands)
+- ❌ **No BDD/pytest-bdd** (overkill for this use case)
 
-When Claude loads a skill, `{baseDir}` resolves to the skill's installation directory:
-- **User installation**: `~/.claude/skills/gitstory/`
-- **System installation**: `/usr/local/share/claude/skills/gitstory/`
-- **Development**: `/path/to/gitstory/skills/gitstory/`
+## What We Test
 
-### Example: Referencing Templates
+### Python Scripts (Unit Tests Required)
 
-In SKILL.md:
-\```markdown
-For template customization, see {baseDir}/references/template-authoring.md
-\```
+1. **Validators** - YAML/JSON syntax checking
+2. **Workflow Plugins** - Guards, events, actions (EPIC-0001.2+)
+3. **Core Scripts** - parse_ticket, run_workflow_plugin, validate_workflow
+4. **Template Processors** - Variable substitution, frontmatter parsing
 
-Resolves to: `~/.claude/skills/gitstory/references/template-authoring.md`
+**Coverage Goal**: >80% for all Python code
 
-### Example: Loading Configuration
+### Markdown Prompts (Documentation Only)
 
-In command implementation:
-\```python
-config_path = f"{baseDir}/commands/plan.yaml"
-\```
+1. **Agents** (.claude/agents/) - Describe behavior, provide examples
+2. **Commands** (.claude/commands/) - Document usage, show examples
+3. **Templates** (skills/gitstory/templates/) - Validate syntax, document fields
 
-Resolves to: `~/.claude/skills/gitstory/commands/plan.yaml`
+**Testing**: Manual verification, example-based documentation
 
-### Template Lookup Priority
+## Running Tests
 
-1. **Project override** (highest): `.gitstory/templates/story.md`
-2. **User override**: `~/.claude/skills/gitstory/templates/story.md`
-3. **Skill default** (lowest): `{baseDir}/templates/story.md`
-4. **Fallback**: `{baseDir}/templates/generic.md`
+```bash
+# Run all tests
+uv run pytest
 
-## Cross-Platform Compatibility
+# With coverage report
+uv run pytest --cov=src/gitstory --cov-report=html
 
-The {baseDir} pattern works on:
-- Linux: Standard path resolution
-- macOS: Standard path resolution
-- Windows: Backslash paths handled automatically (validated in CI)
-\```
+# Type checking
+uv run mypy src
 
-### Testing Strategy
+# Linting
+uv run ruff check src tests
 
-**Manual testing (Linux/macOS):**
-1. Create skills/gitstory/ structure
-2. Create test SKILL.md with {baseDir} references
-3. Verify git tracks .gitkeep files
-4. Verify no symlinks needed
+# Formatting
+uv run ruff format src tests
 
-**CI testing (Windows):**
-- Deferred to EPIC-0001.4 (comprehensive CI setup)
+# All quality gates
+uv run ruff check src tests && \
+uv run ruff format src tests && \
+uv run mypy src && \
+uv run pytest
+```
+
+## Writing Tests
+
+### Example: Validator Test
+
+```python
+# tests/test_yaml_validator.py
+import pytest
+from gitstory.validators.yaml_validator import validate_yaml
+
+def test_valid_yaml():
+    """Valid YAML should pass validation."""
+    content = "key: value\nlist:\n  - item1\n  - item2"
+    assert validate_yaml(content) is True
+
+def test_invalid_yaml():
+    """Invalid YAML should fail validation."""
+    content = "key: value\ninvalid:\n  - item1\n    - nested_wrong"
+    assert validate_yaml(content) is False
+
+def test_empty_yaml():
+    """Empty content should be valid."""
+    assert validate_yaml("") is True
+```
+
+## Why No BDD?
+
+1. **Prompts are hard to test** - Agent/command behavior depends on LLM interpretation
+2. **Simple scripts don't need BDD** - Validators/parsers are straightforward functions
+3. **Maintenance burden** - BDD scenarios require upkeep, add little value here
+4. **Time better spent** - Focus on prompt engineering, not test infrastructure
+
+## Future Testing
+
+As Python code grows (EPIC-0001.2+), we may add:
+- Integration tests for workflow state machines
+- End-to-end tests for full ticket workflows
+- Property-based tests for parsers
+
+But we'll always avoid BDD for markdown prompts.
+```
+
+### Example Validator Implementation
+
+```python
+# src/gitstory/validators/yaml_validator.py
+"""YAML syntax validation for GitStory config files."""
+
+import yaml
+from typing import Union
+
+
+def validate_yaml(content: str) -> bool:
+    """
+    Validate YAML syntax.
+
+    Args:
+        content: YAML string to validate
+
+    Returns:
+        True if valid YAML, False otherwise
+    """
+    if not content.strip():
+        return True
+
+    try:
+        yaml.safe_load(content)
+        return True
+    except yaml.YAMLError:
+        return False
+
+
+def validate_yaml_file(filepath: str) -> Union[bool, str]:
+    """
+    Validate YAML file syntax.
+
+    Args:
+        filepath: Path to YAML file
+
+    Returns:
+        True if valid, error message string if invalid
+    """
+    try:
+        with open(filepath, 'r') as f:
+            content = f.read()
+
+        if validate_yaml(content):
+            return True
+        else:
+            return f"Invalid YAML syntax in {filepath}"
+
+    except FileNotFoundError:
+        return f"File not found: {filepath}"
+    except Exception as e:
+        return f"Error reading {filepath}: {str(e)}"
+```
 
 ## Tasks
 
-| ID | Title | Status | Hours | BDD Progress |
-|----|-------|--------|-------|--------------|
-| [TASK-0001.1.1.1](TASK-0001.1.1.1.md) | Write BDD scenarios for directory structure | 🔵 Not Started | 3 | 0/3 (stubbed) |
-| [TASK-0001.1.1.2](TASK-0001.1.1.2.md) | Research ALL {baseDir} patterns from anthropics/skills | 🔵 Not Started | 4 | 0/3 passing |
-| [TASK-0001.1.1.3](TASK-0001.1.1.3.md) | Create directory structure and README.md documentation | 🔵 Not Started | 5 | 2/3 passing |
-| [TASK-0001.1.1.4](TASK-0001.1.1.4.md) | Verify cross-platform compatibility and complete final BDD | 🔵 Not Started | 2 | 3/3 passing ✅ |
+| ID | Title | Status | Hours |
+|----|-------|--------|-------|
+| [TASK-0001.1.1.1](TASK-0001.1.1.1.md) | Initialize Python project structure with uv | ✅ Complete | 1 |
+| [TASK-0001.1.1.2](TASK-0001.1.1.2.md) | Configure pyproject.toml with dependencies and tools | ✅ Complete | 1 |
+| [TASK-0001.1.1.3](TASK-0001.1.1.3.md) | Write TESTING.md strategy documentation | ✅ Complete | 0.5 |
+| [TASK-0001.1.1.4](TASK-0001.1.1.4.md) | Implement example YAML validator with TDD | ✅ Complete | 1 |
+| [TASK-0001.1.1.5](TASK-0001.1.1.5.md) | Create README.md with setup instructions | ✅ Complete | 0.5 |
 
-**Total Hours**: 14 (3 story points + 2h comprehensive research)
-
-**BDD Progress**: 0/3 scenarios passing
-
-**Incremental BDD Tracking:**
-
-- TASK-1: 0/3 (all scenarios stubbed and failing - defines behavior)
-- TASK-2: 0/3 (research phase - no implementation)
-- TASK-3: 2/3 (core implementation - scenarios 1-2 passing)
-- TASK-4: 3/3 (complete integration - all scenarios passing ✅)
+**Total Hours**: 12 (3 story points × 4)
 
 ## Dependencies
 
 **Prerequisites:**
-- Git repository initialized at /Users/bram/Code/gitstory-ai/gitstory/
-- Basic project structure exists (src/, tests/, docs/ directories)
+- Git repository initialized at gitstory-ai/gitstory
+- Basic directory structure (docs/, existing folders)
 
 **Requires:**
-- None - First story in epic
+- None - This is the foundation story (first in epic)
 
 **Blocks:**
-- STORY-0001.1.2 (needs skills/gitstory/ directory for SKILL.md placement)
-- STORY-0001.1.3 (needs templates/ subdirectory)
-- STORY-0001.1.4 (needs commands/ subdirectory)
-- STORY-0001.1.5 (needs README.md foundation for documentation)
+- STORY-0001.1.2+ (all subsequent stories need Python package foundation)
+- EPIC-0001.2 (needs Python package for core scripts)
+- EPIC-0001.3 (needs Python package for plugin base classes)
+
+**Note:** This story establishes the foundation for multi-plugin monorepo distributed via GitHub marketplace
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| {baseDir} pattern breaks on Windows | 2h rework | 5% | Pattern proven in anthropics/skills (cross-platform tested), defer Windows CI to EPIC-0001.4 for validation |
-| anthropics/skills repository structure changes | 1h update | 10% | Document specific commit SHA of reviewed examples, pattern is stable across Anthropic's official skills |
-| .gitkeep files not tracked by git | 30min fix | 15% | Verify with `git status` after creation, add explicitly with `git add` |
+| uv not installed on all platforms | 1h setup | 10% | Document installation in README, uv is cross-platform |
+| Python 3.12 not available | 2h workaround | 5% | Python 3.12 widely available, document requirement clearly |
+| Tool config conflicts (ruff/mypy) | 2h debugging | 15% | Use standard configs from ruff/mypy docs, test on clean environment |
+| Testing strategy unclear to contributors | 1h docs | 20% | Write clear TESTING.md with philosophy and examples |
+| Plugin structure confusion | 2h clarification | 15% | Document multi-plugin architecture clearly in README and TESTING.md |

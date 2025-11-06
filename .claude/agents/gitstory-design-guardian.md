@@ -1,1 +1,1 @@
-../../gitstory/agents/gitstory-design-guardian.md
+../../skills/gitstory/agents/gitstory-design-guardian.md

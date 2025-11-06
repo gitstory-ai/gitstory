@@ -1,1 +1,1 @@
-../../gitstory/agents/gitstory-prompt-generator.md
+../../skills/gitstory/agents/gitstory-prompt-generator.md

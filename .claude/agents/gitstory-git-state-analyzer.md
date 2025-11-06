@@ -1,1 +1,1 @@
-../../gitstory/agents/gitstory-git-state-analyzer.md
+../../skills/gitstory/agents/gitstory-git-state-analyzer.md

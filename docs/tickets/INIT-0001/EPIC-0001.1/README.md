@@ -2,7 +2,7 @@
 
 **Parent Initiative**: [INIT-0001](../README.md)
 **Status**: 🔵 Not Started
-**Story Points**: 21
+**Story Points**: 24
 **Progress**: ░░░░░░░░░░ 0%
 
 ## Overview
@@ -60,11 +60,12 @@ Scenario: Marketplace config enables skill installation
 
 | ID | Title | Status | Points | Progress |
 |----|-------|--------|--------|----------|
-| [STORY-0001.1.1](STORY-0001.1.1/README.md) | Create skills/gitstory/ structure with {baseDir} pattern | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create SKILL.md scaffold & marketplace config | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.3](STORY-0001.1.3/README.md) | Create template system with 6 default templates | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create command configuration system | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create documentation guides | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.1](STORY-0001.1.1/README.md) | Python Project Bootstrap & Testing Strategy | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create skills/gitstory/ structure with {baseDir} pattern | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.3](STORY-0001.1.3/README.md) | Create SKILL.md scaffold & marketplace config | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create template system with 6 default templates | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create command configuration system | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.6](STORY-0001.1.6/README.md) | Create documentation guides | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 
 ## Technical Approach
 
@@ -193,7 +194,7 @@ ${tasks_table}
 - `${user_role}` - From user story
 - `${goal}` - From user story
 - `${benefit}` - From user story
-- Custom variables from interview responses
+- Custom variables from interview responses: ${estimated_hours}, ${severity}, ${environment}, etc.
 
 **Implementation:** Use Python's string.Template with safe_substitute() method (stdlib, no dependencies). Template syntax: ${ticket_id}, ${title}, ${parent}, etc. Error handling: safe_substitute() leaves missing variables as literal '${unknown_var}' in output and logs warning. Falsy values (None, False, 0, empty string, empty list, empty dict) replaced with empty string ''. Boolean False becomes '' not 'False'. Example: `Template(template_text).safe_substitute(context_dict)`.
 
@@ -354,7 +355,7 @@ Create SKILL.md following anthropics/skills conventions (no frontmatter needed):
 - **Activation section:** Specific activation triggers: (1) User runs /gitstory:plan, /gitstory:review, or /gitstory:install commands, (2) User mentions 'create ticket', 'plan epic', 'review story quality', or 'customize workflow templates', (3) User references ticket IDs matching INIT-*, EPIC-*, STORY-*, TASK-*, or BUG-* patterns in conversation
 - **Validation:** Compare against anthropics/skills examples, ensure markdown renders correctly
 
-**Note:** Metadata (name, version, description) goes in .claude-plugin/config.json, not SKILL.md frontmatter. SKILL.md focuses on instructions/context for Claude. Complete SKILL.md documentation (expand from 200-500 word scaffold to 3000-4000 word production version with examples, troubleshooting, references) happens in EPIC-0001.4.
+**Note:** Metadata (name, version, description) goes in .claude-plugin/config.json, not SKILL.md frontmatter. SKILL.md focuses on instructions/context for Claude. Complete SKILL.md documentation (grow from 200-500 word foundation to 3000-4000 word production version including command references, workflow examples, troubleshooting section, and progressive disclosure links) happens in EPIC-0001.4.
 
 ### .claude-plugin/config.json (Marketplace Registration)
 
@@ -423,7 +424,7 @@ Create `.claude-plugin/config.json` validated against official schema:
 - [ ] templates/task.md created with YAML frontmatter field schemas
 - [ ] templates/bug.md created with YAML frontmatter field schemas
 - [ ] templates/generic.md created with YAML frontmatter field schemas
-- [ ] All field schemas include 4 required keys validated: type ('string'|'integer'|'enum'|'list'|'textarea'), required (boolean), validation (regex ^.+$ or range ^\\d+-\\d+$), help (non-empty string). If type=enum then values list must exist with 2+ items.
+- [ ] All field schemas include 4 required keys validated: type ('string'|'integer'|'enum'|'list'|'textarea'), required (boolean), validation (regex string applied via Python re.match() - invalid input shows field-specific help text), help (error message shown when validation fails). If type=enum then values list must exist with 2+ items.
 - [ ] All templates use string.Template variables (${ticket_id}, ${parent}, etc.)
 - [ ] Template lookup priority implemented (project → user → skill)
 - [ ] Variable substitution implemented (simple string replacement)
@@ -441,7 +442,7 @@ Create `.claude-plugin/config.json` validated against official schema:
 ### Documentation & Scripts
 - [ ] Template authoring guide content created (500-1000 words, for references/ in EPIC-0001.4)
 - [ ] Command configuration guide content created (500-1000 words, for references/ in EPIC-0001.4)
-- [ ] All deliverables tested on Linux/macOS (Windows CI deferred to EPIC-0001.4)
+- [ ] All deliverables tested on Linux/macOS: directory creation succeeds, {baseDir} pattern resolves to correct paths, templates render in markdown preview, YAML configs validate with yaml.safe_load() (Windows CI deferred to EPIC-0001.4)
 
 ## Risks & Mitigations
 

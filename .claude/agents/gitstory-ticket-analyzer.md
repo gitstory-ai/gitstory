@@ -1,1 +1,1 @@
-../../gitstory/agents/gitstory-ticket-analyzer.md
+../../skills/gitstory/agents/gitstory-ticket-analyzer.md

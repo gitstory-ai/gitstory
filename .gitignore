@@ -60,3 +60,6 @@ Thumbs.db
 
 # Claude Code settings
 .claude/settings.local.json
+
+# envrc local files
+.envrc.local
