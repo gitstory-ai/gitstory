@@ -1,9 +1,9 @@
 # STORY-0001.1.2: Create skills/gitstory/ structure with {baseDir} pattern
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
-**Status**: 🔵 Not Started
+**Status**: 🟡 In Progress
 **Story Points**: 3
-**Progress**: ░░░░░░░░░░ 0%
+**Progress**: ████████░░ 50%
 
 ## User Story
 
@@ -130,10 +130,10 @@ def test_skills_directory_structure():
 
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
-| [TASK-0001.1.2.1](TASK-0001.1.2.1.md) | Research {baseDir} patterns from anthropics/skills | 🔵 Not Started | 4 |
+| [TASK-0001.1.2.1](TASK-0001.1.2.1.md) | Research {baseDir} patterns from anthropics/skills | ✅ Complete | 4 |
 | [TASK-0001.1.2.2](TASK-0001.1.2.2.md) | Create directory structure and README.md documentation | 🔵 Not Started | 8 |
 
-**Total Hours**: 12 (matches 3 story points)
+**Total Hours**: 12 (4 actual, 8 remaining)
 
 ## Dependencies
 
