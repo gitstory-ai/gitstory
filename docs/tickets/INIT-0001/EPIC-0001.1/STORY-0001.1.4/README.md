@@ -1,219 +1,230 @@
-# STORY-0001.1.4: Create template system with 6 default templates
+# STORY-0001.1.4: Create SKILL.md as CLI Wrapper
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🔵 Not Started
-**Story Points**: 5
+**Story Points**: 3
 **Progress**: ░░░░░░░░░░ 0%
 
 ## User Story
 
-As a GitStory user
-I want to use default templates for creating tickets
-So that I can quickly generate properly formatted INIT, EPIC, STORY, and TASK tickets with required fields
+As a Claude user
+I want to use the GitStory CLI from within Claude conversations
+So that I can leverage GitStory's ticket management without leaving my chat context
 
 ## Acceptance Criteria
 
-- [ ] Template directory created: skills/gitstory/templates/ with 6 markdown files
-- [ ] 6 templates implemented: initiative.md, epic.md, story.md, task.md, bug.md, generic.md
-- [ ] Each template includes YAML frontmatter with field definitions (type, required, validation, help)
-- [ ] Each template includes markdown body scaffold matching ticket hierarchy conventions
-- [ ] Template field validation documented: enum constraints, min/max length, regex patterns
-- [ ] Template lookup priority works: project (.gitstory/templates/) → user (~/.claude/skills/gitstory/templates/) → skill ({baseDir}/templates/)
-- [ ] All templates render correctly in markdown preview
-- [ ] Template YAML validated with Python yaml.safe_load()
+- [ ] SKILL.md created as CLI wrapper (200-500 words, no YAML frontmatter)
+- [ ] SKILL.md documents CLI installation requirement (pipx/uvx)
+- [ ] SKILL.md documents all 6 CLI commands: plan, review, execute, validate, test-plugin, init
+- [ ] SKILL.md includes usage examples showing CLI invocation from Claude
+- [ ] SKILL.md includes activation section with trigger patterns:
+  - Command patterns: /gitstory:*, CLI command names
+  - Natural language: "gitstory", "create ticket", "plan epic"
+  - Ticket ID patterns: INIT-*, EPIC-*, STORY-*, TASK-*, BUG-*
+- [ ] SKILL.md structure validated against anthropics/skills repository patterns
+- [ ] .claude-plugin/config.json created with required fields: name, id, version, entry_point, author, description, keywords, license, repository
+- [ ] config.json validated with `python -m json.tool .claude-plugin/config.json`
+- [ ] config.json entry_point references skills/gitstory/SKILL.md
+- [ ] SKILL.md renders correctly in markdown preview
 
 ## Technical Design
 
-### Template Directory Structure
+### SKILL.md as CLI Wrapper
 
-```
-skills/gitstory/templates/
-├── initiative.md    # Strategic goals, quarters, key results
-├── epic.md          # Feature sets, user stories, BDD specs
-├── story.md         # User story format, acceptance criteria, tasks
-├── task.md          # Implementation steps, testing, verification
-├── bug.md           # Reproduction steps, severity, environment
-└── generic.md       # Custom template for extensibility
-```
+**Location:** `skills/gitstory/SKILL.md`
 
-### Template Structure Format
+**Purpose:** Document the GitStory CLI and how to invoke it from Claude conversations.
 
-Each template follows this structure:
+**Content Structure:**
 
-```yaml
----
-name: "Story"
-description: "User story template for feature development"
-fields:
-  - name: "title"
-    type: "string"
-    description: "One-line story title"
-    required: true
-    minLength: 10
-    maxLength: 100
-  - name: "story_points"
-    type: "number"
-    description: "Fibonacci points (1, 2, 3, 5, 8, 13, 21)"
-    required: true
-    enum: [1, 2, 3, 5, 8, 13, 21]
-  - name: "status"
-    type: "enum"
-    description: "Current story status"
-    required: true
-    enum: ["Not Started", "In Progress", "Complete", "Blocked"]
----
+```markdown
+# GitStory
 
-# STORY-NNNN.N.N: [Title]
+## Overview
+GitStory is a standalone CLI tool for workflow-agnostic ticket management. This skill provides Claude integration by documenting CLI commands and usage patterns.
 
-**Parent Epic**: [EPIC-NNNN.N](../README.md)
-**Status**: 🔵 Not Started
-**Story Points**: 3
+## Installation
 
-## User Story
+The GitStory CLI must be installed before using this skill:
 
-As a [user type]
-I want [goal]
-So that [benefit]
+```bash
+# Install via pipx (recommended)
+pipx install gitstory
 
-## Acceptance Criteria
-
-- [ ] Criterion 1
-- [ ] Criterion 2
-
-## Tasks
-
-| ID | Title | Status | Hours |
-|----|-------|--------|-------|
+# Or via uvx (run without installing)
+uvx gitstory --help
 ```
 
-### Field Validation Rules
+## CLI Commands
 
-```yaml
-# ID Field Validation
-ticket_id:
-  type: "string"
-  pattern: "^[A-Z]+-\\d{4}(\\.\\d+)*$"
-  examples: ["INIT-0001", "EPIC-0001.1", "STORY-0001.1.4"]
+- `gitstory plan TICKET-ID` - Plan tickets (epics, stories, tasks)
+- `gitstory review TICKET-ID` - Review ticket quality
+- `gitstory execute TICKET-ID` - Execute ticket workflows
+- `gitstory validate TICKET-ID` - Validate ticket structure
+- `gitstory test-plugin PLUGIN-ID` - Test workflow plugins
+- `gitstory init` - Initialize GitStory in a repository
 
-# Status Field
-status:
-  type: "enum"
-  enum: ["Not Started", "In Progress", "Complete", "Blocked"]
-  symbols: ["🔵", "🟡", "🟢", "🔴"]
+## Activation
 
-# Story Points (Fibonacci)
-story_points:
-  type: "number"
-  enum: [1, 2, 3, 5, 8, 13, 21]
+This skill activates when you:
 
-# Hours Estimate (Tasks)
-hours:
-  type: "number"
-  minimum: 1
-  maximum: 8
+1. **Commands:** `/gitstory:*` or mention `gitstory` CLI
+2. **Natural Language:** "create ticket", "plan epic", "review story quality"
+3. **Ticket IDs:** `INIT-*`, `EPIC-*`, `STORY-*`, `TASK-*`, `BUG-*`
+
+## Quick Start
+
+```bash
+# Plan a new story
+gitstory plan STORY-0001.2.4
+
+# Review epic quality
+gitstory review EPIC-0001.3
 ```
 
-### Template Lookup Implementation
+## Customization
 
-```python
-def load_template(template_name: str) -> dict:
-    """Load template with priority: project → user → skill."""
+See `skills/gitstory/references/` for detailed configuration guides.
+```
 
-    # Level 1: Project override (highest)
-    project_template = Path.cwd() / ".gitstory" / "templates" / f"{template_name}.md"
-    if project_template.exists():
-        return parse_template(project_template)
+**Word count target:** 250-350 words (excluding code blocks)
+**Key principle:** SKILL.md is documentation only, all logic is in the CLI
 
-    # Level 2: User override
-    user_template = Path.home() / ".claude" / "skills" / "gitstory" / "templates" / f"{template_name}.md"
-    if user_template.exists():
-        return parse_template(user_template)
+### .claude-plugin/config.json Structure
 
-    # Level 3: Skill default (using {baseDir})
-    skill_template = Path("{baseDir}") / "templates" / f"{template_name}.md"
-    return parse_template(skill_template)
+**Location:** `.claude-plugin/config.json`
+
+**Content:**
+
+```json
+{
+  "name": "gitstory",
+  "id": "gitstory-ai/gitstory",
+  "version": "0.1.0",
+  "entry_point": "skills/gitstory/SKILL.md",
+  "author": "Bram Swenson",
+  "description": "Workflow-agnostic ticket management via plugin-based state machines",
+  "keywords": [
+    "workflow",
+    "tickets",
+    "state-machine",
+    "planning",
+    "BDD",
+    "kanban",
+    "scrum",
+    "agile"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/gitstory-ai/gitstory"
+}
 ```
 
 ### Validation Steps
 
-**YAML validation:**
-```python
-# src/gitstory/validators/template_validator.py
-import yaml
-from pathlib import Path
+**SKILL.md validation:**
 
-def validate_template_frontmatter(template_path: Path) -> bool:
-    """Validate template YAML frontmatter."""
-    content = template_path.read_text()
+```bash
+# 1. Review anthropics/skills examples
+# Browse https://github.com/anthropics/skills
+# Document 3+ skills with: name, heading structure, word count
 
-    # Extract frontmatter
-    if not content.startswith('---'):
-        return False
+# 2. Check word count (excluding code blocks)
+grep -v '^```' skills/gitstory/SKILL.md | wc -w  # Result must be 200-500
 
-    parts = content.split('---', 2)
-    if len(parts) < 3:
-        return False
+# 3. Verify markdown rendering
+# Open in GitHub/VSCode preview: check headings, lists, code blocks, links
 
-    try:
-        frontmatter = yaml.safe_load(parts[1])
-
-        # Required fields
-        assert 'name' in frontmatter
-        assert 'description' in frontmatter
-        assert 'fields' in frontmatter
-        assert isinstance(frontmatter['fields'], list)
-
-        return True
-    except (yaml.YAMLError, AssertionError):
-        return False
+# 4. Verify no YAML frontmatter
+head -1 skills/gitstory/SKILL.md | grep -v '^---'  # Should output heading, not ---
 ```
 
-**Manual validation:**
-```bash
-# Validate all templates
-for template in skills/gitstory/templates/*.md; do
-    python -c "
-import yaml
-with open('$template') as f:
-    content = f.read()
-    parts = content.split('---', 2)
-    yaml.safe_load(parts[1])
-"
-done
+**config.json validation:**
 
-# Check markdown rendering
-ls -1 skills/gitstory/templates/*.md | xargs -I {} echo "Preview: {}"
+```bash
+# JSON syntax validation
+python -m json.tool .claude-plugin/config.json
+
+# Entry point verification
+test -f skills/gitstory/SKILL.md && echo "Entry point exists" || echo "ERROR: Entry point missing"
+```
+
+**Python validation (optional):**
+```python
+# tests/test_skill_config.py
+import json
+from pathlib import Path
+
+def test_config_json_valid():
+    """Verify .claude-plugin/config.json is valid."""
+    config_path = Path(".claude-plugin/config.json")
+    assert config_path.exists()
+
+    with open(config_path) as f:
+        config = json.load(f)
+
+    # Required fields
+    assert "name" in config
+    assert "id" in config
+    assert "version" in config
+    assert "entry_point" in config
+    assert "author" in config
+    assert "description" in config
+    assert "keywords" in config
+    assert "license" in config
+    assert "repository" in config
+
+    # Entry point exists
+    entry_point = Path(config["entry_point"])
+    assert entry_point.exists()
+
+def test_skill_md_structure():
+    """Verify SKILL.md has correct structure."""
+    skill_path = Path("skills/gitstory/SKILL.md")
+    assert skill_path.exists()
+
+    content = skill_path.read_text()
+
+    # No YAML frontmatter
+    assert not content.startswith("---")
+
+    # Has required sections
+    assert "# GitStory" in content
+    assert "## Activation" in content
+
+    # Word count check (rough - excludes code blocks)
+    words = [line for line in content.split('\n') if not line.startswith('```')]
+    word_count = len(' '.join(words).split())
+    assert 200 <= word_count <= 500, f"Word count {word_count} outside 200-500 range"
 ```
 
 ## Tasks
 
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
-| [TASK-0001.1.4.1](TASK-0001.1.4.1.md) | Create 6 templates with YAML frontmatter | 🔵 Not Started | 12 |
-| [TASK-0001.1.4.2](TASK-0001.1.4.2.md) | Implement template lookup priority and validation | 🔵 Not Started | 8 |
+| [TASK-0001.1.3.1](TASK-0001.1.3.1.md) | Research anthropics/skills and create config.json | 🔵 Not Started | 5 |
+| [TASK-0001.1.3.2](TASK-0001.1.3.2.md) | Create SKILL.md scaffold with validation | 🔵 Not Started | 7 |
 
-**Total Hours**: 20 (matches 5 story points)
+**Total Hours**: 12 (matches 3 story points)
 
 ## Dependencies
 
 **Prerequisites:**
-- STORY-0001.1.2 complete (skills/gitstory/ directory exists)
-- STORY-0001.1.3 complete (SKILL.md scaffold exists)
+- STORY-0001.1.2 complete: Verify with `test -d skills/gitstory && test -f skills/gitstory/README.md`
 
 **Requires:**
-- skills/gitstory/ directory
-- skills/gitstory/templates/ subdirectory
+- skills/gitstory/ directory created
+- skills/gitstory/README.md with {baseDir} documentation
 
 **Blocks:**
-- STORY-0001.1.5 (depends on understanding template patterns)
-- STORY-0001.1.6 (depends on template documentation)
-- EPIC-0001.2 (needs templates for skill integration)
+- EPIC-0001.2 (needs SKILL.md for plugin loading)
+- EPIC-0001.3 (needs config.json for skill metadata)
+- EPIC-0001.4 (needs SKILL.md scaffold for documentation expansion)
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| YAML frontmatter syntax errors | 2h rework | 20% | Validate all templates with yaml.safe_load() before finalizing |
-| Template fields too prescriptive | 1h redesign | 15% | Define core fields, allow custom fields in generic.md |
-| Field validation regex too restrictive | 1h adjustment | 10% | Test patterns with example IDs, allow flexibility |
-| Markdown heading levels inconsistent | 1h fix | 15% | Enforce standard: H1 title, H2 sections, H3 subsections |
+| .claude-plugin/config.json invalid format | 1h rework | 10% | Validate with python -m json.tool, compare against anthropics/skills examples field-by-field |
+| SKILL.md structure doesn't match conventions | 2h rework | 20% | Review multiple skills in anthropics/skills first, document patterns before writing |
+| Word count too short or too long | 1h adjustment | 15% | Target 250-350 words for core content, use code examples to show usage, defer details to references/ |
+| Entry point path incorrect | 30min fix | 10% | Use relative path from repository root (skills/gitstory/SKILL.md), verify with test -f |
