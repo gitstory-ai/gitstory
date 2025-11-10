@@ -1,4 +1,4 @@
-# STORY-0001.1.6: Create documentation guides
+# STORY-0001.1.5: Create command configuration system
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🔵 Not Started
@@ -7,160 +7,158 @@
 
 ## User Story
 
-As a GitStory contributor
-I want comprehensive documentation guides in skills/gitstory/references/
-So that I can customize templates, commands, and workflows without reading source code
+As a GitStory user
+I want to customize command behavior via YAML configuration
+So that I can adjust interview questions, quality thresholds, and validation rules without modifying code
 
 ## Acceptance Criteria
 
-- [ ] References directory created: skills/gitstory/references/ for progressive disclosure docs
-- [ ] Template authoring guide created (500-1000 words): YAML frontmatter schema, field types, validation patterns
-- [ ] Command configuration guide created (500-1000 words): plan.yaml and review.yaml formats, customization examples
-- [ ] All guides written in markdown with code examples
-- [ ] Cross-references between guides work correctly ({baseDir}/references/ pattern)
-- [ ] Documentation validated: no broken links, code blocks render correctly, examples are accurate
+- [ ] Command directory created: skills/gitstory/commands/ with plan.yaml and review.yaml
+- [ ] plan.yaml defines interview questions per ticket type (6 types: initiative, epic, story, task, bug, generic)
+- [ ] review.yaml defines quality thresholds per ticket type (70-95% range) and vague term penalties
+- [ ] Config lookup priority works: project (.gitstory/commands/) → user (~/.claude/skills/gitstory/commands/) → skill ({baseDir}/commands/)
+- [ ] YAML syntax validated with `python -m json.tool` equivalent for YAML
+- [ ] Config versioning implemented: config_version field tracks format (v1.0)
+- [ ] Example configs demonstrate customization patterns
 
 ## Technical Design
 
-### Documentation Structure
+### Command Configuration Files
 
+**skills/gitstory/commands/plan.yaml:**
+```yaml
+config_version: "1.0"
+
+interview_questions:
+  story:
+    - prompt: "As a [user role]..."
+      field: user_role
+      type: string
+      required: true
+
+    - prompt: "I want [goal]..."
+      field: goal
+      type: string
+      required: true
+
+    - prompt: "Story point estimate? (1, 2, 3, 5, 8, 13, 21)"
+      field: story_points
+      type: integer
+      required: true
+      validation: "^(1|2|3|5|8|13|21)$"
+
+  task:
+    - prompt: "Estimated hours? (2-8 hours max)"
+      field: estimated_hours
+      type: integer
+      required: true
+      validation: "^[2-8]$"
 ```
-skills/gitstory/references/
-├── template-authoring.md      # How to create custom templates
-├── command-configuration.md   # How to customize command behavior
-└── troubleshooting.md          # Common issues and solutions
+
+**skills/gitstory/commands/review.yaml:**
+```yaml
+config_version: "1.0"
+
+quality_thresholds:
+  initiative: 85
+  epic: 70
+  story: 85
+  task: 95
+  bug: 85
+  generic: 70
+
+vague_term_penalties:
+  high:
+    terms: ["improve", "enhance", "better"]
+    penalty: -10
+  medium:
+    terms: ["should", "might", "probably"]
+    penalty: -5
+  low:
+    terms: ["etc", "various", "some"]
+    penalty: -2
 ```
 
-### Template Authoring Guide
+### Config Lookup Priority
 
-**File:** `skills/gitstory/references/template-authoring.md`
+```python
+def load_command_config(command_name: str) -> dict:
+    """Load command config with priority: project → user → skill."""
 
-**Content outline (500-1000 words):**
-1. Introduction to template system
-2. YAML frontmatter schema
-3. Field type reference (string, number, enum, array)
-4. Validation patterns (regex, min/max, required)
-5. Variable substitution
-6. Lookup priority (project → user → skill)
-7. Complete example template
-8. Validation steps
+    # Level 1: Project override
+    project_config = Path.cwd() / ".gitstory" / "commands" / f"{command_name}.yaml"
+    if project_config.exists():
+        return parse_config(project_config)
 
-### Command Configuration Guide
+    # Level 2: User override
+    user_config = Path.home() / ".claude" / "skills" / "gitstory" / "commands" / f"{command_name}.yaml"
+    if user_config.exists():
+        return parse_config(user_config)
 
-**File:** `skills/gitstory/references/command-configuration.md`
-
-**Content outline (500-1000 words):**
-1. Introduction to command configs
-2. plan.yaml format (interview questions per ticket type)
-3. review.yaml format (quality thresholds, penalties)
-4. Config versioning (config_version field)
-5. Customization examples
-6. Lookup priority
-7. Validation steps
-
-### Troubleshooting Guide
-
-**File:** `skills/gitstory/references/troubleshooting.md`
-
-**Content outline (300-500 words):**
-1. Common issues
-   - Template not found
-   - YAML syntax errors
-   - Config not loading
-   - {baseDir} path issues
-2. Debugging steps
-3. Where to get help
-
-### Cross-Reference Pattern
-
-Use `{baseDir}` for internal references:
-
-```markdown
-For template customization, see {baseDir}/references/template-authoring.md
-
-For command configuration, see {baseDir}/references/command-configuration.md
+    # Level 3: Skill default
+    skill_config = Path("{baseDir}") / "commands" / f"{command_name}.yaml"
+    return parse_config(skill_config)
 ```
 
 ### Validation
 
-**Manual validation:**
-```bash
-# Check all markdown files render
-ls skills/gitstory/references/*.md | xargs -I {} echo "Preview: {}"
-
-# Verify no broken internal links
-grep -r "{baseDir}/references/" skills/gitstory/
-
-# Check word counts
-for doc in skills/gitstory/references/*.md; do
-    echo "$doc: $(wc -w < $doc) words"
-done
-```
-
-**Python validation (optional):**
+**Python validation:**
 ```python
-# tests/test_documentation.py
+# src/gitstory/validators/config_validator.py
+import yaml
 from pathlib import Path
 
-def test_reference_docs_exist():
-    """Verify all reference docs are present."""
-    refs = Path("skills/gitstory/references")
-    assert refs.exists()
+def validate_command_config(config_path: Path) -> bool:
+    """Validate command config YAML."""
+    try:
+        with open(config_path) as f:
+            config = yaml.safe_load(f)
 
-    required_docs = [
-        "template-authoring.md",
-        "command-configuration.md",
-        "troubleshooting.md"
-    ]
+        # Check config_version
+        assert 'config_version' in config
+        assert config['config_version'] == "1.0"
 
-    for doc in required_docs:
-        assert (refs / doc).exists(), f"Missing: {doc}"
+        return True
+    except (yaml.YAMLError, AssertionError, FileNotFoundError):
+        return False
+```
 
-def test_docs_have_content():
-    """Verify docs meet minimum word count."""
-    refs = Path("skills/gitstory/references")
-
-    # Template authoring guide: 500-1000 words
-    template_doc = (refs / "template-authoring.md").read_text()
-    template_words = len(template_doc.split())
-    assert 500 <= template_words <= 1000
-
-    # Command config guide: 500-1000 words  
-    command_doc = (refs / "command-configuration.md").read_text()
-    command_words = len(command_doc.split())
-    assert 500 <= command_words <= 1000
+**Manual validation:**
+```bash
+# Validate YAML syntax
+python -c "import yaml; yaml.safe_load(open('skills/gitstory/commands/plan.yaml'))"
+python -c "import yaml; yaml.safe_load(open('skills/gitstory/commands/review.yaml'))"
 ```
 
 ## Tasks
 
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
-| [TASK-0001.1.6.1](TASK-0001.1.6.1.md) | Write template authoring and command configuration guides | 🔵 Not Started | 12 |
-| [TASK-0001.1.6.2](TASK-0001.1.6.2.md) | Write troubleshooting guide and validate documentation | 🔵 Not Started | 8 |
+| [TASK-0001.1.5.1](TASK-0001.1.5.1.md) | Create plan.yaml and review.yaml with validation | 🔵 Not Started | 12 |
+| [TASK-0001.1.5.2](TASK-0001.1.5.2.md) | Implement config lookup priority system | 🔵 Not Started | 8 |
 
 **Total Hours**: 20 (matches 5 story points)
 
 ## Dependencies
 
 **Prerequisites:**
-- STORY-0001.1.1 complete (Python project bootstrap exists)
 - STORY-0001.1.2 complete (skills/gitstory/ directory exists)
 - STORY-0001.1.3 complete (SKILL.md scaffold exists)
 - STORY-0001.1.4 complete (template system exists)
-- STORY-0001.1.5 complete (command system exists)
 
 **Requires:**
-- skills/gitstory/references/ directory
-- Understanding of template and command systems
+- skills/gitstory/ directory
+- skills/gitstory/commands/ subdirectory
 
 **Blocks:**
-- EPIC-0001.4 (needs reference docs for progressive disclosure pattern)
+- STORY-0001.1.6 (needs command configs for documentation examples)
+- EPIC-0001.2 (needs command configs for universal commands)
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| Documentation becomes outdated quickly | 2h maintenance | 30% | Use examples from actual templates/configs, document patterns not specifics |
-| Word count targets too restrictive | 1h adjustment | 15% | Treat as guidelines (500-1000), focus on completeness over exact count |
-| Cross-references break during refactoring | 1h fix | 20% | Use {baseDir} pattern consistently, validate links before release |
-| Examples don't match implementation | 2h rework | 20% | Copy-paste from actual working files, validate examples with Python tests |
+| YAML syntax errors in configs | 2h rework | 15% | Validate with yaml.safe_load() before finalizing |
+| Config format too rigid for custom workflows | 3h redesign | 20% | Allow extensibility, provide clear examples |
+| Quality threshold values not well-calibrated | 1h adjustment | 25% | Start conservative (70-95%), adjust based on dogfooding |
+| Config versioning not future-proof | 2h rework | 10% | Follow semver, document migration path |

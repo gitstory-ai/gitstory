@@ -1,15 +1,17 @@
-# EPIC-0001.1: Skills Foundation & Infrastructure
+# EPIC-0001.1: CLI & Skill Foundation
 
 **Parent Initiative**: [INIT-0001](../README.md)
-**Status**: 🔵 Not Started
-**Story Points**: 24
-**Progress**: ░░░░░░░░░░ 0%
+**Status**: 🟡 In Progress
+**Story Points**: 29
+**Progress**: ██░░░░░░░░ 16% (1.5/6 stories complete)
 
 ## Overview
 
-Create the skills/gitstory/ directory structure with 6 default ticket templates (initiative, epic, story, task, bug, generic), command configuration files (plan.yaml with 6 ticket type interview sections, review.yaml with quality thresholds), SKILL.md (200-500 words), and .claude-plugin/config.json validated against official schema. Success: All files pass JSON/YAML validation, {baseDir} pattern tested on Linux/macOS, templates include YAML frontmatter field schemas. This epic combines skill scaffolding, template infrastructure, and the groundwork needed for workflow-agnostic operation. Uses proven {baseDir} pattern from anthropics/skills, implements priority lookup (project → user → skill), and creates all foundational files needed for subsequent epics.
+Create GitStory as a **hybrid CLI + Skill architecture**: (1) standalone CLI tool (typer + pydantic + rich) installable via pipx/uvx providing core ticket management functionality, and (2) Claude skill wrapper that invokes CLI commands while providing Claude-specific context. The CLI includes 6 default ticket templates, command configurations, and all business logic in src/gitstory/. The skill (skills/gitstory/) serves as a thin wrapper documenting CLI commands and installation. **Architecture decision:** Skill invokes CLI commands rather than implementing logic directly, enabling standalone usage outside Claude Code.
 
-**Deliverables:** skills/gitstory/ directory structure, SKILL.md scaffold (200-500 words), .claude-plugin/config.json with 9 required fields (name, id, version, entry_point, author, description, keywords, license, repository) validated with python -m json.tool, 6 default templates with YAML frontmatter field schemas, commands/plan.yaml (18-36 interview questions across 6 ticket types) and commands/review.yaml (quality thresholds per type) with priority lookup infrastructure, documentation content (500-1000 words each) for template authoring and command configuration guides.
+**Key Finding (STORY-0001.1.2):** Research shows `{baseDir}` pattern does NOT exist in anthropics/skills. Actual pattern: `${CLAUDE_PLUGIN_ROOT}` for plugins, relative paths for skills. Impact: Skill uses relative paths, CLI implements template/config priority lookup (project → user → skill).
+
+**Deliverables:** CLI package structure (src/gitstory/cli/, core/, models/) with typer entry point, skill wrapper (skills/gitstory/) with templates/commands/references/plugins subdirs, pyproject.toml configured with CLI dependencies (typer>=0.9, pydantic>=2.0, rich>=13.0), SKILL.md documenting CLI invocation pattern, 6 templates with pydantic schemas, command configs (plan.yaml, review.yaml), and documentation explaining CLI-skill relationship.
 
 ## Key Scenarios
 
@@ -60,38 +62,77 @@ Scenario: Marketplace config enables skill installation
 
 | ID | Title | Status | Points | Progress |
 |----|-------|--------|--------|----------|
-| [STORY-0001.1.1](STORY-0001.1.1/README.md) | Python Project Bootstrap & Testing Strategy | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create skills/gitstory/ structure with {baseDir} pattern | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.3](STORY-0001.1.3/README.md) | Create SKILL.md scaffold & marketplace config | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create template system with 6 default templates | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create command configuration system | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.6](STORY-0001.1.6/README.md) | Create documentation guides | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.1](STORY-0001.1.1/README.md) | Python Project Bootstrap & Testing Strategy | ✅ Complete | 3 | ██████████ 100% |
+| [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create CLI and Skill Directory Structure | 🟡 In Progress | 3 | █████░░░░░ 50% |
+| [STORY-0001.1.3](STORY-0001.1.3/README.md) | Implement GitStory CLI Foundation with Typer | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create SKILL.md as CLI Wrapper | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create Template System with CLI Loader | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.6](STORY-0001.1.6/README.md) | Create Command Configuration with CLI Loader | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.7](STORY-0001.1.7/README.md) | Create CLI and Skill Documentation | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
+
+**Total:** 29 story points (4.5 complete, 24.5 remaining)
 
 ## Technical Approach
 
-### {baseDir} Pattern Implementation
+### Hybrid CLI + Skill Architecture
 
-Implement command-to-skill references using **{baseDir} pattern** from anthropics/skills repository (proven standard):
+GitStory uses a **two-layer architecture** for maximum flexibility:
 
-**Approach:**
-1. Review ALL skills in anthropics/skills repository, document {baseDir} usage patterns with code snippets from representative examples (2 hours)
-2. Implement {baseDir} pattern in SKILL.md and commands (e.g., `{baseDir}/references/workflow-schema.md`)
-3. Document usage in skills/gitstory/README.md with code examples
-4. Verify cross-platform compatibility (Linux/macOS testing, Windows deferred to CI in EPIC-0001.4)
+**Layer 1: Standalone CLI Tool** (`src/gitstory/`)
+- **Framework:** typer (CLI commands + rich integration)
+- **Validation:** pydantic (schemas for tickets, workflows, configs)
+- **UI:** rich (progress bars, tables, colors)
+- **Installation:** `pipx install gitstory` or `uvx gitstory`
+- **Usage:** Standalone outside Claude Code
 
-**Why {baseDir}:**
-- **Proven:** Official Anthropic pattern used across all anthropics/skills examples
-- **Portable:** Works when skill installed in ~/.claude/skills/ or /usr/local/share/
-- **Cross-platform:** Handles Windows paths without symlinks
-- **Simple:** No runtime placeholder replacement, direct path resolution
+**Layer 2: Claude Skill Wrapper** (`skills/gitstory/`)
+- **Purpose:** Provides Claude-specific context and help
+- **Pattern:** Invokes CLI commands (doesn't reimplement logic)
+- **Installation:** Requires CLI installed first
+- **Usage:** Enhances Claude's understanding when working with tickets
+
+**Integration Pattern:**
+```markdown
+<!-- In SKILL.md -->
+When user asks to plan a story:
+gitstory plan STORY-0001.2.4
+```
+
+**Why Hybrid:**
+- **Standalone:** CLI usable without Claude Code (pipx/uvx, CI/CD, scripts)
+- **Maintainability:** Single source of truth (CLI), skill is thin wrapper
+- **Flexibility:** Users choose CLI-only or CLI+Skill based on workflow
+- **Testability:** CLI unit tests, skill integration tests
 
 ### Directory Structure
 
+**CLI Structure:**
+```
+src/gitstory/
+├── __init__.py
+├── __main__.py                 # Entry point placeholder (STORY-0001.1.2)
+├── cli/                        # Typer commands (STORY-0001.1.3)
+│   ├── __init__.py
+│   ├── plan.py
+│   ├── review.py
+│   └── execute.py
+├── core/                       # Business logic (EPIC-0001.2)
+│   ├── __init__.py
+│   ├── ticket_parser.py
+│   ├── template_engine.py      # Loads from skills/gitstory/templates/
+│   └── config_loader.py        # Loads from skills/gitstory/commands/
+└── models/                     # Pydantic schemas (EPIC-0001.2)
+    ├── __init__.py
+    ├── workflow.py
+    └── ticket.py
+```
+
+**Skill Structure:**
 ```
 skills/gitstory/
-├── SKILL.md                    # 200-500 word scaffold (expanded in EPIC-0001.4)
-├── README.md                   # {baseDir} usage documentation
-├── templates/                  # 6 default ticket templates
+├── SKILL.md                    # CLI wrapper doc (STORY-0001.1.4)
+├── README.md                   # CLI-skill relationship (STORY-0001.1.2)
+├── templates/                  # 6 default templates (STORY-0001.1.5)
 │   ├── initiative.md
 │   ├── epic.md
 │   ├── story.md

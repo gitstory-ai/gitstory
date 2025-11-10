@@ -1,4 +1,4 @@
-# STORY-0001.1.5: Create command configuration system
+# STORY-0001.1.4: Create template system with 6 default templates
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🔵 Not Started
@@ -8,134 +8,189 @@
 ## User Story
 
 As a GitStory user
-I want to customize command behavior via YAML configuration
-So that I can adjust interview questions, quality thresholds, and validation rules without modifying code
+I want to use default templates for creating tickets
+So that I can quickly generate properly formatted INIT, EPIC, STORY, and TASK tickets with required fields
 
 ## Acceptance Criteria
 
-- [ ] Command directory created: skills/gitstory/commands/ with plan.yaml and review.yaml
-- [ ] plan.yaml defines interview questions per ticket type (6 types: initiative, epic, story, task, bug, generic)
-- [ ] review.yaml defines quality thresholds per ticket type (70-95% range) and vague term penalties
-- [ ] Config lookup priority works: project (.gitstory/commands/) → user (~/.claude/skills/gitstory/commands/) → skill ({baseDir}/commands/)
-- [ ] YAML syntax validated with `python -m json.tool` equivalent for YAML
-- [ ] Config versioning implemented: config_version field tracks format (v1.0)
-- [ ] Example configs demonstrate customization patterns
+- [ ] Template directory created: skills/gitstory/templates/ with 6 markdown files
+- [ ] 6 templates implemented: initiative.md, epic.md, story.md, task.md, bug.md, generic.md
+- [ ] Each template includes YAML frontmatter with field definitions (type, required, validation, help)
+- [ ] Each template includes markdown body scaffold matching ticket hierarchy conventions
+- [ ] Template field validation documented: enum constraints, min/max length, regex patterns
+- [ ] Template lookup priority works: project (.gitstory/templates/) → user (~/.claude/skills/gitstory/templates/) → skill ({baseDir}/templates/)
+- [ ] All templates render correctly in markdown preview
+- [ ] Template YAML validated with Python yaml.safe_load()
 
 ## Technical Design
 
-### Command Configuration Files
+### Template Directory Structure
 
-**skills/gitstory/commands/plan.yaml:**
-```yaml
-config_version: "1.0"
-
-interview_questions:
-  story:
-    - prompt: "As a [user role]..."
-      field: user_role
-      type: string
-      required: true
-
-    - prompt: "I want [goal]..."
-      field: goal
-      type: string
-      required: true
-
-    - prompt: "Story point estimate? (1, 2, 3, 5, 8, 13, 21)"
-      field: story_points
-      type: integer
-      required: true
-      validation: "^(1|2|3|5|8|13|21)$"
-
-  task:
-    - prompt: "Estimated hours? (2-8 hours max)"
-      field: estimated_hours
-      type: integer
-      required: true
-      validation: "^[2-8]$"
+```
+skills/gitstory/templates/
+├── initiative.md    # Strategic goals, quarters, key results
+├── epic.md          # Feature sets, user stories, BDD specs
+├── story.md         # User story format, acceptance criteria, tasks
+├── task.md          # Implementation steps, testing, verification
+├── bug.md           # Reproduction steps, severity, environment
+└── generic.md       # Custom template for extensibility
 ```
 
-**skills/gitstory/commands/review.yaml:**
+### Template Structure Format
+
+Each template follows this structure:
+
 ```yaml
-config_version: "1.0"
+---
+name: "Story"
+description: "User story template for feature development"
+fields:
+  - name: "title"
+    type: "string"
+    description: "One-line story title"
+    required: true
+    minLength: 10
+    maxLength: 100
+  - name: "story_points"
+    type: "number"
+    description: "Fibonacci points (1, 2, 3, 5, 8, 13, 21)"
+    required: true
+    enum: [1, 2, 3, 5, 8, 13, 21]
+  - name: "status"
+    type: "enum"
+    description: "Current story status"
+    required: true
+    enum: ["Not Started", "In Progress", "Complete", "Blocked"]
+---
 
-quality_thresholds:
-  initiative: 85
-  epic: 70
-  story: 85
-  task: 95
-  bug: 85
-  generic: 70
+# STORY-NNNN.N.N: [Title]
 
-vague_term_penalties:
-  high:
-    terms: ["improve", "enhance", "better"]
-    penalty: -10
-  medium:
-    terms: ["should", "might", "probably"]
-    penalty: -5
-  low:
-    terms: ["etc", "various", "some"]
-    penalty: -2
+**Parent Epic**: [EPIC-NNNN.N](../README.md)
+**Status**: 🔵 Not Started
+**Story Points**: 3
+
+## User Story
+
+As a [user type]
+I want [goal]
+So that [benefit]
+
+## Acceptance Criteria
+
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+## Tasks
+
+| ID | Title | Status | Hours |
+|----|-------|--------|-------|
 ```
 
-### Config Lookup Priority
+### Field Validation Rules
+
+```yaml
+# ID Field Validation
+ticket_id:
+  type: "string"
+  pattern: "^[A-Z]+-\\d{4}(\\.\\d+)*$"
+  examples: ["INIT-0001", "EPIC-0001.1", "STORY-0001.1.4"]
+
+# Status Field
+status:
+  type: "enum"
+  enum: ["Not Started", "In Progress", "Complete", "Blocked"]
+  symbols: ["🔵", "🟡", "🟢", "🔴"]
+
+# Story Points (Fibonacci)
+story_points:
+  type: "number"
+  enum: [1, 2, 3, 5, 8, 13, 21]
+
+# Hours Estimate (Tasks)
+hours:
+  type: "number"
+  minimum: 1
+  maximum: 8
+```
+
+### Template Lookup Implementation
 
 ```python
-def load_command_config(command_name: str) -> dict:
-    """Load command config with priority: project → user → skill."""
+def load_template(template_name: str) -> dict:
+    """Load template with priority: project → user → skill."""
 
-    # Level 1: Project override
-    project_config = Path.cwd() / ".gitstory" / "commands" / f"{command_name}.yaml"
-    if project_config.exists():
-        return parse_config(project_config)
+    # Level 1: Project override (highest)
+    project_template = Path.cwd() / ".gitstory" / "templates" / f"{template_name}.md"
+    if project_template.exists():
+        return parse_template(project_template)
 
     # Level 2: User override
-    user_config = Path.home() / ".claude" / "skills" / "gitstory" / "commands" / f"{command_name}.yaml"
-    if user_config.exists():
-        return parse_config(user_config)
+    user_template = Path.home() / ".claude" / "skills" / "gitstory" / "templates" / f"{template_name}.md"
+    if user_template.exists():
+        return parse_template(user_template)
 
-    # Level 3: Skill default
-    skill_config = Path("{baseDir}") / "commands" / f"{command_name}.yaml"
-    return parse_config(skill_config)
+    # Level 3: Skill default (using {baseDir})
+    skill_template = Path("{baseDir}") / "templates" / f"{template_name}.md"
+    return parse_template(skill_template)
 ```
 
-### Validation
+### Validation Steps
 
-**Python validation:**
+**YAML validation:**
 ```python
-# src/gitstory/validators/config_validator.py
+# src/gitstory/validators/template_validator.py
 import yaml
 from pathlib import Path
 
-def validate_command_config(config_path: Path) -> bool:
-    """Validate command config YAML."""
-    try:
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
+def validate_template_frontmatter(template_path: Path) -> bool:
+    """Validate template YAML frontmatter."""
+    content = template_path.read_text()
 
-        # Check config_version
-        assert 'config_version' in config
-        assert config['config_version'] == "1.0"
+    # Extract frontmatter
+    if not content.startswith('---'):
+        return False
+
+    parts = content.split('---', 2)
+    if len(parts) < 3:
+        return False
+
+    try:
+        frontmatter = yaml.safe_load(parts[1])
+
+        # Required fields
+        assert 'name' in frontmatter
+        assert 'description' in frontmatter
+        assert 'fields' in frontmatter
+        assert isinstance(frontmatter['fields'], list)
 
         return True
-    except (yaml.YAMLError, AssertionError, FileNotFoundError):
+    except (yaml.YAMLError, AssertionError):
         return False
 ```
 
 **Manual validation:**
 ```bash
-# Validate YAML syntax
-python -c "import yaml; yaml.safe_load(open('skills/gitstory/commands/plan.yaml'))"
-python -c "import yaml; yaml.safe_load(open('skills/gitstory/commands/review.yaml'))"
+# Validate all templates
+for template in skills/gitstory/templates/*.md; do
+    python -c "
+import yaml
+with open('$template') as f:
+    content = f.read()
+    parts = content.split('---', 2)
+    yaml.safe_load(parts[1])
+"
+done
+
+# Check markdown rendering
+ls -1 skills/gitstory/templates/*.md | xargs -I {} echo "Preview: {}"
 ```
 
 ## Tasks
 
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
-| [TASK-0001.1.5.1](TASK-0001.1.5.1.md) | Create plan.yaml and review.yaml with validation | 🔵 Not Started | 12 |
-| [TASK-0001.1.5.2](TASK-0001.1.5.2.md) | Implement config lookup priority system | 🔵 Not Started | 8 |
+| [TASK-0001.1.4.1](TASK-0001.1.4.1.md) | Create 6 templates with YAML frontmatter | 🔵 Not Started | 12 |
+| [TASK-0001.1.4.2](TASK-0001.1.4.2.md) | Implement template lookup priority and validation | 🔵 Not Started | 8 |
 
 **Total Hours**: 20 (matches 5 story points)
 
@@ -144,21 +199,21 @@ python -c "import yaml; yaml.safe_load(open('skills/gitstory/commands/review.yam
 **Prerequisites:**
 - STORY-0001.1.2 complete (skills/gitstory/ directory exists)
 - STORY-0001.1.3 complete (SKILL.md scaffold exists)
-- STORY-0001.1.4 complete (template system exists)
 
 **Requires:**
 - skills/gitstory/ directory
-- skills/gitstory/commands/ subdirectory
+- skills/gitstory/templates/ subdirectory
 
 **Blocks:**
-- STORY-0001.1.6 (needs command configs for documentation examples)
-- EPIC-0001.2 (needs command configs for universal commands)
+- STORY-0001.1.5 (depends on understanding template patterns)
+- STORY-0001.1.6 (depends on template documentation)
+- EPIC-0001.2 (needs templates for skill integration)
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| YAML syntax errors in configs | 2h rework | 15% | Validate with yaml.safe_load() before finalizing |
-| Config format too rigid for custom workflows | 3h redesign | 20% | Allow extensibility, provide clear examples |
-| Quality threshold values not well-calibrated | 1h adjustment | 25% | Start conservative (70-95%), adjust based on dogfooding |
-| Config versioning not future-proof | 2h rework | 10% | Follow semver, document migration path |
+| YAML frontmatter syntax errors | 2h rework | 20% | Validate all templates with yaml.safe_load() before finalizing |
+| Template fields too prescriptive | 1h redesign | 15% | Define core fields, allow custom fields in generic.md |
+| Field validation regex too restrictive | 1h adjustment | 10% | Test patterns with example IDs, allow flexibility |
+| Markdown heading levels inconsistent | 1h fix | 15% | Enforce standard: H1 title, H2 sections, H3 subsections |
