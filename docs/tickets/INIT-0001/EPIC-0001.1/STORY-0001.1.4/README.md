@@ -1,4 +1,4 @@
-# STORY-0001.1.3: Create SKILL.md scaffold & marketplace config
+# STORY-0001.1.4: Create SKILL.md as CLI Wrapper
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🔵 Not Started
@@ -8,28 +8,32 @@
 ## User Story
 
 As a Claude user
-I want to install the GitStory skill via marketplace
-So that I can use workflow-agnostic ticket management commands in any Claude conversation
+I want to use the GitStory CLI from within Claude conversations
+So that I can leverage GitStory's ticket management without leaving my chat context
 
 ## Acceptance Criteria
 
-- [ ] SKILL.md created at skills/gitstory/SKILL.md with 200-500 word markdown body (no YAML frontmatter)
-- [ ] SKILL.md includes activation section with 3 concrete trigger types:
-  - Command patterns: /gitstory:plan, /gitstory:review, /gitstory:install
-  - Natural language: "create ticket", "plan epic", "review story quality"
+- [ ] SKILL.md created as CLI wrapper (200-500 words, no YAML frontmatter)
+- [ ] SKILL.md documents CLI installation requirement (pipx/uvx)
+- [ ] SKILL.md documents all 6 CLI commands: plan, review, execute, validate, test-plugin, init
+- [ ] SKILL.md includes usage examples showing CLI invocation from Claude
+- [ ] SKILL.md includes activation section with trigger patterns:
+  - Command patterns: /gitstory:*, CLI command names
+  - Natural language: "gitstory", "create ticket", "plan epic"
   - Ticket ID patterns: INIT-*, EPIC-*, STORY-*, TASK-*, BUG-*
-- [ ] SKILL.md structure validated by reviewing anthropics/skills repository (document 3+ skills reviewed)
-- [ ] .claude-plugin/config.json created with 9 required fields: name, id, version, entry_point, author, description, keywords (5+ items), license, repository
+- [ ] SKILL.md structure validated against anthropics/skills repository patterns
+- [ ] .claude-plugin/config.json created with required fields: name, id, version, entry_point, author, description, keywords, license, repository
 - [ ] config.json validated with `python -m json.tool .claude-plugin/config.json`
 - [ ] config.json entry_point references skills/gitstory/SKILL.md
-- [ ] SKILL.md renders correctly in markdown preview (headings, lists, code blocks, links)
-- [ ] Word count verified: SKILL.md body is 200-500 words (excluding code blocks)
+- [ ] SKILL.md renders correctly in markdown preview
 
 ## Technical Design
 
-### SKILL.md Structure
+### SKILL.md as CLI Wrapper
 
 **Location:** `skills/gitstory/SKILL.md`
+
+**Purpose:** Document the GitStory CLI and how to invoke it from Claude conversations.
 
 **Content Structure:**
 
@@ -37,32 +41,54 @@ So that I can use workflow-agnostic ticket management commands in any Claude con
 # GitStory
 
 ## Overview
-[Purpose: workflow-agnostic ticket management via Claude Skills]
+GitStory is a standalone CLI tool for workflow-agnostic ticket management. This skill provides Claude integration by documenting CLI commands and usage patterns.
+
+## Installation
+
+The GitStory CLI must be installed before using this skill:
+
+```bash
+# Install via pipx (recommended)
+pipx install gitstory
+
+# Or via uvx (run without installing)
+uvx gitstory --help
+```
+
+## CLI Commands
+
+- `gitstory plan TICKET-ID` - Plan tickets (epics, stories, tasks)
+- `gitstory review TICKET-ID` - Review ticket quality
+- `gitstory execute TICKET-ID` - Execute ticket workflows
+- `gitstory validate TICKET-ID` - Validate ticket structure
+- `gitstory test-plugin PLUGIN-ID` - Test workflow plugins
+- `gitstory init` - Initialize GitStory in a repository
 
 ## Activation
 
 This skill activates when you:
 
-1. **Commands:** `/gitstory:plan`, `/gitstory:review`, `/gitstory:install`
+1. **Commands:** `/gitstory:*` or mention `gitstory` CLI
 2. **Natural Language:** "create ticket", "plan epic", "review story quality"
 3. **Ticket IDs:** `INIT-*`, `EPIC-*`, `STORY-*`, `TASK-*`, `BUG-*`
 
-## Features
-
-- Template-driven ticket types with YAML frontmatter field schemas
-- Configurable commands via YAML (plan.yaml, review.yaml)
-- Priority lookup: project → user → skill defaults
-
 ## Quick Start
 
-[2-3 concrete examples with commands and expected output]
+```bash
+# Plan a new story
+gitstory plan STORY-0001.2.4
+
+# Review epic quality
+gitstory review EPIC-0001.3
+```
 
 ## Customization
 
-See `{baseDir}/references/` for detailed configuration options.
+See `skills/gitstory/references/` for detailed configuration guides.
 ```
 
 **Word count target:** 250-350 words (excluding code blocks)
+**Key principle:** SKILL.md is documentation only, all logic is in the CLI
 
 ### .claude-plugin/config.json Structure
 

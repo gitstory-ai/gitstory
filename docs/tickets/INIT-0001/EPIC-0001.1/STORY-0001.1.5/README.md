@@ -1,4 +1,4 @@
-# STORY-0001.1.4: Create template system with 6 default templates
+# STORY-0001.1.5: Create Template System with CLI Loader
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🔵 Not Started
@@ -8,19 +8,27 @@
 ## User Story
 
 As a GitStory user
-I want to use default templates for creating tickets
-So that I can quickly generate properly formatted INIT, EPIC, STORY, and TASK tickets with required fields
+I want to use templates for creating tickets via the CLI
+So that I can quickly generate properly formatted tickets with validated fields and customizable content
 
 ## Acceptance Criteria
 
-- [ ] Template directory created: skills/gitstory/templates/ with 6 markdown files
-- [ ] 6 templates implemented: initiative.md, epic.md, story.md, task.md, bug.md, generic.md
-- [ ] Each template includes YAML frontmatter with field definitions (type, required, validation, help)
-- [ ] Each template includes markdown body scaffold matching ticket hierarchy conventions
-- [ ] Template field validation documented: enum constraints, min/max length, regex patterns
-- [ ] Template lookup priority works: project (.gitstory/templates/) → user (~/.claude/skills/gitstory/templates/) → skill ({baseDir}/templates/)
+### Template Data Files
+- [ ] 6 template files created in skills/gitstory/templates/: initiative.md, epic.md, story.md, task.md, bug.md, generic.md
+- [ ] Each template includes YAML frontmatter with field schemas (type, required, validation, help)
+- [ ] Each template includes markdown body with string.Template variables (${ticket_id}, ${title}, ${parent})
+- [ ] All templates validated with Python yaml.safe_load()
 - [ ] All templates render correctly in markdown preview
-- [ ] Template YAML validated with Python yaml.safe_load()
+
+### CLI Loader Implementation
+- [ ] CLI template engine created: src/gitstory/core/template_engine.py
+- [ ] Template engine implements 3-tier priority lookup: project (.gitstory/templates/) → user (~/.claude/skills/gitstory/templates/) → skill (package resources)
+- [ ] Template engine uses importlib.resources for skill template resolution
+- [ ] Template engine parses YAML frontmatter from template files
+- [ ] Template engine performs variable substitution using string.Template.safe_substitute()
+- [ ] Pydantic models created: src/gitstory/models/template.py for field schema validation
+- [ ] TemplateNotFoundError raised when template missing from all locations
+- [ ] Template engine tested with unit tests
 
 ## Technical Design
 
@@ -113,11 +121,24 @@ hours:
   maximum: 8
 ```
 
-### Template Lookup Implementation
+### CLI Template Engine Implementation
+
+**File:** `src/gitstory/core/template_engine.py`
 
 ```python
-def load_template(template_name: str) -> dict:
-    """Load template with priority: project → user → skill."""
+from pathlib import Path
+from string import Template
+from importlib import resources
+import yaml
+from typing import Dict, Any
+from ..models.template import TemplateSchema, FieldSchema
+
+class TemplateNotFoundError(Exception):
+    """Raised when template not found in any location."""
+    pass
+
+def load_template(template_name: str) -> Dict[str, Any]:
+    """Load template with 3-tier priority: project → user → skill."""
 
     # Level 1: Project override (highest)
     project_template = Path.cwd() / ".gitstory" / "templates" / f"{template_name}.md"
@@ -129,48 +150,98 @@ def load_template(template_name: str) -> dict:
     if user_template.exists():
         return parse_template(user_template)
 
-    # Level 3: Skill default (using {baseDir})
-    skill_template = Path("{baseDir}") / "templates" / f"{template_name}.md"
-    return parse_template(skill_template)
-```
+    # Level 3: Skill default (from package resources)
+    try:
+        with resources.path('gitstory', 'skills') as skill_root:
+            skill_template = skill_root / "gitstory" / "templates" / f"{template_name}.md"
+            if skill_template.exists():
+                return parse_template(skill_template)
+    except (ModuleNotFoundError, FileNotFoundError):
+        pass
 
-### Validation Steps
+    # Fallback to generic
+    if template_name != "generic":
+        return load_template("generic")
 
-**YAML validation:**
-```python
-# src/gitstory/validators/template_validator.py
-import yaml
-from pathlib import Path
+    raise TemplateNotFoundError(f"Template '{template_name}' not found in any location")
 
-def validate_template_frontmatter(template_path: Path) -> bool:
-    """Validate template YAML frontmatter."""
+def parse_template(template_path: Path) -> Dict[str, Any]:
+    """Parse template file: extract YAML frontmatter and markdown body."""
     content = template_path.read_text()
 
-    # Extract frontmatter
+    # Extract YAML frontmatter
     if not content.startswith('---'):
-        return False
+        raise ValueError(f"Template {template_path} missing YAML frontmatter")
 
     parts = content.split('---', 2)
     if len(parts) < 3:
-        return False
+        raise ValueError(f"Template {template_path} has malformed frontmatter")
 
-    try:
-        frontmatter = yaml.safe_load(parts[1])
+    frontmatter = yaml.safe_load(parts[1])
+    body = parts[2].strip()
 
-        # Required fields
-        assert 'name' in frontmatter
-        assert 'description' in frontmatter
-        assert 'fields' in frontmatter
-        assert isinstance(frontmatter['fields'], list)
+    # Validate schema using Pydantic
+    schema = TemplateSchema(**frontmatter)
 
-        return True
-    except (yaml.YAMLError, AssertionError):
-        return False
+    return {
+        "schema": schema,
+        "body": body,
+        "path": template_path
+    }
+
+def render_template(template_data: Dict[str, Any], context: Dict[str, Any]) -> str:
+    """Render template body with variable substitution."""
+    template = Template(template_data["body"])
+    return template.safe_substitute(context)
 ```
+
+### Pydantic Models
+
+**File:** `src/gitstory/models/template.py`
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional, Literal
+
+class FieldSchema(BaseModel):
+    """Schema for a template field."""
+    name: str
+    type: Literal["string", "number", "enum", "array"]
+    description: str
+    required: bool = False
+    minLength: Optional[int] = None
+    maxLength: Optional[int] = None
+    enum: Optional[List[str | int]] = None
+    minimum: Optional[int] = None
+    maximum: Optional[int] = None
+
+class TemplateSchema(BaseModel):
+    """Schema for template YAML frontmatter."""
+    name: str = Field(..., description="Template name")
+    description: str = Field(..., description="Template purpose")
+    fields: List[FieldSchema] = Field(..., description="Field definitions")
+```
+
+### Validation
+
+Templates are validated automatically when loaded by the CLI:
+
+1. **YAML Syntax:** yaml.safe_load() validates YAML structure
+2. **Schema Validation:** Pydantic models validate frontmatter structure
+3. **Field Types:** FieldSchema ensures valid type, required, validation fields
+4. **Template Body:** string.Template validates variable syntax
 
 **Manual validation:**
 ```bash
-# Validate all templates
+# Test CLI template loader
+uv run python -c "
+from gitstory.core.template_engine import load_template
+template = load_template('story')
+print(f'Template: {template[\"schema\"].name}')
+print(f'Fields: {len(template[\"schema\"].fields)}')
+"
+
+# Validate all template YAML
 for template in skills/gitstory/templates/*.md; do
     python -c "
 import yaml
@@ -180,40 +251,45 @@ with open('$template') as f:
     yaml.safe_load(parts[1])
 "
 done
-
-# Check markdown rendering
-ls -1 skills/gitstory/templates/*.md | xargs -I {} echo "Preview: {}"
 ```
 
 ## Tasks
 
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
-| [TASK-0001.1.4.1](TASK-0001.1.4.1.md) | Create 6 templates with YAML frontmatter | 🔵 Not Started | 12 |
-| [TASK-0001.1.4.2](TASK-0001.1.4.2.md) | Implement template lookup priority and validation | 🔵 Not Started | 8 |
+| [TASK-0001.1.5.1](TASK-0001.1.5.1.md) | Create 6 template files with YAML frontmatter | 🔵 Not Started | 8 |
+| [TASK-0001.1.5.2](TASK-0001.1.5.2.md) | Implement CLI template engine (template_engine.py) | 🔵 Not Started | 6 |
+| [TASK-0001.1.5.3](TASK-0001.1.5.3.md) | Create Pydantic models for template schemas | 🔵 Not Started | 4 |
+| [TASK-0001.1.5.4](TASK-0001.1.5.4.md) | Test template loader and validation | 🔵 Not Started | 2 |
 
 **Total Hours**: 20 (matches 5 story points)
+
+**Note:** Run `/plan-story STORY-0001.1.5` to create detailed task files.
 
 ## Dependencies
 
 **Prerequisites:**
-- STORY-0001.1.2 complete (skills/gitstory/ directory exists)
-- STORY-0001.1.3 complete (SKILL.md scaffold exists)
+- STORY-0001.1.2 complete (CLI and skill directories exist)
+- STORY-0001.1.3 complete (typer, pydantic, rich installed)
+- STORY-0001.1.4 complete (SKILL.md documents template usage)
 
 **Requires:**
-- skills/gitstory/ directory
-- skills/gitstory/templates/ subdirectory
+- src/gitstory/core/ directory exists
+- src/gitstory/models/ directory exists
+- skills/gitstory/templates/ directory exists
+- pyproject.toml configured with pydantic, pyyaml
 
 **Blocks:**
-- STORY-0001.1.5 (depends on understanding template patterns)
-- STORY-0001.1.6 (depends on template documentation)
-- EPIC-0001.2 (needs templates for skill integration)
+- STORY-0001.1.6 (command configs follow same pattern as templates)
+- STORY-0001.1.7 (documentation needs working template examples)
+- EPIC-0001.2 (workflow engine uses templates for ticket creation)
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| YAML frontmatter syntax errors | 2h rework | 20% | Validate all templates with yaml.safe_load() before finalizing |
-| Template fields too prescriptive | 1h redesign | 15% | Define core fields, allow custom fields in generic.md |
-| Field validation regex too restrictive | 1h adjustment | 10% | Test patterns with example IDs, allow flexibility |
-| Markdown heading levels inconsistent | 1h fix | 15% | Enforce standard: H1 title, H2 sections, H3 subsections |
+| importlib.resources breaks on some Python versions | 3h rework | 10% | Test on Python 3.11+, use fallback path resolution if needed |
+| YAML frontmatter syntax errors in templates | 2h rework | 20% | Validate with Pydantic models, provide clear error messages |
+| Template not found errors confusing | 2h debugging | 25% | Show all checked paths in TemplateNotFoundError message |
+| Variable substitution conflicts with markdown | 2h fix | 10% | Use string.Template safe_substitute(), document escaping in templates |
+| Template fields too prescriptive for custom workflows | 3h redesign | 15% | Provide generic.md fallback, document customization in references/ |

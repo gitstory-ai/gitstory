@@ -1,4 +1,4 @@
-# STORY-0001.1.6: Create documentation guides
+# STORY-0001.1.7: Create CLI and Skill Documentation
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🔵 Not Started
@@ -7,18 +7,26 @@
 
 ## User Story
 
-As a GitStory contributor
-I want comprehensive documentation guides in skills/gitstory/references/
-So that I can customize templates, commands, and workflows without reading source code
+As a GitStory user and contributor
+I want comprehensive documentation for both the CLI and skill
+So that I can install, use, and customize GitStory effectively
 
 ## Acceptance Criteria
 
-- [ ] References directory created: skills/gitstory/references/ for progressive disclosure docs
-- [ ] Template authoring guide created (500-1000 words): YAML frontmatter schema, field types, validation patterns
-- [ ] Command configuration guide created (500-1000 words): plan.yaml and review.yaml formats, customization examples
+### CLI Documentation
+- [ ] README.md updated with CLI installation instructions (pipx/uvx)
+- [ ] README.md includes CLI usage examples for all 6 commands
+- [ ] README.md explains CLI-skill relationship and architecture
+- [ ] CLI command help text implemented for all commands (--help flag)
+- [ ] Installation troubleshooting section added to README
+
+### Skill Reference Guides
+- [ ] skills/gitstory/references/template-authoring.md created (500-1000 words)
+- [ ] skills/gitstory/references/command-configuration.md created (500-1000 words)
+- [ ] skills/gitstory/references/troubleshooting.md created (300-500 words)
 - [ ] All guides written in markdown with code examples
-- [ ] Cross-references between guides work correctly ({baseDir}/references/ pattern)
-- [ ] Documentation validated: no broken links, code blocks render correctly, examples are accurate
+- [ ] Cross-references use relative paths (not {baseDir})
+- [ ] All code examples validated and tested
 
 ## Technical Design
 
@@ -64,37 +72,45 @@ skills/gitstory/references/
 
 **Content outline (300-500 words):**
 1. Common issues
+   - CLI not installed
    - Template not found
    - YAML syntax errors
    - Config not loading
-   - {baseDir} path issues
+   - Path resolution issues
 2. Debugging steps
-3. Where to get help
+3. Where to get help (GitHub issues, discussions)
 
 ### Cross-Reference Pattern
 
-Use `{baseDir}` for internal references:
+Use relative paths for internal references:
 
 ```markdown
-For template customization, see {baseDir}/references/template-authoring.md
+For template customization, see [Template Authoring Guide](references/template-authoring.md)
 
-For command configuration, see {baseDir}/references/command-configuration.md
+For command configuration, see [Command Configuration Guide](references/command-configuration.md)
+
+For CLI usage, see the main [README.md](../../README.md)
 ```
 
 ### Validation
 
 **Manual validation:**
 ```bash
-# Check all markdown files render
-ls skills/gitstory/references/*.md | xargs -I {} echo "Preview: {}"
+# Test CLI help text
+uv run gitstory --help
+uv run gitstory plan --help
+uv run gitstory review --help
 
-# Verify no broken internal links
-grep -r "{baseDir}/references/" skills/gitstory/
+# Validate markdown rendering
+ls skills/gitstory/references/*.md | xargs -I {} echo "Preview: {}"
 
 # Check word counts
 for doc in skills/gitstory/references/*.md; do
     echo "$doc: $(wc -w < $doc) words"
 done
+
+# Verify README installation instructions
+grep -A 10 "## Installation" README.md
 ```
 
 **Python validation (optional):**
@@ -135,32 +151,40 @@ def test_docs_have_content():
 
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
-| [TASK-0001.1.6.1](TASK-0001.1.6.1.md) | Write template authoring and command configuration guides | 🔵 Not Started | 12 |
-| [TASK-0001.1.6.2](TASK-0001.1.6.2.md) | Write troubleshooting guide and validate documentation | 🔵 Not Started | 8 |
+| [TASK-0001.1.7.1](TASK-0001.1.7.1.md) | Update README.md with CLI installation and usage | 🔵 Not Started | 6 |
+| [TASK-0001.1.7.2](TASK-0001.1.7.2.md) | Implement CLI command help text (--help for all commands) | 🔵 Not Started | 4 |
+| [TASK-0001.1.7.3](TASK-0001.1.7.3.md) | Write skill reference guides (3 markdown files) | 🔵 Not Started | 8 |
+| [TASK-0001.1.7.4](TASK-0001.1.7.4.md) | Validate all documentation and examples | 🔵 Not Started | 2 |
 
 **Total Hours**: 20 (matches 5 story points)
+
+**Note:** Run `/plan-story STORY-0001.1.7` to create detailed task files.
 
 ## Dependencies
 
 **Prerequisites:**
-- STORY-0001.1.1 complete (Python project bootstrap exists)
-- STORY-0001.1.2 complete (skills/gitstory/ directory exists)
-- STORY-0001.1.3 complete (SKILL.md scaffold exists)
-- STORY-0001.1.4 complete (template system exists)
-- STORY-0001.1.5 complete (command system exists)
+- STORY-0001.1.2 complete (CLI and skill directories exist)
+- STORY-0001.1.3 complete (CLI commands implemented)
+- STORY-0001.1.4 complete (SKILL.md exists)
+- STORY-0001.1.5 complete (template system working)
+- STORY-0001.1.6 complete (config system working)
 
 **Requires:**
-- skills/gitstory/references/ directory
-- Understanding of template and command systems
+- README.md file exists in repository root
+- skills/gitstory/references/ directory exists
+- CLI commands functional for testing help text
+- Working examples of templates and configs
 
 **Blocks:**
-- EPIC-0001.4 (needs reference docs for progressive disclosure pattern)
+- EPIC-0001.2 (needs documentation to understand CLI usage)
+- EPIC-0001.4 (needs reference guides for expansion)
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| Documentation becomes outdated quickly | 2h maintenance | 30% | Use examples from actual templates/configs, document patterns not specifics |
-| Word count targets too restrictive | 1h adjustment | 15% | Treat as guidelines (500-1000), focus on completeness over exact count |
-| Cross-references break during refactoring | 1h fix | 20% | Use {baseDir} pattern consistently, validate links before release |
-| Examples don't match implementation | 2h rework | 20% | Copy-paste from actual working files, validate examples with Python tests |
+| Documentation becomes outdated as CLI evolves | 3h maintenance | 30% | Use actual working examples, document behavior not implementation details |
+| CLI help text inconsistent across commands | 2h rework | 20% | Use typer conventions consistently, review all help text together |
+| Installation instructions platform-specific | 2h rework | 25% | Test on Linux/macOS, document known limitations, defer Windows specifics to EPIC-0001.4 |
+| Examples don't match actual CLI output | 3h rework | 20% | Test all examples with actual CLI, include exact command output in docs |
+| Cross-references break during refactoring | 1h fix | 15% | Use relative paths, validate links with markdown linter |

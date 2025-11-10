@@ -1,4 +1,4 @@
-# STORY-0001.1.5: Create command configuration system
+# STORY-0001.1.6: Create Command Configuration with CLI Loader
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🔵 Not Started
@@ -8,18 +8,28 @@
 ## User Story
 
 As a GitStory user
-I want to customize command behavior via YAML configuration
-So that I can adjust interview questions, quality thresholds, and validation rules without modifying code
+I want to customize CLI command behavior via YAML configuration
+So that I can adjust interview questions, quality thresholds, and validation rules without modifying CLI code
 
 ## Acceptance Criteria
 
-- [ ] Command directory created: skills/gitstory/commands/ with plan.yaml and review.yaml
-- [ ] plan.yaml defines interview questions per ticket type (6 types: initiative, epic, story, task, bug, generic)
-- [ ] review.yaml defines quality thresholds per ticket type (70-95% range) and vague term penalties
-- [ ] Config lookup priority works: project (.gitstory/commands/) → user (~/.claude/skills/gitstory/commands/) → skill ({baseDir}/commands/)
-- [ ] YAML syntax validated with `python -m json.tool` equivalent for YAML
-- [ ] Config versioning implemented: config_version field tracks format (v1.0)
-- [ ] Example configs demonstrate customization patterns
+### Config Data Files
+- [ ] skills/gitstory/commands/plan.yaml created with interview questions per ticket type (6 types)
+- [ ] skills/gitstory/commands/review.yaml created with quality thresholds and vague term penalties
+- [ ] plan.yaml includes: prompt, field, type, required, help for each question
+- [ ] review.yaml includes: quality thresholds (70-95%), vague term penalties, acceptance criteria requirements
+- [ ] All YAML files validated with `python -c "import yaml; yaml.safe_load(open('file.yaml'))"`
+- [ ] Config versioning: config_version field set to "1.0"
+
+### CLI Loader Implementation
+- [ ] CLI config loader created: src/gitstory/core/config_loader.py
+- [ ] Config loader implements 3-tier priority lookup: project (.gitstory/commands/) → user (~/.claude/skills/gitstory/commands/) → skill (package resources)
+- [ ] Config loader uses importlib.resources for skill config resolution
+- [ ] Config loader validates config_version field
+- [ ] Config loader parses YAML and returns validated structure
+- [ ] Pydantic models created: src/gitstory/models/config.py for config validation
+- [ ] ConfigNotFoundError raised when config missing from all locations
+- [ ] Config loader tested with unit tests
 
 ## Technical Design
 
@@ -79,52 +89,128 @@ vague_term_penalties:
     penalty: -2
 ```
 
-### Config Lookup Priority
+### CLI Config Loader Implementation
+
+**File:** `src/gitstory/core/config_loader.py`
 
 ```python
-def load_command_config(command_name: str) -> dict:
-    """Load command config with priority: project → user → skill."""
+from pathlib import Path
+from importlib import resources
+import yaml
+from typing import Dict, Any
+from ..models.config import PlanConfig, ReviewConfig
 
-    # Level 1: Project override
+class ConfigNotFoundError(Exception):
+    """Raised when config not found in any location."""
+    pass
+
+def load_command_config(command_name: str) -> Dict[str, Any]:
+    """Load command config with 3-tier priority: project → user → skill."""
+
+    # Level 1: Project override (highest)
     project_config = Path.cwd() / ".gitstory" / "commands" / f"{command_name}.yaml"
     if project_config.exists():
-        return parse_config(project_config)
+        return parse_config(project_config, command_name)
 
     # Level 2: User override
     user_config = Path.home() / ".claude" / "skills" / "gitstory" / "commands" / f"{command_name}.yaml"
     if user_config.exists():
-        return parse_config(user_config)
+        return parse_config(user_config, command_name)
 
-    # Level 3: Skill default
-    skill_config = Path("{baseDir}") / "commands" / f"{command_name}.yaml"
-    return parse_config(skill_config)
+    # Level 3: Skill default (from package resources)
+    try:
+        with resources.path('gitstory', 'skills') as skill_root:
+            skill_config = skill_root / "gitstory" / "commands" / f"{command_name}.yaml"
+            if skill_config.exists():
+                return parse_config(skill_config, command_name)
+    except (ModuleNotFoundError, FileNotFoundError):
+        pass
+
+    raise ConfigNotFoundError(f"Config '{command_name}.yaml' not found in any location")
+
+def parse_config(config_path: Path, command_name: str) -> Dict[str, Any]:
+    """Parse config file and validate structure."""
+    with open(config_path) as f:
+        data = yaml.safe_load(f)
+
+    # Validate config_version
+    if 'config_version' not in data:
+        raise ValueError(f"Config {config_path} missing config_version field")
+
+    if data['config_version'] != "1.0":
+        raise ValueError(f"Unsupported config_version: {data['config_version']}")
+
+    # Validate using Pydantic models
+    if command_name == "plan":
+        config = PlanConfig(**data)
+    elif command_name == "review":
+        config = ReviewConfig(**data)
+    else:
+        raise ValueError(f"Unknown command: {command_name}")
+
+    return {
+        "config": config,
+        "path": config_path
+    }
+```
+
+### Pydantic Models
+
+**File:** `src/gitstory/models/config.py`
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Dict, Literal
+
+class InterviewQuestion(BaseModel):
+    """Schema for interview question."""
+    prompt: str
+    field: str
+    type: Literal["string", "integer", "enum", "list", "textarea"]
+    required: bool = True
+    validation: str | None = None
+    help: str | None = None
+    min_items: int | None = None
+    max_items: int | None = None
+    values: List[str] | None = None
+
+class PlanConfig(BaseModel):
+    """Schema for plan.yaml config."""
+    config_version: str = Field(..., pattern="^1\\.0$")
+    interview_questions: Dict[str, List[InterviewQuestion]]
+
+class VagueTermPenalty(BaseModel):
+    """Schema for vague term penalty."""
+    terms: List[str]
+    penalty: int
+
+class ReviewConfig(BaseModel):
+    """Schema for review.yaml config."""
+    config_version: str = Field(..., pattern="^1\\.0$")
+    quality_thresholds: Dict[str, int]
+    vague_term_penalties: Dict[str, VagueTermPenalty]
+    acceptance_criteria_requirements: Dict[str, Any] | None = None
 ```
 
 ### Validation
 
-**Python validation:**
-```python
-# src/gitstory/validators/config_validator.py
-import yaml
-from pathlib import Path
+Configs are validated automatically when loaded by the CLI:
 
-def validate_command_config(config_path: Path) -> bool:
-    """Validate command config YAML."""
-    try:
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
-
-        # Check config_version
-        assert 'config_version' in config
-        assert config['config_version'] == "1.0"
-
-        return True
-    except (yaml.YAMLError, AssertionError, FileNotFoundError):
-        return False
-```
+1. **YAML Syntax:** yaml.safe_load() validates YAML structure
+2. **Schema Validation:** Pydantic models validate config structure
+3. **Version Check:** config_version must be "1.0"
+4. **Field Types:** InterviewQuestion validates question structure
 
 **Manual validation:**
 ```bash
+# Test CLI config loader
+uv run python -c "
+from gitstory.core.config_loader import load_command_config
+config = load_command_config('plan')
+print(f'Config version: {config[\"config\"].config_version}')
+print(f'Ticket types: {list(config[\"config\"].interview_questions.keys())}')
+"
+
 # Validate YAML syntax
 python -c "import yaml; yaml.safe_load(open('skills/gitstory/commands/plan.yaml'))"
 python -c "import yaml; yaml.safe_load(open('skills/gitstory/commands/review.yaml'))"
@@ -134,31 +220,39 @@ python -c "import yaml; yaml.safe_load(open('skills/gitstory/commands/review.yam
 
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
-| [TASK-0001.1.5.1](TASK-0001.1.5.1.md) | Create plan.yaml and review.yaml with validation | 🔵 Not Started | 12 |
-| [TASK-0001.1.5.2](TASK-0001.1.5.2.md) | Implement config lookup priority system | 🔵 Not Started | 8 |
+| [TASK-0001.1.6.1](TASK-0001.1.6.1.md) | Create plan.yaml and review.yaml config files | 🔵 Not Started | 8 |
+| [TASK-0001.1.6.2](TASK-0001.1.6.2.md) | Implement CLI config loader (config_loader.py) | 🔵 Not Started | 6 |
+| [TASK-0001.1.6.3](TASK-0001.1.6.3.md) | Create Pydantic models for config schemas | 🔵 Not Started | 4 |
+| [TASK-0001.1.6.4](TASK-0001.1.6.4.md) | Test config loader and validation | 🔵 Not Started | 2 |
 
 **Total Hours**: 20 (matches 5 story points)
+
+**Note:** Run `/plan-story STORY-0001.1.6` to create detailed task files.
 
 ## Dependencies
 
 **Prerequisites:**
-- STORY-0001.1.2 complete (skills/gitstory/ directory exists)
-- STORY-0001.1.3 complete (SKILL.md scaffold exists)
-- STORY-0001.1.4 complete (template system exists)
+- STORY-0001.1.2 complete (CLI and skill directories exist)
+- STORY-0001.1.3 complete (typer, pydantic, rich installed)
+- STORY-0001.1.4 complete (SKILL.md documents config usage)
+- STORY-0001.1.5 complete (template engine pattern established)
 
 **Requires:**
-- skills/gitstory/ directory
-- skills/gitstory/commands/ subdirectory
+- src/gitstory/core/ directory exists
+- src/gitstory/models/ directory exists
+- skills/gitstory/commands/ directory exists
+- pyproject.toml configured with pydantic, pyyaml
 
 **Blocks:**
-- STORY-0001.1.6 (needs command configs for documentation examples)
-- EPIC-0001.2 (needs command configs for universal commands)
+- STORY-0001.1.7 (documentation needs working config examples)
+- EPIC-0001.2 (workflow engine uses configs for command behavior)
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| YAML syntax errors in configs | 2h rework | 15% | Validate with yaml.safe_load() before finalizing |
-| Config format too rigid for custom workflows | 3h redesign | 20% | Allow extensibility, provide clear examples |
-| Quality threshold values not well-calibrated | 1h adjustment | 25% | Start conservative (70-95%), adjust based on dogfooding |
-| Config versioning not future-proof | 2h rework | 10% | Follow semver, document migration path |
+| importlib.resources breaks on some Python versions | 3h rework | 10% | Test on Python 3.11+, use fallback path resolution if needed |
+| YAML syntax errors in config files | 2h rework | 15% | Validate with Pydantic models, provide clear error messages |
+| Config not found errors confusing | 2h debugging | 20% | Show all checked paths in ConfigNotFoundError message |
+| Config format too rigid for customization | 3h redesign | 20% | Document extensibility patterns in references/, allow additional fields |
+| Quality thresholds not well-calibrated | 2h adjustment | 25% | Start conservative (70-95%), adjust based on usage feedback |

@@ -3,7 +3,7 @@
 **Parent Initiative**: [INIT-0001](../README.md)
 **Status**: 🟡 In Progress
 **Story Points**: 29
-**Progress**: ██░░░░░░░░ 16% (1.5/6 stories complete)
+**Progress**: ██░░░░░░░░ 21% (6/29 points, 2/7 stories complete)
 
 ## Overview
 
@@ -11,66 +11,42 @@ Create GitStory as a **hybrid CLI + Skill architecture**: (1) standalone CLI too
 
 **Key Finding (STORY-0001.1.2):** Research shows `{baseDir}` pattern does NOT exist in anthropics/skills. Actual pattern: `${CLAUDE_PLUGIN_ROOT}` for plugins, relative paths for skills. Impact: Skill uses relative paths, CLI implements template/config priority lookup (project → user → skill).
 
-**Deliverables:** CLI package structure (src/gitstory/cli/, core/, models/) with typer entry point, skill wrapper (skills/gitstory/) with templates/commands/references/plugins subdirs, pyproject.toml configured with CLI dependencies (typer>=0.9, pydantic>=2.0, rich>=13.0), SKILL.md documenting CLI invocation pattern, 6 templates with pydantic schemas, command configs (plan.yaml, review.yaml), and documentation explaining CLI-skill relationship.
+**Deliverables:** CLI package structure (src/gitstory/cli/, core/, models/) with typer entry point, CLI loaders (template_engine.py, config_loader.py) with 3-tier priority lookup, Pydantic models for templates and configs, skill wrapper (skills/gitstory/) with templates/commands/references subdirs, pyproject.toml configured with CLI dependencies (typer>=0.9, pydantic>=2.0, rich>=13.0), SKILL.md documenting CLI invocation pattern, 6 template files with YAML frontmatter, command config files (plan.yaml, review.yaml), and documentation explaining CLI-skill relationship.
 
-## Key Scenarios
+## Key Requirements
 
-```gherkin
-Scenario: Skill directory structure uses {baseDir} pattern from anthropics/skills
-  Given the GitStory repository
-  When I create the skills/gitstory/ directory structure
-  Then it includes skills/gitstory/templates/ for ticket templates
-  And it includes skills/gitstory/commands/ for command configuration
-  And it includes skills/gitstory/references/ for progressive disclosure docs
-  And SKILL.md can reference resources using {baseDir}/references/workflow-schema.md
-  And pattern works across Linux/macOS/Windows without symlinks
+### CLI Implementation
+- **Template Engine** (`src/gitstory/core/template_engine.py`): Loads templates with 3-tier priority (project → user → skill), parses YAML frontmatter, performs variable substitution using string.Template
+- **Config Loader** (`src/gitstory/core/config_loader.py`): Loads command configs with 3-tier priority, validates YAML structure, provides config versioning support
+- **Pydantic Models** (`src/gitstory/models/`): Schema validation for template fields, config structures, ticket types
+- **Typer Commands** (`src/gitstory/cli/`): Six placeholder commands (plan, review, execute, validate, test-plugin, init) with rich formatting
 
-Scenario: Template with YAML frontmatter defines field schemas
-  Given template file skills/gitstory/templates/story.md
-  When I parse the YAML frontmatter
-  Then it defines fields: title, parent_epic, status, story_points, progress
-  And each field specifies: type (string/integer/enum), required (bool), validation (regex/range)
-  And field schemas include help text for interview prompts
-  And template body uses string.Template variables: ${ticket_id}, ${title}, ${parent}
+### Skill Data Files
+- **Templates** (`skills/gitstory/templates/`): 6 markdown files with YAML frontmatter (initiative, epic, story, task, bug, generic)
+- **Configs** (`skills/gitstory/commands/`): YAML configuration files (plan.yaml for interview questions, review.yaml for quality thresholds)
+- **Documentation** (`skills/gitstory/references/`): Markdown guides for customization and troubleshooting
+- **SKILL.md**: Claude wrapper documenting CLI commands and activation patterns
 
-Scenario: Project template overrides skill default via priority lookup
-  Given skill default template: skills/gitstory/templates/story.md
-  And project template: .gitstory/templates/story.md
-  When /gitstory:plan creates a story
-  Then it uses .gitstory/templates/story.md (project override - highest priority)
-  And ignores skill default template
-  And uses project-specific field schemas from frontmatter
-
-Scenario: Command configuration customizes interview questions
-  Given skills/gitstory/commands/plan.yaml with interview sections per ticket type
-  When /gitstory:plan EPIC-0001.2 runs
-  Then it reads epic interview questions from plan.yaml
-  And prompts user with customized questions
-  And validates responses against field schemas from template frontmatter
-  And uses custom help text for each field
-
-Scenario: Marketplace config enables skill installation
-  Given .claude-plugin/config.json with skill metadata
-  When validated against anthropics/skills format
-  Then JSON syntax passes: jq . .claude-plugin/config.json
-  And all required fields present: name, id, version, entry_point, author, description, keywords, license, repository
-  And entry_point references skills/gitstory/SKILL.md
-  And users can install via /plugin install gitstory
-```
+### Key Behaviors
+- CLI resolves skill resources using relative paths from package installation location
+- Template/config priority: `.gitstory/` (project) → `~/.claude/skills/gitstory/` (user) → `skills/gitstory/` (skill default)
+- Variable substitution uses Python's string.Template: `${ticket_id}`, `${title}`, `${parent}`
+- Validation happens in CLI using Pydantic models, not in skill files
+- Skill provides data and documentation, CLI provides all logic
 
 ## Stories
 
 | ID | Title | Status | Points | Progress |
 |----|-------|--------|--------|----------|
 | [STORY-0001.1.1](STORY-0001.1.1/README.md) | Python Project Bootstrap & Testing Strategy | ✅ Complete | 3 | ██████████ 100% |
-| [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create CLI and Skill Directory Structure | 🟡 In Progress | 3 | █████░░░░░ 50% |
+| [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create CLI and Skill Directory Structure | ✅ Complete | 3 | ██████████ 100% |
 | [STORY-0001.1.3](STORY-0001.1.3/README.md) | Implement GitStory CLI Foundation with Typer | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create SKILL.md as CLI Wrapper | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create Template System with CLI Loader | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.6](STORY-0001.1.6/README.md) | Create Command Configuration with CLI Loader | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.7](STORY-0001.1.7/README.md) | Create CLI and Skill Documentation | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 
-**Total:** 29 story points (4.5 complete, 24.5 remaining)
+**Total:** 29 story points (6 complete, 23 remaining)
 
 ## Technical Approach
 
@@ -242,24 +218,40 @@ ${tasks_table}
 ### Template Lookup Priority
 
 ```python
+# Implementation in src/gitstory/core/template_engine.py
+from pathlib import Path
+from importlib import resources
+
 def find_template(ticket_type: str) -> Path:
+    """Load template with 3-tier priority lookup.
+
+    Priority: project → user → skill (package resources)
+    """
     # 1. Project override (highest priority)
-    project_template = Path(f".gitstory/templates/{ticket_type}.md")
+    project_template = Path.cwd() / ".gitstory" / "templates" / f"{ticket_type}.md"
     if project_template.exists():
         return project_template
 
     # 2. User global override
-    user_template = Path.home() / f".claude/skills/gitstory/templates/{ticket_type}.md"
+    user_template = Path.home() / ".claude" / "skills" / "gitstory" / "templates" / f"{ticket_type}.md"
     if user_template.exists():
         return user_template
 
-    # 3. Skill default (lowest priority)
-    skill_template = Path(f"{{baseDir}}/templates/{ticket_type}.md")
-    if skill_template.exists():
-        return skill_template
+    # 3. Skill default from package (lowest priority)
+    # Use importlib.resources to find skill templates in installed package
+    try:
+        with resources.path('gitstory', 'skills') as skill_root:
+            skill_template = skill_root / "gitstory" / "templates" / f"{ticket_type}.md"
+            if skill_template.exists():
+                return skill_template
+    except (ModuleNotFoundError, FileNotFoundError):
+        pass
 
     # 4. Fallback to generic
-    return find_template("generic")
+    if ticket_type != "generic":
+        return find_template("generic")
+
+    raise TemplateNotFoundError(f"Template '{ticket_type}' not found in any location")
 ```
 
 ### commands/plan.yaml Structure
@@ -391,12 +383,15 @@ acceptance_criteria_requirements:
 
 ### SKILL.md Foundation
 
-Create SKILL.md following anthropics/skills conventions (no frontmatter needed):
-- **Body:** 200-500 word markdown describing GitStory purpose and workflow plugin system overview
-- **Activation section:** Specific activation triggers: (1) User runs /gitstory:plan, /gitstory:review, or /gitstory:install commands, (2) User mentions 'create ticket', 'plan epic', 'review story quality', or 'customize workflow templates', (3) User references ticket IDs matching INIT-*, EPIC-*, STORY-*, TASK-*, or BUG-* patterns in conversation
+Create SKILL.md as a **CLI wrapper** following anthropics/skills conventions (no frontmatter needed):
+- **Purpose:** Documents the GitStory CLI and how to invoke it from Claude
+- **Body:** 200-500 word markdown describing GitStory CLI architecture and basic usage
+- **Activation section:** Specific activation triggers: (1) User runs `/gitstory:*` commands, (2) User mentions 'gitstory', 'create ticket', 'plan epic', or 'review story quality', (3) User references ticket IDs matching INIT-*, EPIC-*, STORY-*, TASK-*, or BUG-* patterns
+- **CLI Commands:** Documents the 6 CLI commands (plan, review, execute, validate, test-plugin, init) with usage examples
+- **Installation:** Explains that CLI must be installed first (`pipx install gitstory` or `uvx gitstory`)
 - **Validation:** Compare against anthropics/skills examples, ensure markdown renders correctly
 
-**Note:** Metadata (name, version, description) goes in .claude-plugin/config.json, not SKILL.md frontmatter. SKILL.md focuses on instructions/context for Claude. Complete SKILL.md documentation (grow from 200-500 word foundation to 3000-4000 word production version including command references, workflow examples, troubleshooting section, and progressive disclosure links) happens in EPIC-0001.4.
+**Note:** Metadata (name, version, description) goes in .claude-plugin/config.json, not SKILL.md frontmatter. SKILL.md is a thin wrapper that tells Claude how to invoke the CLI. Complete SKILL.md documentation (grow from 200-500 word foundation to comprehensive version with examples) happens in EPIC-0001.4.
 
 ### .claude-plugin/config.json (Marketplace Registration)
 
@@ -439,59 +434,79 @@ Create `.claude-plugin/config.json` validated against official schema:
 
 ## Deliverables
 
-### Directory Structure
-- [ ] skills/gitstory/ directory created
-- [ ] skills/gitstory/README.md created documenting {baseDir} usage with code examples
-- [ ] skills/gitstory/templates/ subdirectory created
-- [ ] skills/gitstory/commands/ subdirectory created
-- [ ] skills/gitstory/references/ subdirectory created (with .gitkeep for future docs)
-- [ ] skills/gitstory/scripts/ subdirectory created (with .gitkeep for EPIC-0001.2)
-- [ ] {baseDir} pattern studied from anthropics/skills repo (findings documented in README.md)
+### CLI Package Structure
+- [x] src/gitstory/cli/ directory created with __init__.py
+- [x] src/gitstory/core/ directory created with __init__.py
+- [x] src/gitstory/models/ directory created with __init__.py
+- [x] src/gitstory/__main__.py placeholder created
+- [x] pyproject.toml configured with CLI dependencies (typer, pydantic, rich)
+- [x] pyproject.toml entry point configured: `gitstory = "gitstory.cli:app"`
+- [ ] src/gitstory/cli/__init__.py implements typer app with 6 commands
+- [ ] src/gitstory/core/template_engine.py implements template loader
+- [ ] src/gitstory/core/config_loader.py implements config loader
+- [ ] src/gitstory/models/template.py implements Pydantic template schemas
+- [ ] src/gitstory/models/config.py implements Pydantic config schemas
 
-### Skill Scaffold
-- [ ] SKILL.md created (200-500 word markdown body, no frontmatter)
+### Skill Directory Structure
+- [x] skills/gitstory/ directory created
+- [x] skills/gitstory/README.md created documenting CLI-skill relationship
+- [x] skills/gitstory/templates/ subdirectory created
+- [x] skills/gitstory/commands/ subdirectory created
+- [x] skills/gitstory/references/ subdirectory created (with .gitkeep)
+- [x] skills/gitstory/plugins/ subdirectory created (with .gitkeep for EPIC-0001.3)
+- [x] Research findings documented: ${CLAUDE_PLUGIN_ROOT} for plugins, relative paths for skills
+
+### Skill Scaffold (CLI Wrapper)
+- [ ] SKILL.md created as CLI wrapper (200-500 words, documents CLI commands)
+- [ ] SKILL.md explains CLI installation requirement (pipx/uvx)
+- [ ] SKILL.md documents 6 CLI commands with usage examples
 - [ ] SKILL.md contains activation description with concrete triggers
-- [ ] Review ALL skills in anthropics/skills repository to identify common patterns and best practices
-- [ ] Document findings: SKILL.md structure patterns, activation trigger styles, common sections, word count ranges, use of examples/code blocks
-- [ ] SKILL.md validated against discovered patterns: (1) No YAML frontmatter (if pattern holds), (2) Consistent heading structure, (3) Activation section present, (4) File renders correctly in markdown preview, (5) Word count appropriate for scope
+- [ ] Review anthropics/skills repository for skill pattern conventions
+- [ ] SKILL.md validated: (1) No YAML frontmatter, (2) Consistent heading structure, (3) Activation section present, (4) CLI commands documented, (5) File renders correctly
 - [ ] .claude-plugin/config.json created with all required fields
-- [ ] .claude-plugin/config.json validated (JSON syntax check with jq)
+- [ ] .claude-plugin/config.json validated (JSON syntax check with jq or python -m json.tool)
 - [ ] .claude-plugin/config.json matches anthropics/skills format
 
-### Templates (6 total)
-- [ ] templates/initiative.md created with YAML frontmatter field schemas
-- [ ] templates/epic.md created with YAML frontmatter field schemas
-- [ ] templates/story.md created with YAML frontmatter field schemas
-- [ ] templates/task.md created with YAML frontmatter field schemas
-- [ ] templates/bug.md created with YAML frontmatter field schemas
-- [ ] templates/generic.md created with YAML frontmatter field schemas
-- [ ] All field schemas include 4 required keys validated: type ('string'|'integer'|'enum'|'list'|'textarea'), required (boolean), validation (regex string applied via Python re.match() - invalid input shows field-specific help text), help (error message shown when validation fails). If type=enum then values list must exist with 2+ items.
+### Template Data Files (6 total, loaded by CLI)
+- [ ] skills/gitstory/templates/initiative.md created with YAML frontmatter
+- [ ] skills/gitstory/templates/epic.md created with YAML frontmatter
+- [ ] skills/gitstory/templates/story.md created with YAML frontmatter
+- [ ] skills/gitstory/templates/task.md created with YAML frontmatter
+- [ ] skills/gitstory/templates/bug.md created with YAML frontmatter
+- [ ] skills/gitstory/templates/generic.md created with YAML frontmatter
+- [ ] All YAML frontmatter includes field schemas: type, required, validation, help
 - [ ] All templates use string.Template variables (${ticket_id}, ${parent}, etc.)
-- [ ] Template lookup priority implemented (project → user → skill)
-- [ ] Variable substitution implemented (simple string replacement)
+- [ ] CLI template_engine.py implements 3-tier lookup (project → user → skill)
+- [ ] CLI template_engine.py implements variable substitution using string.Template
+- [ ] Pydantic models validate template field schemas
 
-### Command Configuration
-- [ ] commands/plan.yaml created with interview questions per ticket type (6 types)
-- [ ] Interview questions include: prompt, field, type, required, help
-- [ ] Question types supported: string, integer, enum, list, textarea
-- [ ] commands/review.yaml created with quality thresholds per ticket type
-- [ ] Quality thresholds defined: initiative (85%), epic (70%), story (85%), task (95%), bug (85%), generic (70%)
-- [ ] Vague term penalty weights included (high/-10, medium/-5, low/-2)
-- [ ] BDD and acceptance criteria requirements defined
-- [ ] Command config lookup checks paths in order: (1) .gitstory/commands/{command}.yaml (project), (2) ~/.claude/skills/gitstory/commands/{command}.yaml (user), (3) {baseDir}/commands/{command}.yaml (skill), returns first existing file. If none exist, raise FileNotFoundError with message 'Command config {command}.yaml not found in project, user, or skill directories'.
+### Command Configuration Files (loaded by CLI)
+- [ ] skills/gitstory/commands/plan.yaml created with interview questions per ticket type
+- [ ] skills/gitstory/commands/review.yaml created with quality thresholds and penalty weights
+- [ ] plan.yaml interview questions include: prompt, field, type, required, help
+- [ ] plan.yaml supports question types: string, integer, enum, list, textarea
+- [ ] review.yaml quality thresholds: initiative (85%), epic (70%), story (85%), task (95%), bug (85%), generic (70%)
+- [ ] review.yaml vague term penalties: high (-10), medium (-5), low (-2)
+- [ ] review.yaml acceptance criteria requirements defined
+- [ ] CLI config_loader.py implements 3-tier lookup (project → user → skill)
+- [ ] CLI config_loader.py validates YAML structure and config_version
+- [ ] Pydantic models validate config schemas
 
-### Documentation & Scripts
-- [ ] Template authoring guide content created (500-1000 words, for references/ in EPIC-0001.4)
-- [ ] Command configuration guide content created (500-1000 words, for references/ in EPIC-0001.4)
-- [ ] All deliverables tested on Linux/macOS: directory creation succeeds, {baseDir} pattern resolves to correct paths, templates render in markdown preview, YAML configs validate with yaml.safe_load() (Windows CI deferred to EPIC-0001.4)
+### Documentation
+- [ ] skills/gitstory/references/template-authoring.md guide created (500-1000 words)
+- [ ] skills/gitstory/references/command-configuration.md guide created (500-1000 words)
+- [ ] skills/gitstory/references/troubleshooting.md guide created (300-500 words)
+- [ ] CLI README.md updated with installation and usage instructions
+- [ ] All deliverables tested on Linux/macOS: CLI installable, templates/configs load correctly, YAML validates with yaml.safe_load() (Windows CI deferred to EPIC-0001.4)
 
 ## Risks & Mitigations
 
 | Risk | Impact (Hours/%) | Likelihood (%) | Mitigation |
 |------|------------------|----------------|------------|
-| {baseDir} pattern breaks on Windows | 2h rework | 5% | Pattern proven in anthropics/skills (cross-platform tested), defer Windows CI to EPIC-0001.4 for validation |
-| .claude-plugin/config.json invalid format | 1h rework | 10% | Validate with python -m json.tool, compare against anthropics/skills examples field-by-field, use exact format from official repo |
-| YAML frontmatter parsing errors | 4h debugging | 25% | Validate YAML syntax, provide clear error messages with line numbers, test with malformed input |
-| Variable substitution conflicts with markdown syntax | 2h fix | 10% | Use specific delimiter (${var}), escape literal braces in templates, document escaping in authoring guide |
-| Priority lookup confusing (which template/config is active?) | 3h documentation | 30% | Document lookup order clearly, add --show-template flag to /gitstory:plan (in EPIC-0001.3) to display active path |
-| Template field schemas too rigid for custom workflows | 6h refactor | 15% | Allow additionalFields: true in frontmatter, provide generic.md fallback, document customization in authoring guide |
+| CLI resource path resolution breaks across platforms | 3h rework | 15% | Use importlib.resources for cross-platform package resource loading, test on Linux/macOS, defer Windows CI to EPIC-0001.4 |
+| .claude-plugin/config.json invalid format | 1h rework | 10% | Validate with python -m json.tool, compare against anthropics/skills examples field-by-field |
+| YAML frontmatter parsing errors in templates/configs | 4h debugging | 25% | Validate YAML syntax in CLI loader, provide clear error messages with line numbers, test with malformed input |
+| Variable substitution conflicts with markdown syntax | 2h fix | 10% | Use string.Template delimiter (${var}), escape literal braces in templates, document escaping in authoring guide |
+| Priority lookup confusing (which template/config is active?) | 3h documentation | 30% | Document lookup order clearly in README, add --show-template flag to CLI (in EPIC-0001.2) to display active path |
+| Template field schemas too rigid for custom workflows | 6h refactor | 15% | Provide generic.md fallback template, document customization in reference guides |
+| CLI not installed when skill is used | 2h documentation | 20% | SKILL.md prominently documents installation requirement, provide helpful error messages in skill commands |
