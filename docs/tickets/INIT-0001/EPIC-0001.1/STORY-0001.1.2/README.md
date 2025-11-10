@@ -1,9 +1,9 @@
 # STORY-0001.1.2: Create CLI and Skill Directory Structure
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
-**Status**: 🟡 In Progress
+**Status**: ✅ Complete
 **Story Points**: 3
-**Progress**: ████████░░ 50%
+**Progress**: ██████████ 100%
 
 ## User Story
 
@@ -14,22 +14,22 @@ So that the CLI provides core functionality while the skill serves as a Claude-s
 ## Acceptance Criteria
 
 ### CLI Structure
-- [ ] CLI package structure created: src/gitstory/cli/, core/, models/
-- [ ] Entry point configured in pyproject.toml: `gitstory = "gitstory.cli:app"`
-- [ ] CLI dependencies added: typer, pydantic, rich
-- [ ] CLI installable via `uvx gitstory --help` shows help text
+- [x] CLI package structure created: src/gitstory/cli/, core/, models/
+- [x] Entry point configured in pyproject.toml: `gitstory = "gitstory.cli:app"`
+- [x] CLI dependencies added: typer, pydantic, rich
+- [x] CLI installable via `uvx gitstory --help` shows help text
 
 ### Skill Structure
-- [ ] Directory structure created: skills/gitstory/ with 4 subdirectories (templates/, commands/, references/, plugins/)
-- [ ] Placeholder files created: references/.gitkeep and plugins/.gitkeep for future epics
-- [ ] Cross-platform compatibility verified on Linux and macOS: directory creation succeeds, .gitkeep files tracked by git
+- [x] Directory structure created: skills/gitstory/ with 4 subdirectories (templates/, commands/, references/, plugins/)
+- [x] Placeholder files created: references/.gitkeep and plugins/.gitkeep for future epics
+- [x] Cross-platform compatibility verified on Linux and macOS: directory creation succeeds, .gitkeep files tracked by git
 
 ### Documentation
-- [ ] skills/gitstory/README.md created documenting CLI-skill relationship
-- [ ] Research finding documented: ${CLAUDE_PLUGIN_ROOT} is actual pattern, not {baseDir}
-- [ ] README explains skill will invoke CLI commands (e.g., `gitstory plan TICKET-ID`)
-- [ ] README documents CLI installation requirement (pipx/uvx)
-- [ ] Template lookup priority documented: project (.gitstory/) → user (~/.claude/skills/gitstory/) → skill (skills/gitstory/)
+- [x] skills/gitstory/README.md created documenting CLI-skill relationship
+- [x] Research finding documented: ${CLAUDE_PLUGIN_ROOT} is actual pattern, not {baseDir}
+- [x] README explains skill will invoke CLI commands (e.g., `gitstory plan TICKET-ID`)
+- [x] README documents CLI installation requirement (pipx/uvx)
+- [x] Template lookup priority documented: project (.gitstory/) → user (~/.claude/skills/gitstory/) → skill (skills/gitstory/)
 
 ## Technical Design
 
@@ -163,9 +163,9 @@ find skills/gitstory -type l  # Should return empty
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
 | [TASK-0001.1.2.1](TASK-0001.1.2.1.md) | Research {baseDir} patterns from anthropics/skills | ✅ Complete | 4 |
-| [TASK-0001.1.2.2](TASK-0001.1.2.2.md) | Create directory structure and README.md documentation | 🔵 Not Started | 8 |
+| [TASK-0001.1.2.2](TASK-0001.1.2.2.md) | Create directory structure and README.md documentation | ✅ Complete | 8 |
 
-**Total Hours**: 12 (4 actual, 8 remaining)
+**Total Hours**: 12 (12 actual, 0 remaining)
 
 ## Dependencies
 
