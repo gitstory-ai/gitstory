@@ -1,4 +1,4 @@
-# STORY-0001.1.4: Create SKILL.md as CLI Wrapper
+# STORY-0001.1.4: Create SKILL.md as Primary Interface
 
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🔵 Not Started
@@ -7,9 +7,9 @@
 
 ## User Story
 
-As a Claude user
-I want to use the GitStory CLI from within Claude conversations
-So that I can leverage GitStory's ticket management without leaving my chat context
+As a user
+I want comprehensive SKILL.md documentation
+So that Claude Code knows how to orchestrate GitStory CLI commands to manage my tickets intelligently
 
 ## Acceptance Criteria
 
@@ -29,11 +29,17 @@ So that I can leverage GitStory's ticket management without leaving my chat cont
 
 ## Technical Design
 
-### SKILL.md as CLI Wrapper
+### SKILL.md as Primary Interface
 
 **Location:** `skills/gitstory/SKILL.md`
 
-**Purpose:** Document the GitStory CLI and how to invoke it from Claude conversations.
+**Purpose:** SKILL.md is the **primary user interface** for GitStory. It provides Claude with context about:
+- When to activate GitStory
+- How to orchestrate CLI commands for deterministic operations
+- What operations are deterministic (CLI) vs intelligent (Claude)
+- How to present results to users
+
+**Architecture:** Skill provides intelligence and context, CLI provides deterministic implementation. Claude reads SKILL.md to understand how to use GitStory's CLI commands effectively.
 
 **Content Structure:**
 
@@ -88,7 +94,7 @@ See `skills/gitstory/references/` for detailed configuration guides.
 ```
 
 **Word count target:** 250-350 words (excluding code blocks)
-**Key principle:** SKILL.md is documentation only, all logic is in the CLI
+**Key principle:** SKILL.md is the primary interface. It documents how Claude should orchestrate CLI commands (deterministic operations) while providing intelligent planning, review, and decision-making
 
 ### .claude-plugin/config.json Structure
 

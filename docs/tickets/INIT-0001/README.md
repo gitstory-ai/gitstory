@@ -49,14 +49,15 @@ Transform GitStory into a **workflow-agnostic ticket management system** distrib
 3. **Script-Based Infrastructure**: Core utilities (parse_ticket, run_workflow_plugin, validate_workflow) live in `scripts/`—used by commands/agents, not overridable, not referenced in workflow.yaml
 4. **Explicit Workflow Required**: Commands/agents MUST find `.gitstory/workflow.yaml` or error—no fallback to skill defaults. Skill provides reference implementation copied on init.
 5. **Command Configuration**: Command behavior (interview questions, quality thresholds) customizable via `commands/*.yaml` files with priority lookup (project → user → skill)
-6. **Template Field Schemas**: Ticket structure and validation rules defined in template frontmatter (YAML), not separate config files
-7. **Shorthand Notation**: String in list = convention path (`plugins/{type}/{name}`), object = inline code or custom config
-8. **Priority Lookup for Extensions**: Project workflow plugins/templates/commands override user overrides override skill defaults (workflow.yaml has NO fallback)
-9. **Flexible Execution**: Inline code (no files), external files (no extensions, shebang), or commands
-10. **Standard Contracts**: Guards/events/actions have defined input/output/exit codes (0=success, 1=failure, 2=error). Actions stop on first failure.
-11. **Command-Driven**: Event detection happens when user runs commands, not background polling
-12. **Progressive Disclosure**: Skill loads resources on-demand via references/ directory, keeps SKILL.md core at 3000-4000 words
-13. **Tool Access**: No `allowed-tools` restriction—Claude inherits default tool access to intelligently use whatever tools are available on user's system (jq, yq, fd, rg, etc.). Since workflow plugins run arbitrary code, restricting Claude's tools provides minimal security benefit while reducing flexibility.
+6. **Claude-First Design**: CLI provides deterministic operations (file I/O, git, validation, structured output), Claude provides intelligence (planning, review, orchestration, decision-making). Skill is primary interface, CLI is implementation layer designed for programmatic invocation.
+7. **Template Field Schemas**: Ticket structure and validation rules defined in template frontmatter (YAML), not separate config files
+8. **Shorthand Notation**: String in list = convention path (`plugins/{type}/{name}`), object = inline code or custom config
+9. **Priority Lookup for Extensions**: Project workflow plugins/templates/commands override user overrides override skill defaults (workflow.yaml has NO fallback)
+10. **Flexible Execution**: Inline code (no files), external files (no extensions, shebang), or commands
+11. **Standard Contracts**: Guards/events/actions have defined input/output/exit codes (0=success, 1=failure, 2=error). Actions stop on first failure.
+12. **Command-Driven**: Event detection happens when user runs commands, not background polling
+13. **Progressive Disclosure**: Skill loads resources on-demand via references/ directory, keeps SKILL.md core at 3000-4000 words
+14. **Tool Access**: No `allowed-tools` restriction—Claude inherits default tool access to intelligently use whatever tools are available on user's system (jq, yq, fd, rg, etc.). Since workflow plugins run arbitrary code, restricting Claude's tools provides minimal security benefit while reducing flexibility.
 
 ### System Components
 

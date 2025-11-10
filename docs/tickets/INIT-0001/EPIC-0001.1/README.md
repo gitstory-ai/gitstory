@@ -7,7 +7,7 @@
 
 ## Overview
 
-Create GitStory as a **hybrid CLI + Skill architecture**: (1) standalone CLI tool (typer + pydantic + rich) installable via pipx/uvx providing core ticket management functionality, and (2) Claude skill wrapper that invokes CLI commands while providing Claude-specific context. The CLI includes 6 default ticket templates, command configurations, and all business logic in src/gitstory/. The skill (skills/gitstory/) serves as a thin wrapper documenting CLI commands and installation. **Architecture decision:** Skill invokes CLI commands rather than implementing logic directly, enabling standalone usage outside Claude Code.
+Create GitStory as a **hybrid CLI + Skill architecture**: (1) standalone CLI tool (typer + pydantic + rich) providing **deterministic operations for Claude Code to orchestrate**, also installable via pipx/uvx for standalone developer use, and (2) Claude skill **primary interface** that provides intelligence and context while orchestrating CLI commands for mechanical work. The CLI includes 6 default ticket templates, command configurations, and all deterministic logic in src/gitstory/. The skill (skills/gitstory/) serves as the primary user interface documenting how Claude should use CLI commands. **Architecture decision:** CLI designed primarily for Claude Code invocation, handling deterministic aspects (file operations, validation, git commands) while Claude handles intelligence (planning, quality assessment, decision-making). Skill is primary interface, CLI is implementation layer.
 
 **Key Finding (STORY-0001.1.2):** Research shows `{baseDir}` pattern does NOT exist in anthropics/skills. Actual pattern: `${CLAUDE_PLUGIN_ROOT}` for plugins, relative paths for skills. Impact: Skill uses relative paths, CLI implements template/config priority lookup (project → user → skill).
 
@@ -41,7 +41,7 @@ Create GitStory as a **hybrid CLI + Skill architecture**: (1) standalone CLI too
 | [STORY-0001.1.1](STORY-0001.1.1/README.md) | Python Project Bootstrap & Testing Strategy | ✅ Complete | 3 | ██████████ 100% |
 | [STORY-0001.1.2](STORY-0001.1.2/README.md) | Create CLI and Skill Directory Structure | ✅ Complete | 3 | ██████████ 100% |
 | [STORY-0001.1.3](STORY-0001.1.3/README.md) | Implement GitStory CLI Foundation with Typer | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
-| [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create SKILL.md as CLI Wrapper | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
+| [STORY-0001.1.4](STORY-0001.1.4/README.md) | Create SKILL.md as Primary Interface | 🔵 Not Started | 3 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.5](STORY-0001.1.5/README.md) | Create Template System with CLI Loader | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.6](STORY-0001.1.6/README.md) | Create Command Configuration with CLI Loader | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
 | [STORY-0001.1.7](STORY-0001.1.7/README.md) | Create CLI and Skill Documentation | 🔵 Not Started | 5 | ░░░░░░░░░░ 0% |
