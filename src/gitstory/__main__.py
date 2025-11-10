@@ -5,7 +5,7 @@ typer-based CLI implementation.
 """
 
 
-def main():
+def main() -> None:
     """Placeholder main function."""
     print("GitStory CLI - foundation placeholder")
     print("Actual CLI implementation coming in STORY-0001.1.3")
