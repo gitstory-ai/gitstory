@@ -3,7 +3,7 @@
 **Parent Epic**: [EPIC-0001.1](../README.md)
 **Status**: 🟡 In Progress
 **Story Points**: 5
-**Progress**: ██▓░░░░░░░ 25%
+**Progress**: █████▓░░░░ 50%
 
 ## User Story
 
@@ -22,10 +22,10 @@ So that I can manage the deterministic aspects of a users workflow
 
 ### Command Structure
 
-- [ ] Subcommands implemented: plan, review, execute, validate, test-plugin, init
-- [ ] Each command has placeholder implementation (prints "Coming in EPIC-0001.2")
-- [ ] Commands accept ticket ID argument: `gitstory plan STORY-0001.2.4`
-- [ ] Commands show help text: `gitstory plan --help`
+- [x] Subcommands implemented: plan, review, execute, validate, test-plugin, init
+- [x] Each command has placeholder implementation (prints "Coming in EPIC-0001.2")
+- [x] Commands accept ticket ID argument: `gitstory plan STORY-0001.2.4`
+- [x] Commands show help text: `gitstory plan --help`
 
 ### Rich Output
 
@@ -69,7 +69,7 @@ GitStory CLI provides **deterministic ticket operations** for Claude Code to orc
 | ID  | Title                                    | Status         | Hours |
 | --- | ---------------------------------------- | -------------- | ----- |
 | [TASK-0001.1.3.1](TASK-0001.1.3.1.md) | Create Typer App with Dual Output Modes | ✅ Complete    | 3     |
-| [TASK-0001.1.3.2](TASK-0001.1.3.2.md) | Implement 6 Placeholder Commands | 🔵 Not Started | 4     |
+| [TASK-0001.1.3.2](TASK-0001.1.3.2.md) | Implement 6 Placeholder Commands | ✅ Complete    | 4     |
 | [TASK-0001.1.3.3](TASK-0001.1.3.3.md) | Add Dual Output Formatting | 🔵 Not Started | 3     |
 | [TASK-0001.1.3.4](TASK-0001.1.3.4.md) | Configure Installation and Test Both Use Cases | 🔵 Not Started | 2     |
 

@@ -61,5 +61,9 @@ def main(
     ctx.obj = {"json_mode": json_mode}
 
 
+# Import all commands to register them with the app
+# These imports must come after app is defined
+from gitstory.cli import execute, init, plan, review, test_plugin, validate  # noqa: E402, F401
+
 # Export app for use in __main__.py
 __all__ = ["app"]
