@@ -14,6 +14,8 @@ from typing import Any
 from rich.console import Console
 from rich.table import Table
 
+from .symbols import get_symbols
+
 
 class OutputFormatter:
     """Dual-mode output formatter for GitStory CLI.
@@ -39,6 +41,8 @@ class OutputFormatter:
         """
         self.json_mode = json_mode
         self.console = Console() if not json_mode else None
+        # Get platform-appropriate symbols (Unicode or ASCII fallback)
+        self.symbols = get_symbols()
 
     def render_rich(self, data: dict[str, Any]) -> str:
         """Render data in rich terminal format with ANSI colors.
@@ -63,11 +67,11 @@ class OutputFormatter:
         if "status" in data:
             status = data["status"]
             if status == "success":
-                temp_console.print("[green]✓[/green]", end=" ")
+                temp_console.print(f"[green]{self.symbols.SUCCESS}[/green]", end=" ")
             elif status == "error":
-                temp_console.print("[red]✗[/red]", end=" ")
+                temp_console.print(f"[red]{self.symbols.ERROR}[/red]", end=" ")
             else:
-                temp_console.print("[blue]ℹ[/blue]", end=" ")
+                temp_console.print(f"[blue]{self.symbols.INFO}[/blue]", end=" ")
 
         if "message" in data:
             temp_console.print(data["message"])
@@ -99,7 +103,7 @@ class OutputFormatter:
     # New methods added in TASK-0001.1.3.3
 
     def success(self, message: str, data: dict[str, Any] | None = None) -> None:
-        """Output success message with green checkmark.
+        """Output success message with platform-appropriate success indicator.
 
         Args:
             message: Success message to display
@@ -108,7 +112,7 @@ class OutputFormatter:
         if self.json_mode:
             print(json.dumps({"status": "success", "message": message, "data": data}))
         elif self.console:
-            self.console.print(f"[green]✓[/green] {message}")
+            self.console.print(f"[green]{self.symbols.SUCCESS}[/green] {message}")
             if data:
                 for key, value in data.items():
                     self.console.print(f"  {key}: {value}")
@@ -135,14 +139,14 @@ class OutputFormatter:
                 )
             )
         elif self.console:
-            self.console.print(f"[red]✗[/red] {message}", style="bold red")
+            self.console.print(f"[red]{self.symbols.ERROR}[/red] {message}", style="bold red")
             if details:
                 for key, value in details.items():
                     self.console.print(f"  {key}: {value}")
         sys.exit(exit_code)
 
     def info(self, message: str) -> None:
-        """Output info message with blue icon.
+        """Output info message with platform-appropriate info indicator.
 
         Args:
             message: Info message to display
@@ -150,10 +154,10 @@ class OutputFormatter:
         if self.json_mode:
             print(json.dumps({"level": "info", "message": message}))
         elif self.console:
-            self.console.print(f"[blue]ℹ[/blue] {message}")
+            self.console.print(f"[blue]{self.symbols.INFO}[/blue] {message}")
 
     def warning(self, message: str) -> None:
-        """Output warning message with yellow icon.
+        """Output warning message with platform-appropriate warning indicator.
 
         Args:
             message: Warning message to display
@@ -161,10 +165,10 @@ class OutputFormatter:
         if self.json_mode:
             print(json.dumps({"level": "warning", "message": message}))
         elif self.console:
-            self.console.print(f"[yellow]⚠[/yellow] {message}")
+            self.console.print(f"[yellow]{self.symbols.WARNING}[/yellow] {message}")
 
     def debug(self, message: str) -> None:
-        """Output debug message (dimmed).
+        """Output debug message with platform-appropriate debug indicator.
 
         Args:
             message: Debug message to display
@@ -172,7 +176,7 @@ class OutputFormatter:
         if self.json_mode:
             print(json.dumps({"level": "debug", "message": message}))
         elif self.console:
-            self.console.print(f"[dim]Debug: {message}[/dim]")
+            self.console.print(f"[dim]{self.symbols.DEBUG} {message}[/dim]")
 
     @contextmanager
     def progress(self, description: str, total: int):  # type: ignore[no-untyped-def]
@@ -191,7 +195,7 @@ class OutputFormatter:
             Actual rich.Progress implementation deferred to future task.
         """
         if not self.json_mode and self.console:
-            self.console.print(f"[blue]ℹ[/blue] {description}")
+            self.console.print(f"[blue]{self.symbols.INFO}[/blue] {description}")
         yield self
         # Exit: no-op for placeholder
 

@@ -263,7 +263,8 @@ def test_debug_method_rich_mode(capsys):
 
     captured = capsys.readouterr()
     assert "Checking file paths..." in captured.out
-    assert "Debug:" in captured.out or "\x1b[" in captured.out  # Debug prefix or ANSI codes
+    # Debug output should contain either Unicode symbol (•) or ASCII ([*])
+    assert "•" in captured.out or "[*]" in captured.out or "\x1b[" in captured.out
 
 
 def test_debug_method_json_mode(capsys):
