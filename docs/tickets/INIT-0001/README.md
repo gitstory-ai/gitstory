@@ -1,9 +1,9 @@
 # INIT-0001: Make GitStory Workflow-Agnostic via Plugin-Based State Machines
 
-**Timeline**: Q4 2025  
-**Status**: 🟡 In Progress  
-**Owner**: Bram Swenson  
-**Progress**: ░░░░░░░░░░ 0%
+**Timeline**: Q4 2025
+**Status**: 🟡 In Progress
+**Owner**: Bram Swenson
+**Progress**: █░░░░░░░░░ 10% (11/114 points complete)
 
 ## Objective
 
@@ -32,7 +32,7 @@ Transform GitStory into a **workflow-agnostic ticket management system** distrib
 
 | ID                                   | Title                                            | Status         | Story Points | Progress      | Owner |
 | ------------------------------------ | ------------------------------------------------ | -------------- | ------------ | ------------- | ----- |
-| [EPIC-0001.1](EPIC-0001.1/README.md) | Skills Foundation & Infrastructure               | 🔵 Not Started | 21           | ░░░░░░░░░░ 0% | TBD   |
+| [EPIC-0001.1](EPIC-0001.1/README.md) | CLI & Skill Foundation               | 🟡 In Progress | 29           | ████░░░░░░ 38% | Bram   |
 | [EPIC-0001.2](EPIC-0001.2/README.md) | Workflow Engine & Core Scripts                   | 🔵 Not Started | 41           | ░░░░░░░░░░ 0% | TBD   |
 | [EPIC-0001.3](EPIC-0001.3/README.md) | Workflow Plugins & Universal Commands            | 🔵 Not Started | 32           | ░░░░░░░░░░ 0% | TBD   |
 | [EPIC-0001.4](EPIC-0001.4/README.md) | Distribution, Documentation & Validation         | 🔵 Not Started | 20           | ░░░░░░░░░░ 0% | TBD   |
