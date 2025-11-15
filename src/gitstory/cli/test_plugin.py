@@ -8,15 +8,14 @@ This command will eventually handle:
 """
 
 import typer
-from rich.console import Console
 
 from gitstory.cli import app
-
-console = Console()
+from gitstory.cli.output import OutputFormatter
 
 
 @app.command(name="test-plugin")
 def test_plugin(
+    ctx: typer.Context,
     plugin_name: str = typer.Argument(..., help="Plugin to test (e.g., all_children_done)"),
     ticket_id: str = typer.Option(None, "--ticket", help="Ticket ID for plugin context"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output"),
@@ -33,9 +32,13 @@ def test_plugin(
         gitstory test-plugin all_children_done
         gitstory test-plugin validate_ticket --ticket STORY-0001.2.4 --verbose
     """
-    console.print(f"[blue]ℹ[/blue] Testing plugin {plugin_name}...")
+    # Get json_mode from context and create formatter
+    json_mode = ctx.obj.get("json_mode", False)
+    output = OutputFormatter(json_mode=json_mode)
+
+    output.info(f"Testing plugin {plugin_name}...")
     if ticket_id:
-        console.print(f"[dim]Using ticket context: {ticket_id}[/dim]")
+        output.debug(f"Using ticket context: {ticket_id}")
     if verbose:
-        console.print("[dim]Verbose mode enabled[/dim]")
-    console.print("[yellow]⚠[/yellow] Coming in EPIC-0001.3: Plugin testing framework")
+        output.debug("Verbose mode enabled")
+    output.warning("Coming in EPIC-0001.3: Plugin testing framework")

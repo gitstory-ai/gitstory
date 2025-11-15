@@ -8,15 +8,14 @@ This command will eventually handle:
 """
 
 import typer
-from rich.console import Console
 
 from gitstory.cli import app
-
-console = Console()
+from gitstory.cli.output import OutputFormatter
 
 
 @app.command()
 def review(
+    ctx: typer.Context,
     ticket_id: str = typer.Argument(..., help="Ticket ID to review (e.g., EPIC-0001.3)"),
     focus: str = typer.Option(None, "--focus", help="Specific concern to focus on"),
 ) -> None:
@@ -32,7 +31,11 @@ def review(
         gitstory review STORY-0001.2.4
         gitstory review EPIC-0001.3 --focus security
     """
-    console.print(f"[blue]ℹ[/blue] Reviewing {ticket_id}...")
+    # Get json_mode from context and create formatter
+    json_mode = ctx.obj.get("json_mode", False)
+    output = OutputFormatter(json_mode=json_mode)
+
+    output.info(f"Reviewing {ticket_id}...")
     if focus:
-        console.print(f"[dim]Focus area: {focus}[/dim]")
-    console.print("[yellow]⚠[/yellow] Coming in EPIC-0001.2: Quality checker & validation logic")
+        output.debug(f"Focus area: {focus}")
+    output.warning("Coming in EPIC-0001.2: Quality checker & validation logic")

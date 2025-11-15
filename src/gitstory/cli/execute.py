@@ -8,15 +8,14 @@ This command will eventually handle:
 """
 
 import typer
-from rich.console import Console
 
 from gitstory.cli import app
-
-console = Console()
+from gitstory.cli.output import OutputFormatter
 
 
 @app.command()
 def execute(
+    ctx: typer.Context,
     ticket_id: str = typer.Argument(..., help="Ticket ID to execute (e.g., TASK-0001.2.4.3)"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show actions without executing"),
 ) -> None:
@@ -33,7 +32,11 @@ def execute(
         gitstory execute TASK-0001.2.4.3
         gitstory execute STORY-0001.2.4 --dry-run
     """
-    console.print(f"[blue]ℹ[/blue] Executing {ticket_id}...")
+    # Get json_mode from context and create formatter
+    json_mode = ctx.obj.get("json_mode", False)
+    output = OutputFormatter(json_mode=json_mode)
+
+    output.info(f"Executing {ticket_id}...")
     if dry_run:
-        console.print("[dim]Dry run mode - no changes will be made[/dim]")
-    console.print("[yellow]⚠[/yellow] Coming in EPIC-0001.2: Workflow execution engine")
+        output.debug("Dry run mode - no changes will be made")
+    output.warning("Coming in EPIC-0001.2: Workflow execution engine")

@@ -8,15 +8,14 @@ This command will eventually handle:
 """
 
 import typer
-from rich.console import Console
 
 from gitstory.cli import app
-
-console = Console()
+from gitstory.cli.output import OutputFormatter
 
 
 @app.command()
 def plan(
+    ctx: typer.Context,
     ticket_id: str = typer.Argument(..., help="Ticket ID to plan (e.g., STORY-0001.2.4)"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output"),
 ) -> None:
@@ -30,7 +29,11 @@ def plan(
     Example:
         gitstory plan STORY-0001.2.4
     """
-    console.print(f"[blue]ℹ[/blue] Planning {ticket_id}...")
+    # Get json_mode from context and create formatter
+    json_mode = ctx.obj.get("json_mode", False)
+    output = OutputFormatter(json_mode=json_mode)
+
+    output.info(f"Planning {ticket_id}...")
     if verbose:
-        console.print("[dim]Verbose mode enabled[/dim]")
-    console.print("[yellow]⚠[/yellow] Coming in EPIC-0001.2: Workflow engine & planning logic")
+        output.debug("Verbose mode enabled")
+    output.warning("Coming in EPIC-0001.2: Workflow engine & planning logic")

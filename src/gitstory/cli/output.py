@@ -6,10 +6,13 @@ Provides consistent output formatting across all CLI commands:
 """
 
 import json
+import sys
+from contextlib import contextmanager
 from io import StringIO
 from typing import Any
 
 from rich.console import Console
+from rich.table import Table
 
 
 class OutputFormatter:
@@ -92,6 +95,123 @@ class OutputFormatter:
             'success'
         """
         return json.dumps(data, indent=2, ensure_ascii=False)
+
+    # New methods added in TASK-0001.1.3.3
+
+    def success(self, message: str, data: dict[str, Any] | None = None) -> None:
+        """Output success message with green checkmark.
+
+        Args:
+            message: Success message to display
+            data: Optional additional data to display
+        """
+        if self.json_mode:
+            print(json.dumps({"status": "success", "message": message, "data": data}))
+        elif self.console:
+            self.console.print(f"[green]✓[/green] {message}")
+            if data:
+                for key, value in data.items():
+                    self.console.print(f"  {key}: {value}")
+
+    def error(
+        self, message: str, details: dict[str, Any] | None = None, exit_code: int = 1
+    ) -> None:
+        """Output error message and exit process.
+
+        Args:
+            message: Error message to display
+            details: Optional error details
+            exit_code: Exit code (default: 1)
+        """
+        if self.json_mode:
+            print(
+                json.dumps(
+                    {
+                        "status": "error",
+                        "message": message,
+                        "details": details,
+                        "exit_code": exit_code,
+                    }
+                )
+            )
+        elif self.console:
+            self.console.print(f"[red]✗[/red] {message}", style="bold red")
+            if details:
+                for key, value in details.items():
+                    self.console.print(f"  {key}: {value}")
+        sys.exit(exit_code)
+
+    def info(self, message: str) -> None:
+        """Output info message with blue icon.
+
+        Args:
+            message: Info message to display
+        """
+        if self.json_mode:
+            print(json.dumps({"level": "info", "message": message}))
+        elif self.console:
+            self.console.print(f"[blue]ℹ[/blue] {message}")
+
+    def warning(self, message: str) -> None:
+        """Output warning message with yellow icon.
+
+        Args:
+            message: Warning message to display
+        """
+        if self.json_mode:
+            print(json.dumps({"level": "warning", "message": message}))
+        elif self.console:
+            self.console.print(f"[yellow]⚠[/yellow] {message}")
+
+    def debug(self, message: str) -> None:
+        """Output debug message (dimmed).
+
+        Args:
+            message: Debug message to display
+        """
+        if self.json_mode:
+            print(json.dumps({"level": "debug", "message": message}))
+        elif self.console:
+            self.console.print(f"[dim]Debug: {message}[/dim]")
+
+    @contextmanager
+    def progress(self, description: str, total: int):  # type: ignore[no-untyped-def]
+        """Context manager for progress indication (placeholder implementation).
+
+        Args:
+            description: Progress description
+            total: Total number of items (unused in placeholder)
+
+        Yields:
+            self (no-op for placeholder)
+
+        Note:
+            In rich mode, prints description on entry.
+            In JSON mode, silent (no output).
+            Actual rich.Progress implementation deferred to future task.
+        """
+        if not self.json_mode and self.console:
+            self.console.print(f"[blue]ℹ[/blue] {description}")
+        yield self
+        # Exit: no-op for placeholder
+
+    def table(self, headers: list[str], rows: list[list[str]]) -> None:
+        """Output table data.
+
+        Args:
+            headers: Table column headers
+            rows: Table rows (list of lists)
+        """
+        if self.json_mode:
+            print(json.dumps({"type": "table", "headers": headers, "rows": rows}))
+        elif self.console:
+            # Create rich table
+            table = Table()
+            for header in headers:
+                table.add_column(header)
+            for row in rows:
+                table.add_row(*row)
+            self.console.print(table)
 
 
 # Export for use in CLI commands

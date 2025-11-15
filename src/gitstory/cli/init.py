@@ -8,15 +8,14 @@ This command will eventually handle:
 """
 
 import typer
-from rich.console import Console
 
 from gitstory.cli import app
-
-console = Console()
+from gitstory.cli.output import OutputFormatter
 
 
 @app.command()
 def init(
+    ctx: typer.Context,
     force: bool = typer.Option(False, "--force", help="Overwrite existing .gitstory/"),
 ) -> None:
     """Initialize GitStory in repository: copy workflow.yaml, create directories.
@@ -31,7 +30,11 @@ def init(
         gitstory init
         gitstory init --force  # Overwrite existing configuration
     """
-    console.print("[blue]ℹ[/blue] Initializing GitStory...")
+    # Get json_mode from context and create formatter
+    json_mode = ctx.obj.get("json_mode", False)
+    output = OutputFormatter(json_mode=json_mode)
+
+    output.info("Initializing GitStory...")
     if force:
-        console.print("[dim]Force mode - will overwrite existing files[/dim]")
-    console.print("[yellow]⚠[/yellow] Coming in EPIC-0001.2: Initialization logic")
+        output.debug("Force mode - will overwrite existing files")
+    output.warning("Coming in EPIC-0001.2: Initialization logic")
