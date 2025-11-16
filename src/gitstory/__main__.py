@@ -1,15 +1,12 @@
-"""GitStory CLI entry point placeholder.
+"""GitStory CLI entry point.
 
-This placeholder will be replaced in STORY-0001.1.3 with the actual
-typer-based CLI implementation.
+This module allows the CLI to be invoked via:
+- Direct command: gitstory (via pyproject.toml entry point)
+- Module invocation: python -m gitstory
+- Programmatic: from gitstory.cli import app; app()
 """
 
-
-def main() -> None:
-    """Placeholder main function."""
-    print("GitStory CLI - foundation placeholder")
-    print("Actual CLI implementation coming in STORY-0001.1.3")
-
+from gitstory.cli import app
 
 if __name__ == "__main__":
-    main()
+    app()
