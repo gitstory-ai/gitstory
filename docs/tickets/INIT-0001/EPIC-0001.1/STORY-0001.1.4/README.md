@@ -8,24 +8,40 @@
 ## User Story
 
 As a user
-I want comprehensive SKILL.md documentation
-So that Claude Code knows how to orchestrate GitStory CLI commands to manage my tickets intelligently
+I want SKILL.md documentation (250-400 words, 6 CLI commands, activation patterns)
+So that Claude Code knows how to orchestrate GitStory CLI commands to manage my tickets
 
 ## Acceptance Criteria
 
-- [ ] SKILL.md created as CLI wrapper (200-500 words, no YAML frontmatter)
+- [ ] SKILL.md created as CLI wrapper (250-400 words core content excluding code blocks, no YAML frontmatter)
 - [ ] SKILL.md documents CLI installation requirement (pipx/uvx)
+- [ ] SKILL.md documents installation commands with expected behavior:
+  - [ ] Documents `pipx install gitstory` command with expected output: "installed package gitstory"
+  - [ ] Documents `uvx gitstory --help` command for running without install
+  - [ ] Documents expected error if CLI not installed: "Error: gitstory command not found. Install with: pipx install gitstory"
+  - [ ] Note: Actual installation testing happens in CLI packaging story (out of scope - CLI doesn't exist yet)
 - [ ] SKILL.md documents all 6 CLI commands: plan, review, execute, validate, test-plugin, init
 - [ ] SKILL.md includes usage examples showing CLI invocation from Claude
 - [ ] SKILL.md includes activation section with trigger patterns:
   - Command patterns: /gitstory:*, CLI command names
   - Natural language: "gitstory", "create ticket", "plan epic"
   - Ticket ID patterns: INIT-*, EPIC-*, STORY-*, TASK-*, BUG-*
-- [ ] SKILL.md structure validated against anthropics/skills repository patterns
+- [ ] SKILL.md activation behavior documented:
+  - Pattern matching: case-insensitive substring match
+  - When matched: Claude loads SKILL.md context and suggests relevant CLI command
+  - User confirmation required before CLI execution
+  - Priority: Command patterns > Ticket IDs > Natural language
+- [ ] SKILL.md structure validated against anthropics/skills repository patterns:
+  - [ ] Starts with h1 heading (# GitStory), no YAML frontmatter above it
+  - [ ] Contains ## Activation section describing trigger patterns
+  - [ ] Contains ## Commands or ## Usage section with CLI examples
+  - [ ] Has 3-6 h2 sections total
+  - [ ] Code blocks use ```bash or ```python syntax highlighting
+  - [ ] Patterns match 3-5 reviewed skills documented in TASK-0001.1.4.1
 - [ ] .claude-plugin/config.json created with required fields: name, id, version, entry_point, author, description, keywords, license, repository
 - [ ] config.json validated with `python -m json.tool .claude-plugin/config.json`
 - [ ] config.json entry_point references skills/gitstory/SKILL.md
-- [ ] SKILL.md renders correctly in markdown preview
+- [ ] SKILL.md markdown validated in preview: (1) h1/h2 headings display correctly, (2) code blocks show syntax highlighting, (3) links clickable, (4) no rendering errors
 
 ## Technical Design
 
@@ -93,7 +109,7 @@ gitstory review EPIC-0001.3
 See `skills/gitstory/references/` for detailed configuration guides.
 ```
 
-**Word count target:** 250-350 words (excluding code blocks)
+**Word count target:** 250-400 words of prose (excluding code blocks, headings, and examples)
 **Key principle:** SKILL.md is the primary interface. It documents how Claude should orchestrate CLI commands (deterministic operations) while providing intelligent planning, review, and decision-making
 
 ### .claude-plugin/config.json Structure
@@ -135,7 +151,14 @@ See `skills/gitstory/references/` for detailed configuration guides.
 # Document 3+ skills with: name, heading structure, word count
 
 # 2. Check word count (excluding code blocks)
-grep -v '^```' skills/gitstory/SKILL.md | wc -w  # Result must be 200-500
+# Word count must be exactly 250-400 words (excluding code blocks and headings)
+WORD_COUNT=$(grep -Ev '^(```|#)' skills/gitstory/SKILL.md | wc -w | tr -d ' ')
+if [ "$WORD_COUNT" -ge 250 ] && [ "$WORD_COUNT" -le 400 ]; then
+  echo "✓ Word count valid: $WORD_COUNT words"
+else
+  echo "✗ Word count invalid: $WORD_COUNT words (expected 250-400)"
+  exit 1
+fi
 
 # 3. Verify markdown rendering
 # Open in GitHub/VSCode preview: check headings, lists, code blocks, links
@@ -150,8 +173,18 @@ head -1 skills/gitstory/SKILL.md | grep -v '^---'  # Should output heading, not 
 # JSON syntax validation
 python -m json.tool .claude-plugin/config.json
 
-# Entry point verification
-test -f skills/gitstory/SKILL.md && echo "Entry point exists" || echo "ERROR: Entry point missing"
+# Entry point verification (path matches AND file exists)
+ENTRY_POINT=$(python -c "import json; print(json.load(open('.claude-plugin/config.json'))['entry_point'])" 2>/dev/null)
+EXPECTED="skills/gitstory/SKILL.md"
+if [ "$ENTRY_POINT" = "$EXPECTED" ] && [ -f "$ENTRY_POINT" ]; then
+  echo "✓ Entry point valid: $ENTRY_POINT (file exists)"
+elif [ "$ENTRY_POINT" != "$EXPECTED" ]; then
+  echo "✗ Entry point mismatch: got '$ENTRY_POINT', expected '$EXPECTED'"
+  exit 1
+else
+  echo "✗ Entry point file missing: $ENTRY_POINT"
+  exit 1
+fi
 ```
 
 **Python validation (optional):**
@@ -207,10 +240,10 @@ def test_skill_md_structure():
 
 | ID | Title | Status | Hours |
 |----|-------|--------|-------|
-| [TASK-0001.1.3.1](TASK-0001.1.3.1.md) | Research anthropics/skills and create config.json | 🔵 Not Started | 5 |
-| [TASK-0001.1.3.2](TASK-0001.1.3.2.md) | Create SKILL.md scaffold with validation | 🔵 Not Started | 7 |
+| [TASK-0001.1.4.1](TASK-0001.1.4.1.md) | Research anthropics/skills and create config.json | 🔵 Not Started | 2 |
+| [TASK-0001.1.4.2](TASK-0001.1.4.2.md) | Create SKILL.md (250-400 words) with structure validation | 🔵 Not Started | 7 |
 
-**Total Hours**: 12 (matches 3 story points)
+**Total Hours**: 9 (3 story points)
 
 ## Dependencies
 
